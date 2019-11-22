@@ -48,10 +48,20 @@ def stadistic_difference_distributions(data, submission, time_column, test_perce
 
     return time_analysis_df, cols_to_remove
 
-def outliers_analysis(full_data_pd, features_names=None, x_column=None, subplot_rows=None, subplot_cols=None, starting_index=0,
+def outliers_analysis(full_data, features_names=None, x_column=None, subplot_rows=None, subplot_cols=None, starting_index=0,
                       index_offset=1, z_score_threshold=3.5, use_mean=False, plot=True, num_bins=50):
+    # Compatibility with numpy arrays
+    if type(full_data) == np.ndarray:
+        assert len(full_data.shape) <= 2
+        if len(full_data.shape) == 1:
+            columns = ['feature']
+        else:
+            columns = ['feature_'+str(i) for i in range(full_data.shape[-1])]
+        full_data = pd.DataFrame(full_data, columns=columns)
+    
+    # Features not provided, use all the columns
     if features_names is None:
-        features_names = list(full_data_pd.columns)
+        features_names = list(full_data.columns)
     
     if plot:
         # Set a good relation rows/cols for the plot if not specified
@@ -62,7 +72,6 @@ def outliers_analysis(full_data_pd, features_names=None, x_column=None, subplot_
                 subplot_rows = 1
                 subplot_cols = len(features_names)
             else:
-                residual_dict = {}
                 found = False
                 better_res = max(n_cols)
                 better_n = None
@@ -71,22 +80,23 @@ def outliers_analysis(full_data_pd, features_names=None, x_column=None, subplot_
                     if res == 0:
                         subplot_rows = len(features_names) // n
                         subplot_cols = n
-                        found = False
+                        found = True
                         break
                     elif better_res > res:
                         better_res = res
                         better_n = n
+                    print(n, res, better_res, better_n, subplot_rows, subplot_cols)
                         
                 if not found:
                     subplot_rows = len(features_names) // better_n + 1
                     subplot_cols = better_n
-                        
+                print(subplot_rows, subplot_cols)
                     
         # Resize for better visualization of subplots
         plt.rcParams['figure.figsize'] = [subplot_cols * 5, subplot_rows * 4]
         fig, axes = plt.subplots(subplot_rows, subplot_cols, sharex=False, sharey=False)
 
-    outliers_pd = full_data_pd.copy()
+    outliers_pd = full_data.copy()
 
     outliers_summary = {}
 
@@ -116,9 +126,9 @@ def outliers_analysis(full_data_pd, features_names=None, x_column=None, subplot_
             # If X_column provided plot scatter, otherwise histogram
             if x_column is None:
                 bins = np.linspace(data.min(), data.max(), num_bins)
-                plt.hist(data[~outliers_pd[feature_name + '_zscore_outliers']], bins=bins, density=False)
-                plt.hist(data[outliers_pd[feature_name + '_zscore_outliers']], bins=bins, density=False)
-                plt.show()
+                ax.hist(data[~outliers_pd[feature_name + '_zscore_outliers']], bins=bins, density=False)
+                ax.hist(data[outliers_pd[feature_name + '_zscore_outliers']], bins=bins, density=False)
+                ax.set_title(feature_name)
             else:
                 plot_scatter(outliers_pd[outliers_pd[feature_name].notnull()], x_column=x_column, y_column=feature_name,
                          axes=ax, highlight_column=feature_name + '_zscore_outliers')
