@@ -48,8 +48,10 @@ def stadistic_difference_distributions(data, submission, time_column, test_perce
 
     return time_analysis_df, cols_to_remove
 
-def outliers_analysis(full_data_pd, features_names, x_column=None, subplot_rows=None, subplot_cols=None, starting_index=0,
+def outliers_analysis(full_data_pd, features_names=None, x_column=None, subplot_rows=None, subplot_cols=None, starting_index=0,
                       index_offset=1, z_score_threshold=3.5, use_mean=False, plot=True, num_bins=50):
+    if features_names is None:
+        features_names = list(full_data_pd.columns)
     
     if plot:
         # Set a good relation rows/cols for the plot if not specified
