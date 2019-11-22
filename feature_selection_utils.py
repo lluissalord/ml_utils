@@ -48,9 +48,38 @@ def stadistic_difference_distributions(data, submission, time_column, test_perce
 
     return time_analysis_df, cols_to_remove
 
-def outliers_analysis(full_data_pd, features_names, x_column, subplot_rows, subplot_cols, starting_index=0,
-                      index_offset=1, z_score_threshold=3.5, use_mean=False, plot=True):
+def outliers_analysis(full_data_pd, features_names, x_column=None, subplot_rows=None, subplot_cols=None, starting_index=0,
+                      index_offset=1, z_score_threshold=3.5, use_mean=False, plot=True, num_bins=50):
+    
     if plot:
+        # Set a good relation rows/cols for the plot if not specified
+        if subplot_rows is None or subplot_cols is None:
+            n_cols = [3,4,5]
+            max_cols = max(n_cols)
+            if len(features_names) // max_cols == 0:
+                subplot_rows = 1
+                subplot_cols = len(features_names)
+            else:
+                residual_dict = {}
+                found = False
+                better_res = max(n_cols)
+                better_n = None
+                for n in sorted(n_cols, reverse=True):
+                    res = len(features_names) % n
+                    if res == 0:
+                        subplot_rows = len(features_names) // n
+                        subplot_cols = n
+                        found = False
+                        break
+                    elif better_res > res:
+                        better_res = res
+                        better_n = n
+                        
+                if not found:
+                    subplot_rows = len(features_names) // better_n + 1
+                    subplot_cols = better_n
+                        
+                    
         # Resize for better visualization of subplots
         plt.rcParams['figure.figsize'] = [subplot_cols * 5, subplot_rows * 4]
         fig, axes = plt.subplots(subplot_rows, subplot_cols, sharex=False, sharey=False)
@@ -76,11 +105,20 @@ def outliers_analysis(full_data_pd, features_names, x_column, subplot_rows, subp
                                                              outliers_pd[feature_name].notnull()] > z_score_threshold
 
         if plot:
+            # Take into account the case of only one plot
             if subplot_rows * subplot_cols == 1:
                 ax = axes
             else:
                 ax = axes[(i + index_offset) // subplot_cols, (i + index_offset) % subplot_cols]
-            plot_scatter(outliers_pd[outliers_pd[feature_name].notnull()], x_column=x_column, y_column=feature_name,
+            
+            # If X_column provided plot scatter, otherwise histogram
+            if x_column is None:
+                bins = np.linspace(data.min(), data.max(), num_bins)
+                plt.hist(data[~outliers_pd[feature_name + '_zscore_outliers']], bins=bins, density=False)
+                plt.hist(data[outliers_pd[feature_name + '_zscore_outliers']], bins=bins, density=False)
+                plt.show()
+            else:
+                plot_scatter(outliers_pd[outliers_pd[feature_name].notnull()], x_column=x_column, y_column=feature_name,
                          axes=ax, highlight_column=feature_name + '_zscore_outliers')
 
         outliers_percentage = 100 * outliers_pd[feature_name + '_zscore_outliers'].sum() / outliers_pd[
