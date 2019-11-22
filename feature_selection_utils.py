@@ -98,7 +98,9 @@ def outliers_analysis(full_data_pd, features_names, x_column, subplot_rows, subp
         # Resize to original settings
         plt.rcParams['figure.figsize'] = [10, 6]
 
-    return pd.DataFrame.from_dict(outliers_summary, orient='index', columns=['Percentage'])
+    outliers_summary = pd.DataFrame.from_dict(outliers_summary, orient='index', columns=['Percentage'])
+        
+    return outliers_summary, outliers_pd
 
 def feature_selection(classifier_initial, y_train, x_train, n_top_features=50, baseline_features=[],
                       min_importance=None):
