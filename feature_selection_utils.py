@@ -85,12 +85,10 @@ def outliers_analysis(full_data, features_names=None, x_column=None, subplot_row
                     elif better_res > res:
                         better_res = res
                         better_n = n
-                    print(n, res, better_res, better_n, subplot_rows, subplot_cols)
                         
                 if not found:
                     subplot_rows = len(features_names) // better_n + 1
                     subplot_cols = better_n
-                print(subplot_rows, subplot_cols)
                     
         # Resize for better visualization of subplots
         plt.rcParams['figure.figsize'] = [subplot_cols * 5, subplot_rows * 4]
