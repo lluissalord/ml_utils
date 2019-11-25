@@ -330,16 +330,17 @@ def reduce_mem_usage(df, columns=None, verbose=True, debug=False):
         cols_to_convert = list(set(cols_able_to_convert) - set(cols_converted) - set(cols_current_type))
         cols_not_changed = [col for col in cols_able_to_convert if col in cols_current_type]
 
-        if len(cols_to_convert) > 0:
-            if verbose:
-                print("Converting to ", col_type, " ", len(cols_to_convert), " columns")
+        if col_type[:3] == 'Int':
+            cols_to_convert_int_not_null = [col for col in cols_to_convert if col in df_int_cols_not_null]
 
-            if col_type[:3] == 'Int':
-                cols_to_convert_int_not_null = [col for col in cols_to_convert if col in df_int_cols_not_null]
-
+            if len(cols_to_convert_int_not_null) > 0:
                 df[cols_to_convert_int_not_null] = df[cols_to_convert_int_not_null].astype(np_type)
 
                 cols_to_convert = list(set(cols_to_convert) - set(cols_to_convert_int_not_null))
+        
+        if len(cols_to_convert) > 0:
+            if verbose:
+                print("Converting to ", col_type, " ", len(cols_to_convert), " columns")
 
             df[cols_to_convert] = df[cols_to_convert].astype(col_type)
 
