@@ -376,19 +376,25 @@ def get_feature_importance_mean(classifier_initial, y_train, x_train, n_iteratio
             if col in x_columns:
                 cat_features_index.extend((x_columns.index(col), x_columns.index(dict_shadow_names[col])))
 
-    for i in tqdm_notebook(range(n_iterations_mean), desc='Mean Loop'):
-        classifier_initial.set_params(cat_features=cat_features_index, random_state=np.random.randint(100))
-        classifier_initial = classifier_initial.fit(x_train, y_train)
+    n_targets = y_train.shape[-1] if len(y_train.shape) > 1 else 1
+    for t in tqdm_notebook(range(n_targets), desc='Target Loop', leave=False):
+        for i in tqdm_notebook(range(n_iterations_mean), desc='Mean Loop', leave=False):
+            classifier = classifier_initial.copy()
+            classifier.set_params(cat_features=cat_features_index, random_state=np.random.randint(100))
+            if n_targets > 1:
+                classifier = classifier.fit(x_train, y_train.iloc[:,t])
+            else:
+                classifier = classifier.fit(x_train, y_train)
 
-        feature_importance = sorted(zip(map(lambda x: round(x, 4), classifier_initial.feature_importances_), x_train),
-                                    reverse=True)
+            feature_importance = sorted(zip(map(lambda x: round(x, 4), classifier.feature_importances_), x_train),
+                                        reverse=True)
 
-        if i == 0:
-            df_feature_importance = pd.DataFrame(dict(zip(x_train, classifier_initial.feature_importances_)), index=[i])
-        else:
-            df_feature_importance_iter = pd.DataFrame(dict(zip(x_train, classifier_initial.feature_importances_)),
-                                                      index=[i])
+            if t==0 and i == 0:
+                df_feature_importance = pd.DataFrame(dict(zip(x_train, classifier.feature_importances_)), index=[i])
+            else:
+                df_feature_importance_iter = pd.DataFrame(dict(zip(x_train, classifier.feature_importances_)),
+                                                          index=[i])
 
-            df_feature_importance = pd.concat([df_feature_importance, df_feature_importance_iter])
+                df_feature_importance = pd.concat([df_feature_importance, df_feature_importance_iter])
 
     return df_feature_importance.mean()
