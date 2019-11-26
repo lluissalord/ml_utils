@@ -5,7 +5,7 @@ from scipy import stats
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 
-from plot_utils import plot_scatter
+from plot_utils import plot_scatter, get_subplot_rows_cols
 
 def stadistic_difference_distributions(data, submission, time_column, test_percentage=0.2, p_value_threshold=None,
                                        verbose=False):
@@ -49,7 +49,7 @@ def stadistic_difference_distributions(data, submission, time_column, test_perce
     return time_analysis_df, cols_to_remove
 
 def outliers_analysis(full_data, features_names=None, x_column=None, subplot_rows=None, subplot_cols=None, starting_index=0,
-                      index_offset=1, z_score_threshold=3.5, use_mean=False, plot=True, num_bins=50):
+                      index_offset=0, z_score_threshold=3.5, use_mean=False, plot=True, num_bins=50):
     # Compatibility with numpy arrays
     if type(full_data) == np.ndarray:
         assert len(full_data.shape) <= 2
@@ -66,29 +66,7 @@ def outliers_analysis(full_data, features_names=None, x_column=None, subplot_row
     if plot:
         # Set a good relation rows/cols for the plot if not specified
         if subplot_rows is None or subplot_cols is None:
-            n_cols = [3,4,5]
-            max_cols = max(n_cols)
-            if len(features_names) // max_cols == 0:
-                subplot_rows = 1
-                subplot_cols = len(features_names)
-            else:
-                found = False
-                better_res = max(n_cols)
-                better_n = None
-                for n in sorted(n_cols, reverse=True):
-                    res = len(features_names) % n
-                    if res == 0:
-                        subplot_rows = len(features_names) // n
-                        subplot_cols = n
-                        found = True
-                        break
-                    elif better_res > res:
-                        better_res = res
-                        better_n = n
-                        
-                if not found:
-                    subplot_rows = len(features_names) // better_n + 1
-                    subplot_cols = better_n
+            subplot_rows, subplot_cols = get_subplot_rows_cols([3,4,5])
                     
         # Resize for better visualization of subplots
         plt.rcParams['figure.figsize'] = [subplot_cols * 5, subplot_rows * 4]
@@ -118,6 +96,8 @@ def outliers_analysis(full_data, features_names=None, x_column=None, subplot_row
             # Take into account the case of only one plot
             if subplot_rows * subplot_cols == 1:
                 ax = axes
+            elif subplot_rows == 1:
+                ax = axes[(i + index_offset) % subplot_cols]
             else:
                 ax = axes[(i + index_offset) // subplot_cols, (i + index_offset) % subplot_cols]
             
