@@ -107,6 +107,8 @@ def plot_list_scatters(data, list_dict, subplot_cols, subplot_rows, starting_ind
         # Take into account the case of only one plot
         if subplot_rows * subplot_cols == 1:
             ax = axes
+        elif subplot_rows == 1:
+            ax = axes[(i + index_offset) % subplot_cols]
         else:
             ax = axes[(i + index_offset) // subplot_cols, (i + index_offset) % subplot_cols]
 
