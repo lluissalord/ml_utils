@@ -31,8 +31,12 @@ def get_subplot_rows_cols(n_cols = [3,4,5]):
             subplot_cols = better_n
     return subplot_rows, subplot_cols
 
-def plot_histograms(df, column_names, df_types, max_value_counts, subplot_rows, subplot_cols,
-                    starting_index=0, index_offset=1, fit=norm):
+def plot_histograms(df, column_names, df_types, max_value_counts, subplot_rows=None, subplot_cols=None,
+                    starting_index=0, index_offset=0, fit=norm):
+    # Set a good relation rows/cols for the plot if not specified
+    if subplot_rows is None or subplot_cols is None:
+        subplot_rows, subplot_cols = get_subplot_rows_cols([3,4,5])
+    
     # Resize for better visualization of subplots
     plt.rcParams['figure.figsize'] = [subplot_cols * 5, subplot_rows * 4]
 
@@ -94,8 +98,13 @@ def plot_scatter(data, x_column, y_column, title=None, axes=None, highlight_colu
         axes.set_ylabel(y_column)
 
 
-def plot_list_scatters(data, list_dict, subplot_cols, subplot_rows, starting_index=0, index_offset=0, fig=None,
+def plot_list_scatters(data, list_dict, subplot_cols=None, subplot_rows=None, starting_index=0, index_offset=0, fig=None,
                        axes=None):
+    
+    # Set a good relation rows/cols for the plot if not specified
+    if subplot_rows is None or subplot_cols is None:
+        subplot_rows, subplot_cols = get_subplot_rows_cols([3,4,5])
+    
     # Resize for better visualization of subplots
     plt.rcParams['figure.figsize'] = [subplot_cols * 5, subplot_rows * 4]
 
