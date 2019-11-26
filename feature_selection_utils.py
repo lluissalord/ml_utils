@@ -4,8 +4,137 @@ from tqdm import tqdm_notebook
 from scipy import stats
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 from plot_utils import plot_scatter, get_subplot_rows_cols
+
+def covariate_shift(train, test, categorical_columns, n_samples, weights_coef = 1, AUC_threshold = 0.8, importance_threshold = 0.9, max_loops = 20, test_size = 0.1, trys_all_influencer=5, calc_sample_weights=True, data_dir='', load_cov=False, save_cov=False, plot=True):
+
+    if not os.path.exists(data_dir + 'cov_shift_features.pkl') or not load_cov:
+        train_sample = train.sample(n_samples)
+        train_sample.loc[:,'origin'] = 0
+
+        test_sample = test.sample(n_samples)
+        test_sample.loc[:,'origin'] = 1
+
+        combined_train, combined_test = train_test_split(
+            pd.concat([train_sample.reset_index(drop=True), test_sample.reset_index(drop=True)]), 
+            test_size = test_size, 
+            shuffle = True)
+
+        try:
+
+            influence_columns = []
+            count_all_influencer = 0
+            i = 0
+            AUC_score = 1
+            print("Starting Covariance Shift feature selection")
+            while i < max_loops and AUC_score > AUC_threshold:
+
+                x_columns = combined_train.columns.drop(['origin',] + influence_columns)
+
+                # Get the indexes for the categorical columns which CatBoost requires to out-perform other algorithms
+                cat_features_index = [list(x_columns).index(col) for col in categorical_columns if col in list(x_columns)]
+
+                cov_shift_feature_selection = []
+
+                while len(cov_shift_feature_selection) == 0 and count_all_influencer < trys_all_influencer:
+                    if count_all_influencer > 0:
+                        print("Try again because model has set any feature as influencer")
+                    
+                    cov_shift_model = cb.CatBoostClassifier(iterations = 200,
+                                                            eval_metric = "AUC",
+                                                            cat_features = cat_features_index,
+                                                            task_type = "CPU",
+                                                            verbose = False
+                                                   )
+                    cov_shift_feature_selection, df_cov_shift_feature_selection = shadow_feature_selection(
+                        cov_shift_model, 
+                        combined_train['origin'], combined_train[x_columns], 
+                        need_cat_features_index=True, categorical_columns=categorical_columns, 
+                        collinear_threshold = 1,
+                        n_iterations_mean = 1, times_no_change_features = 1
+                    )
+                    
+                    count_all_influencer += 1
+                
+                if count_all_influencer == trys_all_influencer:
+                    cov_shift_feature_selection = x_columns
+                
+                # Get the indexes for the categorical columns which CatBoost requires to out-perform other algorithms
+                cat_features_index = [cov_shift_feature_selection.index(col) for col in categorical_columns if col in cov_shift_feature_selection]
+
+                print("Starting training for Covariate Shift")
+
+                params = {'iterations' : 300, 'learning_rate' : 0.05, 'depth' : 6}
+
+                cov_shift_model = cb.CatBoostClassifier(iterations = 200,
+                                                   eval_metric = "AUC",
+                                                   cat_features = cat_features_index,
+                                                   scale_pos_weight = combined_train['origin'].value_counts()[0] / combined_train['origin'].value_counts()[1],
+                                                   task_type = "CPU",
+                                                   verbose = False
+                                               )
+
+                cov_shift_model.set_params(**params)
+                cov_shift_model.fit(combined_train.drop('origin', axis = 1)[cov_shift_feature_selection],
+                                   combined_train['origin'], 
+                                   eval_set = (combined_test.drop('origin', axis = 1)[cov_shift_feature_selection], combined_test['origin']),
+                                   use_best_model = True,
+                                   #sample_weight = sample_weight,
+                                   #early_stopping_rounds = True,
+                                   plot = False,
+                                   verbose = False)
+
+                AUC_score = cov_shift_model.get_best_score()['validation']['AUC']
+                print(f"Model score AUC of {AUC_score} on test")
+
+                df_cov_shift_importance = pd.DataFrame(cov_shift_model.feature_importances_, columns = ['importance'], index = cov_shift_feature_selection)
+                df_cov_shift_importance['cumulative_importance'] = df_cov_shift_importance['importance'].cumsum() / df_cov_shift_importance['importance'].sum()
+
+                new_influence_columns = list(df_cov_shift_importance[df_cov_shift_importance['cumulative_importance'] < importance_threshold].index)
+                influence_columns = influence_columns + new_influence_columns
+
+                print(f"New {len(new_influence_columns)} columns will be removed from model: ", new_influence_columns)
+                count_all_influencer = 0
+
+                i = i + 1
+        finally:
+
+            print(f"Due to difference of influence of features to distinguish between data and submission, {len(influence_columns)} columns are removed:")
+            print(influence_columns)
+            
+            if calc_sample_weights:
+                print("Calculating weights for each training sample")
+                probs = cov_shift_model.predict_proba(train[cov_shift_model.feature_names_])[:, 1] #calculating the probability
+
+                #print("Plot Train AUC")
+                #plot_roc_auc(pd.Serie(1,index = train.index), probs)
+
+                sample_weight = -np.log(probs) 
+                sample_weight /= max(sample_weight) # Normalizing the weights
+
+                sample_weight = 1 + weights_coef * sample_weight
+
+                if plot:
+                    plt.xlabel('Computed sample weight')
+                    plt.ylabel('# Samples')
+                    sns.distplot(sample_weight, kde=False)
+            
+            if save_cov:
+                with open(data_dir + 'cov_shift_features.pkl', 'wb') as file:
+                    print("Saving data in ", data_dir + 'cov_shift_features.pkl')
+                    pickle.dump(influence_columns, file)
+    else:
+        print("Loading cols_remove_diff_distr from ",data_dir)
+
+        with open(data_dir + 'cov_shift_features.pkl', 'rb') as file:
+            influence_columns = pickle.load(file)
+
+        cov_shift_model = None
+        sample_weight = [1,] * len(train)
+            
+    return influence_columns, cov_shift_model, sample_weight
 
 def stadistic_difference_distributions(data, submission, time_column, test_percentage=0.2, p_value_threshold=None,
                                        verbose=False):
