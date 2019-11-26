@@ -3,9 +3,36 @@ import pandas as pd
 import numpy as np
 from sklearn import metrics
 from tqdm import tqdm_notebook
+import seaborn as sns
+from scipy.stats import norm
+
+def get_subplot_rows_cols(n_cols = [3,4,5]):
+    max_cols = max(n_cols)
+    if len(features_names) // max_cols == 0:
+        subplot_rows = 1
+        subplot_cols = len(features_names)
+    else:
+        found = False
+        better_res = max(n_cols)
+        better_n = None
+        for n in sorted(n_cols, reverse=True):
+            res = len(features_names) % n
+            if res == 0:
+                subplot_rows = len(features_names) // n
+                subplot_cols = n
+                found = True
+                break
+            elif better_res > res:
+                better_res = res
+                better_n = n
+
+        if not found:
+            subplot_rows = len(features_names) // better_n + 1
+            subplot_cols = better_n
+    return subplot_rows, subplot_cols
 
 def plot_histograms(df, column_names, df_types, max_value_counts, subplot_rows, subplot_cols,
-                    starting_index=0, index_offset=1):
+                    starting_index=0, index_offset=1, fit=norm):
     # Resize for better visualization of subplots
     plt.rcParams['figure.figsize'] = [subplot_cols * 5, subplot_rows * 4]
 
@@ -20,12 +47,12 @@ def plot_histograms(df, column_names, df_types, max_value_counts, subplot_rows, 
             0] < max_value_counts:
             df[column_name].value_counts(dropna=False).sort_index().plot(kind='bar', rot=0).set_title(column_name);
         else:
-            df[column_name].hist().set_title(column_name);
+            sns.distplot(df[column_name][df[column_name].notnull()], fit=fit, kde=False)
+        
         i = i + 1
 
     # Resize to original settings
     plt.rcParams['figure.figsize'] = [10, 6]
-
 
 def plot_roc_auc(y_true, y_pred):
     fpr, tpr, threshold = metrics.roc_curve(y_true, y_pred)
@@ -77,7 +104,11 @@ def plot_list_scatters(data, list_dict, subplot_cols, subplot_rows, starting_ind
 
     i = starting_index
     while i < len(list_dict):
-        ax = axes[(i + index_offset) // subplot_cols, (i + index_offset) % subplot_cols]
+        # Take into account the case of only one plot
+        if subplot_rows * subplot_cols == 1:
+            ax = axes
+        else:
+            ax = axes[(i + index_offset) // subplot_cols, (i + index_offset) % subplot_cols]
 
         info = list_dict[i]
         x_column = info['x_column']
