@@ -79,8 +79,8 @@ def plot_scatter(data, x_column, y_column, title=None, axes=None, highlight_colu
                  normal_color='b'):
     # print(data[highlight_column].astype(int))
     if highlight_column != None:
-        data[highlight_column][data[highlight_column] == True] = highlight_color
-        data[highlight_column][data[highlight_column] == False] = normal_color
+        data.loc[data[highlight_column] == True, highlight_column] = highlight_color
+        data.loc[data[highlight_column] == False, highlight_column] = normal_color
         color_pd = data[highlight_column]
         # color_pd = data[highlight_column] * highlight_color + (1 - data[highlight_column]) * normal_color
         color_list = color_pd[color_pd.notnull()].values.tolist()
