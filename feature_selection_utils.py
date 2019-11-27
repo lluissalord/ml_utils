@@ -5,10 +5,12 @@ from scipy import stats
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 import seaborn as sns
+import os
+import catboost as cb
 
 from plot_utils import plot_scatter, get_subplot_rows_cols
 
-def covariate_shift(train, test, categorical_columns, n_samples, weights_coef = 1, AUC_threshold = 0.8, importance_threshold = 0.9, max_loops = 20, test_size = 0.1, trys_all_influencer=5, calc_sample_weights=True, data_dir='', load_cov=False, save_cov=False, plot=True):
+def covariate_shift(train, test, categorical_columns, n_samples, iterations = 200, weights_coef = 1, AUC_threshold = 0.8, importance_threshold = 0.9, max_loops = 20, test_size = 0.1, trys_all_influencer=5, calc_sample_weights=True, task_type="CPU", data_dir='', load_cov=False, save_cov=False, plot=True):
 
     if not os.path.exists(data_dir + 'cov_shift_features.pkl') or not load_cov:
         train_sample = train.sample(n_samples)
@@ -28,7 +30,6 @@ def covariate_shift(train, test, categorical_columns, n_samples, weights_coef = 
             count_all_influencer = 0
             i = 0
             AUC_score = 1
-            print("Starting Covariance Shift feature selection")
             while i < max_loops and AUC_score > AUC_threshold:
 
                 x_columns = combined_train.columns.drop(['origin',] + influence_columns)
@@ -36,16 +37,16 @@ def covariate_shift(train, test, categorical_columns, n_samples, weights_coef = 
                 # Get the indexes for the categorical columns which CatBoost requires to out-perform other algorithms
                 cat_features_index = [list(x_columns).index(col) for col in categorical_columns if col in list(x_columns)]
 
+                # Do the feature selection once and only try again if no feature is selected
                 cov_shift_feature_selection = []
-
                 while len(cov_shift_feature_selection) == 0 and count_all_influencer < trys_all_influencer:
                     if count_all_influencer > 0:
                         print("Try again because model has set any feature as influencer")
                     
-                    cov_shift_model = cb.CatBoostClassifier(iterations = 200,
+                    cov_shift_model = cb.CatBoostClassifier(iterations = iterations,
                                                             eval_metric = "AUC",
                                                             cat_features = cat_features_index,
-                                                            task_type = "CPU",
+                                                            task_type = task_type,
                                                             verbose = False
                                                    )
                     cov_shift_feature_selection, df_cov_shift_feature_selection = shadow_feature_selection(
@@ -59,20 +60,18 @@ def covariate_shift(train, test, categorical_columns, n_samples, weights_coef = 
                     count_all_influencer += 1
                 
                 if count_all_influencer == trys_all_influencer:
-                    cov_shift_feature_selection = x_columns
+                    cov_shift_feature_selection = list(x_columns)
                 
                 # Get the indexes for the categorical columns which CatBoost requires to out-perform other algorithms
                 cat_features_index = [cov_shift_feature_selection.index(col) for col in categorical_columns if col in cov_shift_feature_selection]
 
-                print("Starting training for Covariate Shift")
+                params = {'iterations' : 2*iterations, 'learning_rate' : 0.05, 'depth' : 6}
 
-                params = {'iterations' : 300, 'learning_rate' : 0.05, 'depth' : 6}
-
-                cov_shift_model = cb.CatBoostClassifier(iterations = 200,
+                cov_shift_model = cb.CatBoostClassifier(iterations = iterations,
                                                    eval_metric = "AUC",
                                                    cat_features = cat_features_index,
                                                    scale_pos_weight = combined_train['origin'].value_counts()[0] / combined_train['origin'].value_counts()[1],
-                                                   task_type = "CPU",
+                                                   task_type = task_type,
                                                    verbose = False
                                                )
 
@@ -94,13 +93,15 @@ def covariate_shift(train, test, categorical_columns, n_samples, weights_coef = 
 
                 new_influence_columns = list(df_cov_shift_importance[df_cov_shift_importance['cumulative_importance'] < importance_threshold].index)
                 influence_columns = influence_columns + new_influence_columns
-
+                
                 print(f"New {len(new_influence_columns)} columns will be removed from model: ", new_influence_columns)
+                print()
                 count_all_influencer = 0
-
+                
                 i = i + 1
         finally:
 
+            print()
             print(f"Due to difference of influence of features to distinguish between data and submission, {len(influence_columns)} columns are removed:")
             print(influence_columns)
             
@@ -126,7 +127,7 @@ def covariate_shift(train, test, categorical_columns, n_samples, weights_coef = 
                     print("Saving data in ", data_dir + 'cov_shift_features.pkl')
                     pickle.dump(influence_columns, file)
     else:
-        print("Loading cols_remove_diff_distr from ",data_dir)
+        print("Loading influence columns from ",data_dir)
 
         with open(data_dir + 'cov_shift_features.pkl', 'rb') as file:
             influence_columns = pickle.load(file)
@@ -195,7 +196,7 @@ def outliers_analysis(full_data, features_names=None, x_column=None, subplot_row
     if plot:
         # Set a good relation rows/cols for the plot if not specified
         if subplot_rows is None or subplot_cols is None:
-            subplot_rows, subplot_cols = get_subplot_rows_cols([3,4,5])
+            subplot_rows, subplot_cols = get_subplot_rows_cols(len(features_names), [3,4,5])
                     
         # Resize for better visualization of subplots
         plt.rcParams['figure.figsize'] = [subplot_cols * 5, subplot_rows * 4]
@@ -348,10 +349,7 @@ def collinear_feature_selection(x_train, df_feature_importance, collinear_thresh
     return df_feature_importance
 
 
-def shadow_feature_selection(classifier_initial, y_train, x_train, n_top_features=None, collinear_threshold=0.98,
-                             cum_importance_threshold=0.99, times_no_change_features=2, max_loops=50,
-                             n_iterations_mean=3, need_cat_features_index=False, categorical_columns=[], verbose=True,
-                             debug=False, plot_correlation=False):
+def shadow_feature_selection(classifier_initial, y_train, x_train, eval_set=None, n_top_features=None, collinear_threshold=0.98, cum_importance_threshold=0.99, times_no_change_features=2, max_loops=50, n_iterations_mean=3, need_cat_features_index=False, categorical_columns=[], verbose=True, debug=False, plot_correlation=False):
     # Create 3 random features which will serve as baseline to reject features
     baseline_features = ['random_binary', 'random_uniform', 'random_integers']
     x_train = x_train.drop(baseline_features, axis=1, errors='ignore')
@@ -380,7 +378,8 @@ def shadow_feature_selection(classifier_initial, y_train, x_train, n_top_feature
                                                             n_iterations_mean=n_iterations_mean,
                                                             need_cat_features_index=need_cat_features_index,
                                                             categorical_columns=categorical_columns,
-                                                            dict_shadow_names=dict_shadow_names)
+                                                            dict_shadow_names=dict_shadow_names,
+                                                            eval_set=eval_set)
 
         # Take as minimum value of feature importance as the greatest value of the baselines features
         if baseline_features != []:
@@ -476,9 +475,12 @@ def _create_shadow(x, baseline_features):
 
 
 def get_feature_importance_mean(classifier_initial, y_train, x_train, n_iterations_mean=3,
-                                need_cat_features_index=False, categorical_columns=[], dict_shadow_names={}):
+                                need_cat_features_index=False, categorical_columns=[], dict_shadow_names={}, eval_set=None):
     cat_features_index = None
     if need_cat_features_index:
+        if dict_shadow_names=={}:
+            raise ValueError("dict_shadow_names cannot be empty if categorical features index are needed")
+        
         x_columns = list(x_train.columns)
         cat_features_index = []
         for col in categorical_columns:
@@ -490,10 +492,11 @@ def get_feature_importance_mean(classifier_initial, y_train, x_train, n_iteratio
         for i in tqdm_notebook(range(n_iterations_mean), desc='Mean Loop', leave=False):
             classifier = classifier_initial.copy()
             classifier.set_params(cat_features=cat_features_index, random_state=np.random.randint(100))
+            metric_period = int(classifier.get_param('iterations')) // 10 
             if n_targets > 1:
-                classifier = classifier.fit(x_train, y_train.iloc[:,t])
+                classifier = classifier.fit(x_train, y_train.iloc[:,t], eval_set=eval_set, metric_period=metric_period)
             else:
-                classifier = classifier.fit(x_train, y_train)
+                classifier = classifier.fit(x_train, y_train, eval_set=eval_set, metric_period=metric_period)
 
             feature_importance = sorted(zip(map(lambda x: round(x, 4), classifier.feature_importances_), x_train),
                                         reverse=True)
