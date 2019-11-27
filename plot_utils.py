@@ -6,19 +6,19 @@ from tqdm import tqdm_notebook
 import seaborn as sns
 from scipy.stats import norm
 
-def get_subplot_rows_cols(n_cols = [3,4,5]):
+def get_subplot_rows_cols(num_plots, n_cols = [3,4,5]):
     max_cols = max(n_cols)
-    if len(features_names) // max_cols == 0:
+    if num_plots // max_cols == 0:
         subplot_rows = 1
-        subplot_cols = len(features_names)
+        subplot_cols = num_plots
     else:
         found = False
         better_res = max(n_cols)
         better_n = None
         for n in sorted(n_cols, reverse=True):
-            res = len(features_names) % n
+            res = num_plots % n
             if res == 0:
-                subplot_rows = len(features_names) // n
+                subplot_rows = num_plots // n
                 subplot_cols = n
                 found = True
                 break
@@ -27,7 +27,7 @@ def get_subplot_rows_cols(n_cols = [3,4,5]):
                 better_n = n
 
         if not found:
-            subplot_rows = len(features_names) // better_n + 1
+            subplot_rows = num_plots // better_n + 1
             subplot_cols = better_n
     return subplot_rows, subplot_cols
 
@@ -35,7 +35,7 @@ def plot_histograms(df, column_names, df_types, max_value_counts, subplot_rows=N
                     starting_index=0, index_offset=0, fit=norm):
     # Set a good relation rows/cols for the plot if not specified
     if subplot_rows is None or subplot_cols is None:
-        subplot_rows, subplot_cols = get_subplot_rows_cols([3,4,5])
+        subplot_rows, subplot_cols = get_subplot_rows_cols(len(column_names), [3,4,5])
     
     # Resize for better visualization of subplots
     plt.rcParams['figure.figsize'] = [subplot_cols * 5, subplot_rows * 4]
@@ -43,7 +43,7 @@ def plot_histograms(df, column_names, df_types, max_value_counts, subplot_rows=N
     i = starting_index
     while i < len(column_names):
         column_name = column_names[i]
-        plt.subplot(subplot_rows, subplot_cols, i + index_offset)
+        plt.subplot(subplot_rows, subplot_cols, i + index_offset + 1)
 
         # Plot using value_counts for integer columns with less than 'max_value_counts' different values,
         # Otherwise, use histogram directly
@@ -103,7 +103,7 @@ def plot_list_scatters(data, list_dict, subplot_cols=None, subplot_rows=None, st
     
     # Set a good relation rows/cols for the plot if not specified
     if subplot_rows is None or subplot_cols is None:
-        subplot_rows, subplot_cols = get_subplot_rows_cols([3,4,5])
+        subplot_rows, subplot_cols = get_subplot_rows_cols(len(list_dict), [3,4,5])
     
     # Resize for better visualization of subplots
     plt.rcParams['figure.figsize'] = [subplot_cols * 5, subplot_rows * 4]
