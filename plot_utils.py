@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 import pandas as pd
 import numpy as np
 from sklearn import metrics
@@ -74,8 +75,71 @@ def plot_roc_auc(y_true, y_pred):
     plt.show()
 
 
+# Settings for axis to plot X data as dates correctly
+def plot_date(x, y, axes=None, title=None, color='b'):
+    if axes is None:
+        fig = plt.figure()
+        axes = fig.add_subplot(111)
+        
+    if type(color) is str:
+        axes.plot_date(x, y, color=color)
+    elif type(color) is list:
+        unique_colors = np.unique(color)
+        
+        color = np.array(color)
+        for unique_color in unique_colors:
+            list_unique_color = np.array([unique_color]*len(color))
+            cond = np.where(color == list_unique_color, True, False)
+            try:
+                axes.plot_date(x.loc[cond], y.loc[cond], color=unique_color)
+            except AttributeError:
+                axes.plot_date(x[cond], y[cond], color=unique_color)
+    else:
+        raise ValueError("color parameter must be string or list of strings")
+        
+    if title != None:
+        axes.set_title(title)
+    
+    try:
+        datediff = x.iloc[-1] - x.iloc[0]
+    except AttributeError:
+        datediff = x[-1] - x[0]
+    
+    if datediff.days >= 365:
+        major_loc = mdates.YearLocator()   # every year
+        major_format = mdates.DateFormatter('%Y')
+
+        minor_loc = mdates.MonthLocator()  # every month
+        axes.xaxis.set_minor_locator(minor_loc)
+
+    elif datediff.days >= 32:
+        major_loc = mdates.MonthLocator()   # every month
+        major_format = mdates.DateFormatter('%m')
+
+    elif datediff.days >= 7:
+        major_loc = mdates.DayLocator(interval=5)   # every day
+        major_format = mdates.DateFormatter('%d')
+
+        minor_loc = mdates.DayLocator()
+        axes.xaxis.set_minor_locator(minor_loc)
+
+    elif datediff.days >= 1:
+        major_loc = mdates.DayLocator()   # every day
+        major_format = mdates.DateFormatter('%a')
+
+    else:
+        major_loc = mdates.HourLocator(interval=3)   # every day
+        major_format = mdates.DateFormatter('%H')
+
+        minor_loc = mdates.HourLocator()
+        axes.xaxis.set_minor_locator(minor_loc)
+
+    # format the ticks
+    axes.xaxis.set_major_locator(major_loc)
+    axes.xaxis.set_major_formatter(major_format)
+
 # Here we define a function to draw scatter plots where we can highlight points as the outliers
-def plot_scatter(data, x_column, y_column, title=None, axes=None, highlight_column=None, highlight_color='r',
+def plot_scatter(data, x_column, y_column, title=None, axes=None, highlight_column=None, highlight_color=None,
                  normal_color='b'):
     # print(data[highlight_column].astype(int))
     if highlight_column != None:
@@ -87,12 +151,18 @@ def plot_scatter(data, x_column, y_column, title=None, axes=None, highlight_colu
     else:
         color_list = len(data[y_column]) * [normal_color, ]
 
-    if axes == None:
+    if title == None:
+        title = y_column 
+       
+    if (x_column == 'index' and np.issubdtype(data.index, np.datetime64)) or np.issubdtype(data[x_column], np.datetime64):
+        if x_column == 'index':
+            plot_date(data.index, data[y_column], axes=axes, title=title, color=color_list)
+        else:
+            plot_date(data[x_column], data[y_column], axes=axes, title=title, color=color_list)
+    elif axes == None:
         data.plot.scatter(x=x_column, y=y_column, color=color_list)
     else:
         axes.scatter(x=data[x_column], y=data[y_column], color=color_list)
-        if title == None:
-            title = y_column
         axes.set_title(title)
         axes.set_xlabel(x_column)
         axes.set_ylabel(y_column)
