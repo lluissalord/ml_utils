@@ -88,14 +88,17 @@ def covariate_shift(train, test, categorical_columns, n_samples, iterations = 20
                 AUC_score = cov_shift_model.get_best_score()['validation']['AUC']
                 print(f"Model score AUC of {AUC_score} on test")
 
-                df_cov_shift_importance = pd.DataFrame(cov_shift_model.feature_importances_, columns = ['importance'], index = cov_shift_feature_selection)
-                df_cov_shift_importance['cumulative_importance'] = df_cov_shift_importance['importance'].cumsum() / df_cov_shift_importance['importance'].sum()
+                # Remove the features which cumulative importance is relevant to predict origin of data (train or test)
+                if count_all_influencer != trys_all_influencer:
+                    df_cov_shift_importance = pd.DataFrame(cov_shift_model.feature_importances_, columns = ['importance'], index = cov_shift_feature_selection)
+                    df_cov_shift_importance['cumulative_importance'] = df_cov_shift_importance['importance'].cumsum() / df_cov_shift_importance['importance'].sum()
 
-                new_influence_columns = list(df_cov_shift_importance[df_cov_shift_importance['cumulative_importance'] < importance_threshold].index)
-                influence_columns = influence_columns + new_influence_columns
-                
-                print(f"New {len(new_influence_columns)} columns will be removed from model: ", new_influence_columns)
-                print()
+                    new_influence_columns = list(df_cov_shift_importance[df_cov_shift_importance['cumulative_importance'] < importance_threshold].index)
+                    influence_columns = influence_columns + new_influence_columns
+
+                    print(f"New {len(new_influence_columns)} columns will be removed from model: ", new_influence_columns)
+                    print()
+                    
                 count_all_influencer = 0
                 
                 i = i + 1
@@ -365,6 +368,10 @@ def shadow_feature_selection(classifier_initial, y_train, x_train, eval_set=None
 
     # "Infinite" loop till one of the stopping criterias stop removing features
     for i in tqdm_notebook(range(max_loops), desc='Main Loop'):
+        if dict_shadow_names == {}:
+            print("Stopping because no feature found to be relevant")
+            return [], pd.DataFrame([])
+        
         print("Loop number: ", i, " with still ", len(dict_shadow_names.keys()), " features")
 
         # Take a copy of current columns to check stopping criteria of changing columns
