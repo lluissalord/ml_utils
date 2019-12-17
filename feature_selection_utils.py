@@ -213,17 +213,16 @@ def outliers_analysis(full_data, features_names=None, x_column=None, subplot_row
     while i < len(features_names):
         feature_name = features_names[i]
 
-        data = outliers_pd[feature_name][outliers_pd[feature_name].notnull()]
+        data = outliers_pd.loc[outliers_pd[feature_name].notnull(), feature_name]
 
         # Modified Z-score with MAD (Median Absolute Deviation)
         if use_mean:
-            outliers_pd[feature_name + '_zscore'] = 0.6745 * (data - data.mean()).abs() / (
-                        data - data.mean()).abs().mean()
+            outliers_pd.loc[outliers_pd[feature_name].notnull(), feature_name + '_zscore'] = 0.6745 * (data - data.mean()).abs() / (
+                data - data.mean()).abs().mean()
         else:
-            outliers_pd[feature_name + '_zscore'] = 0.6745 * (data - data.median()).abs() / (
-                        data - data.median()).abs().median()
-        outliers_pd[feature_name + '_zscore_outliers'] = outliers_pd[feature_name + '_zscore'][
-                                                             outliers_pd[feature_name].notnull()] > z_score_threshold
+            outliers_pd.loc[outliers_pd[feature_name].notnull(), feature_name + '_zscore'] = 0.6745 * (data - data.median()).abs() / (
+                data - data.median()).abs().median()
+        outliers_pd[feature_name + '_zscore_outliers'] = outliers_pd[feature_name + '_zscore'] > z_score_threshold
 
         if plot:
             # Take into account the case of only one plot
