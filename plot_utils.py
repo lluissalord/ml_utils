@@ -139,7 +139,7 @@ def plot_date(x, y, axes=None, title=None, color='b'):
     axes.xaxis.set_major_formatter(major_format)
 
 # Here we define a function to draw scatter plots where we can highlight points as the outliers
-def plot_scatter(data, x_column, y_column, title=None, axes=None, highlight_column=None, highlight_color=None,
+def plot_scatter(data, x_column, y_column, title=None, axes=None, highlight_column=None, highlight_color='r',
                  normal_color='b'):
     # print(data[highlight_column].astype(int))
     if highlight_column != None:
