@@ -392,3 +392,184 @@ def visualize_training(history):
             elif key[:4] != "val_" and key[-5:] == "_loss":
                 output_name = key[:-5]
                 visualize_acc_loss(history, output_name=output_name)
+                
+class Model_generator:
+    def __init__(self, input_shape, n_outputs, n_units, model_type='dnn_baseline', activation='sigmoid', lstm_blocks=1, dropout_rate=0, recurrent_dropout=0, lstm_l1=0, lstm_l2=0, droput_input_cols=None, remain_input_cols=None):
+        self.input_shape = input_shape
+        self.n_outputs = n_outputs
+        self.n_units = n_units
+        self.model_type = model_type
+        self.model_type_list = ['dnn_baseline', 'lstm_baseline', 'lstm', 'attention_lstm', 'attention_lstm_residual', 'attention_lstm_dropout_input']
+        self.activation = activation
+        self.lstm_blocks = lstm_blocks
+        self.dropout_rate = dropout_rate
+        self.recurrent_dropout = recurrent_dropout
+        self.lstm_l1 = lstm_l1
+        self.lstm_l2 = lstm_l2
+        self.droput_input_cols = droput_input_cols
+        self.remain_input_cols = remain_input_cols
+
+    def get_model(self, model_type=None):
+        if model_type is None:
+            model_type = self.model_type
+        if model_type not in self.model_type_list:
+            raise ValueError(f'Model type {model_type} not in list. Choose one of the following model types: {self.model_type_list}')
+            
+        if model_type == 'dnn_baseline':
+            return self.dnn_baseline()
+        elif model_type == 'lstm_baseline':
+            return self.lstm_baseline()
+        elif model_type == 'lstm':
+            return self.lstm()
+        elif model_type == 'attention_lstm':
+            return self.attention_lstm()
+        elif model_type == 'attention_lstm_residual':
+            return self.attention_lstm_residual()
+        elif model_type == 'attention_lstm_dropout_input':
+            return self.attention_lstm_dropout_input()
+        else:
+            print("Implementation error, model_type {model_type} is missing")
+
+    def dnn_baseline(self):
+        input_x = Input(shape = self.input_shape)
+        X = input_x
+        X = Dense(self.n_outputs)(X)
+        X = Activation(self.activation, name = 'output')(X)
+
+        return Model(inputs=input_x, outputs=X)
+    
+    def lstm_baseline(self):
+        input_x = Input(shape = self.input_shape)
+        X = input_x
+        X = BatchNormalization()(X)
+        
+        X = LSTM(self.n_units, return_sequences = False, 
+                 recurrent_dropout=self.recurrent_dropout, 
+                 kernel_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+                 activity_regularizer=l1_l2(self.lstm_l1, self.lstm_l2))(X)
+        if self.dropout_rate > 0:
+            X = Dropout(self.dropout_rate)(X)
+        X = BatchNormalization()(X)
+        X = Dense(self.n_outputs)(X)
+        X = Activation(self.activation, name = 'output')(X)
+
+        return Model(inputs=input_x, outputs=X)
+    
+    def lstm(self):
+        input_x = Input(shape = self.input_shape)
+        X = input_x
+        X = BatchNormalization()(X)
+        for i in range(self.lstm_blocks):
+            X = LSTM(self.n_units, return_sequences = True, 
+                 recurrent_dropout=self.recurrent_dropout, 
+                 kernel_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+                 activity_regularizer=l1_l2(self.lstm_l1, self.lstm_l2))(X)
+            if self.dropout_rate > 0:
+                X = Dropout(self.dropout_rate)(X)
+            X = BatchNormalization()(X)
+                
+        X = LSTM(self.n_units, return_sequences = False, 
+                 recurrent_dropout=self.recurrent_dropout, 
+                 kernel_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+                 activity_regularizer=l1_l2(self.lstm_l1, self.lstm_l2))(X)
+        if self.dropout_rate > 0:
+            X = Dropout(self.dropout_rate)(X)
+        X = BatchNormalization()(X)
+        X = Dense(self.n_outputs)(X)
+        X = Activation(self.activation, name = 'output')(X)
+
+        return Model(inputs=input_x, outputs=X)
+    
+    def attention_lstm(self):
+        input_x = Input(shape = self.input_shape, name = 'input')
+        X = input_x
+        
+        for i in range(self.lstm_blocks):
+            query = Dense(10, name='query_' + str(i))(X)
+            key = Dense(10, name='key_' + str(i))(X)
+            attention_weights = AdditiveAttention(use_scale = False, name='attention_'+str(i))([query, X, key])
+            attention_weights = Dense(1, activation='softmax', name='attention_weights_'+str(i))(attention_weights)
+            context = Multiply(name='context_'+str(i))([attention_weights,X])
+            X = LSTM(self.n_units, return_sequences = True, 
+                     recurrent_dropout=self.recurrent_dropout, 
+                     kernel_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+                     activity_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+                     name = 'lstm_' + str(i))(context)
+            if self.dropout_rate > 0:
+                X = Dropout(self.dropout_rate, name='dropout_'+str(i))(X)
+                
+        X = LSTM(self.n_units, return_sequences = False, 
+                 recurrent_dropout=self.recurrent_dropout, 
+                 kernel_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+                 activity_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+                 name = 'lstm_last')(X)
+        if self.dropout_rate > 0:
+            X = Dropout(self.dropout_rate, name='dropout_last')(X)
+        X = Dense(self.n_outputs, activation=self.activation, name = 'output')(X)
+
+        return Model(inputs=input_x, outputs=X, name='attention_lstm')
+    
+    def attention_lstm_residual(self):
+        input_x = Input(shape = self.input_shape, name = 'input')
+        X = input_x
+        
+        for i in range(self.lstm_blocks):
+            query = Dense(10, name='query_' + str(i))(X)
+            key = Dense(10, name='key_' + str(i))(X)
+            attention_weights = AdditiveAttention(use_scale = False, name='attention_'+str(i))([query, X, key])
+            attention_weights = Dense(1, activation='softmax', name='attention_weights_'+str(i))(attention_weights)
+            context = Multiply(name='context_'+str(i))([attention_weights,X])
+            X = LSTM(self.n_units, return_sequences = True, 
+                     recurrent_dropout=self.recurrent_dropout, 
+                     kernel_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+                     activity_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+                     name = 'lstm_' + str(i))(context)
+            if self.dropout_rate > 0:
+                X = Dropout(self.dropout_rate, name='dropout_'+str(i))(X)
+                
+        X = LSTM(self.n_units, return_sequences = False, 
+                 recurrent_dropout=self.recurrent_dropout, 
+                 kernel_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+                 activity_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+                 name = 'lstm_last')(X)
+        if self.dropout_rate > 0:
+            X = Dropout(self.dropout_rate, name='dropout_last')(X)
+        
+        crop_input = Cropping1D(cropping=(0, self.input_shape[0] - 1), name='crop_input')(input_x)
+        if self.dropout_rate > 0:
+            crop_input = Dropout(self.dropout_rate, name='dropout_crop_input')(crop_input)
+        flatten_crop = Flatten()(crop_input)
+        query_input = Dense(10, name='query_input')(flatten_crop)
+        key_input = Dense(10, name='key_input')(flatten_crop)
+        attention_weights_input = AdditiveAttention(use_scale = False, name='attention_input')([query_input, flatten_crop, key_input])
+        attention_weights_input = Dense(1, activation='softmax', name='attention_weights_input')(attention_weights_input)
+        context_input = Multiply(name='context_input')([attention_weights_input, flatten_crop])
+        concat = Concatenate()([X, context_input])
+        X = Dense(self.n_outputs, activation=self.activation, name = 'output')(concat)
+
+        return Model(inputs=input_x, outputs=X, name='attention_lstm')
+    
+    def attention_lstm_dropout_input(self):
+        dropout_input = Input(shape = (seq_len, droput_input_cols), name = 'dropout_input')
+        remain_input = Input(shape = (seq_len, remain_input_cols), name = 'remain_input')
+
+        dropout_x = Dropout(self.dropout_rate)(dropout_input)
+
+        X = Concatenate(axis=-1)([remain_input, dropout_x])
+        
+        for i in range(self.lstm_blocks):
+            query = Dense(10)(X)
+            key = Dense(10)(X)
+            context = AdditiveAttention()([query, X, key])
+            #context = one_step_attention(a)
+            X = LSTM(self.n_units, return_sequences = True, recurrent_dropout=self.recurrent_dropout)(context)
+            if self.dropout_rate > 0:
+                X = Dropout(self.dropout_rate)(X)
+                
+        X = LSTM(self.n_units, return_sequences = False, recurrent_dropout=self.recurrent_dropout)(X)
+        if self.dropout_rate > 0:
+            X = Dropout(self.dropout_rate)(X)
+        X = Dense(self.n_outputs)(X)
+        X = Activation(self.activation, name = 'output')(X)
+
+        return Model(inputs=[dropout_input, remain_input], outputs=X)
