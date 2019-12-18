@@ -194,11 +194,11 @@ def save_train(model, history=None, models_dir="", json_path="", weights_path=""
     if models_dir != "" and models_dir[-1] != "/" and models_dir[-1] != r"\ ".strip():
         models_dir = models_dir + "/"
     
-    # Save model structure on JSON
+    # Save model structure on JSON file
     if json_path == "":
         json_path = models_dir + "model.json"
-    # serialize model to JSON
     try:
+        # serialize model to JSON
         model_json = model.to_json()
         with open(json_path, "w") as json_file:
             json_file.write(model_json)   
@@ -232,24 +232,54 @@ def save_train(model, history=None, models_dir="", json_path="", weights_path=""
         with open(feature_selection_path, 'wb') as pickle_file:
             pickle.dump(feature_selection, pickle_file)
 
-def load_train(models_dir=''):
-    # load json and create model
-    with open(models_dir + "model.json", "r") as json_file:
-        loaded_model_json = json_file.read()
-        
-    loaded_model = model_from_json(loaded_model_json)
-    # load weights into new model
-    loaded_model.load_weights(models_dir +  "model_weights.h5")
-    print("Loaded model and history")
-    
-    try:
-        with open(models_dir + "history.pickle", "wb") as file:
-            history = pickle.load(file)
-    except:
-        print("Train history could not be loaded")
-        history = None
-    return loaded_model, history
 
+def load_train(models_dir="", model_generator=None, json_path="", weights_path="", load_weights=True, history_path="", feature_selection_path=""):
+    
+    if models_dir != "" and models_dir[-1] != "/" and models_dir[-1] != r"\ ".strip():
+        models_dir = models_dir + "/"
+    
+    # Load JSON and create model
+    if json_path == "":
+        json_path = models_dir + "model.json"
+    try:
+        with open(json_path, "r") as json_file:
+            loaded_model_json = json_file.read()
+            model = model_from_json(loaded_model_json)
+    except FileNotFoundError:
+        if model_generator is not None:
+            #Create a new model
+            model = model_gen.get_model()
+        else:
+            raise ValueError(f"Model could not be loaded because file was not found in path {json_path} and no model generator was provided")
+    
+    # Load weights into new model
+    if load_weights:
+        if weights_path == "":
+            weights_path = models_dir + "model_weights"
+        model.load_weights(weights_path)
+        print("Loaded model from " + weights_path)
+    
+    # Load history
+    if history_path == "":
+        history_path = models_dir + "model_history.pickle"
+    try:
+        with open(history_path, 'rb') as pickle_file:
+            history = pickle.load(pickle_file)
+    except IOError:
+        print("History not loaded because the following file was not found: ", history_path)
+        history = None
+        
+    # Load feature selection
+    if feature_selection_path == "":
+        feature_selection_path = models_dir + "feature_selection.pickle"
+    try:
+        with open(feature_selection_path, 'rb') as pickle_file:
+            feature_selection = pickle.load(pickle_file)
+    except IOError:
+        print("Feature selection not loaded because the following file was not found: ", feature_selection_path)
+        feature_selection = None
+        
+    return model, history, feature_selection
 
 class BatchHistoryEarlyStopping(Callback):
     def __init__(
