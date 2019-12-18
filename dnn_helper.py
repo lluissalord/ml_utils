@@ -189,19 +189,48 @@ def make_pred(model, gen, steps = None):
     
     return y_pred
 
-def save_train(model, history, models_dir=""):
-    if not os.path.exists(models_dir):
-        os.makedirs(models_dir)
+def save_train(model, history=None, models_dir="", json_path="", weights_path="", save_weights=True, history_path="", feature_selection=None, feature_selection_path=""):
+   
+    if models_dir != "" and models_dir[-1] != "/" and models_dir[-1] != r"\ ".strip():
+        models_dir = models_dir + "/"
     
-    # Save Final Model
-    model_json = model.to_json()
-    with open(models_dir + "model.json", "w") as json_file:
-        json_file.write(model_json)
+    # Save model structure on JSON
+    if json_path == "":
+        json_path = models_dir + "model.json"
+    # serialize model to JSON
+    try:
+        model_json = model.to_json()
+        with open(json_path, "w") as json_file:
+            json_file.write(model_json)   
+    except NotImplementedError as e:
+        print("Model JSON could not be save due to: ", e)
 
-    model.save_weights(models_dir + "model_weights.h5")
+    # Save weights
+    if save_weights:
+        if weights_path == "":
+            weights_path = models_dir + "model_weights"
+        # serialize weights to HDF5
+        model.save_weights(weights_path)
+
+    # Save history
+    if history is None:
+        history = model.history.history
+    else:
+        for key in history:
+            history[key] = history[key] + model.history.history.get(key,[])
     
-    with open(models_dir + "history.pickle", "wb") as file:
-        pickle.dump(history.history, file)
+    if history_path == "":
+        history_path = models_dir + "model_history.pickle"
+    with open(history_path, 'wb') as pickle_file:
+        pickle.dump(history, pickle_file)
+    
+    # Save feature selection
+    if feature_selection is not None:
+        if feature_selection_path == "":
+            feature_selection_path = models_dir + "feature_selection.pickle"
+        
+        with open(feature_selection_path, 'wb') as pickle_file:
+            pickle.dump(feature_selection, pickle_file)
 
 def load_train(models_dir=''):
     # load json and create model
