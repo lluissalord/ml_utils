@@ -245,10 +245,12 @@ def load_train(models_dir="", model_generator=None, json_path="", weights_path="
         with open(json_path, "r") as json_file:
             loaded_model_json = json_file.read()
             model = model_from_json(loaded_model_json)
+            print("Loaded model from " + json_path)
     except FileNotFoundError:
         if model_generator is not None:
             #Create a new model
-            model = model_gen.get_model()
+            model = model_generator.get_model()
+            print("Loaded model from model generator")
         else:
             raise ValueError(f"Model could not be loaded because file was not found in path {json_path} and no model generator was provided")
     
@@ -257,7 +259,7 @@ def load_train(models_dir="", model_generator=None, json_path="", weights_path="
         if weights_path == "":
             weights_path = models_dir + "model_weights"
         model.load_weights(weights_path)
-        print("Loaded model from " + weights_path)
+        print("Loaded weights model from " + weights_path)
     
     # Load history
     if history_path == "":
@@ -265,6 +267,7 @@ def load_train(models_dir="", model_generator=None, json_path="", weights_path="
     try:
         with open(history_path, 'rb') as pickle_file:
             history = pickle.load(pickle_file)
+            print("Loaded history from " + history_path)
     except IOError:
         print("History not loaded because the following file was not found: ", history_path)
         history = None
@@ -275,6 +278,7 @@ def load_train(models_dir="", model_generator=None, json_path="", weights_path="
     try:
         with open(feature_selection_path, 'rb') as pickle_file:
             feature_selection = pickle.load(pickle_file)
+            print("Loaded feature_selection from " + feature_selection_path)
     except IOError:
         print("Feature selection not loaded because the following file was not found: ", feature_selection_path)
         feature_selection = None
