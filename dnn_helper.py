@@ -457,13 +457,16 @@ def visualize_training(history):
                 visualize_acc_loss(history, output_name=output_name)
                 
 class Model_generator:
-    def __init__(self, input_shape, n_outputs, n_units, model_type='dnn_baseline', activation='sigmoid', lstm_blocks=1, dropout_rate=0, recurrent_dropout=0, lstm_l1=0, lstm_l2=0, droput_input_cols=None, remain_input_cols=None):
+    def __init__(self, input_shape, n_outputs, n_units, model_type='dnn_baseline', activation='softmax', hidden_layers=2, hidden_layer_activation='relu', residual_blocks=10, lstm_blocks=1, dropout_rate=0, recurrent_dropout=0, lstm_l1=0, lstm_l2=0, droput_input_cols=None, remain_input_cols=None):
         self.input_shape = input_shape
         self.n_outputs = n_outputs
         self.n_units = n_units
         self.model_type = model_type
-        self.model_type_list = ['dnn_baseline', 'lstm_baseline', 'lstm', 'attention_lstm', 'attention_lstm_residual', 'attention_lstm_dropout_input']
+        self.model_type_list = ['dnn_baseline', 'dnn', 'dnn_residual', 'lstm_baseline', 'lstm', 'attention_lstm', 'attention_lstm_residual', 'attention_lstm_dropout_input']
         self.activation = activation
+        self.hidden_layers = hidden_layers
+        self.hidden_layer_activation = hidden_layer_activation
+        self.residual_blocks = residual_blocks
         self.lstm_blocks = lstm_blocks
         self.dropout_rate = dropout_rate
         self.recurrent_dropout = recurrent_dropout
@@ -480,6 +483,10 @@ class Model_generator:
             
         if model_type == 'dnn_baseline':
             return self.dnn_baseline()
+        elif model_type == 'dnn':
+            return self.dnn()
+        elif model_type == 'dnn_residual':
+            return self.dnn_residual()
         elif model_type == 'lstm_baseline':
             return self.lstm_baseline()
         elif model_type == 'lstm':
@@ -494,15 +501,51 @@ class Model_generator:
             print("Implementation error, model_type {model_type} is missing")
 
     def dnn_baseline(self):
-        input_x = Input(shape = self.input_shape)
+        input_x = Input(shape = self.input_shape, name='input')
         X = input_x
         X = Dense(self.n_outputs)(X)
         X = Activation(self.activation, name = 'output')(X)
 
-        return Model(inputs=input_x, outputs=X)
+        return Model(inputs=input_x, outputs=X, name='dnn_baseline')
+    
+    def dnn(self):
+        input_x = Input(shape = self.input_shape, name='input')
+        X = input_x
+        for i in range(self.hidden_layers):
+            if self.dropout_rate > 0:
+                X = Dropout(self.dropout_rate, name='dropout_'+str(i))(X)
+            X = Dense(n_units//(2**i), name='dense_'+str(i), activation=self.hidden_layer_activation)(X)
+            
+        if self.dropout_rate > 0:
+            X = Dropout(self.dropout_rate, name='dropout_output')(X)
+        X = Dense(self.n_outputs, name='dense_output')(X)    
+        X = Activation(self.activation, name = 'output')(X)
+
+        return Model(inputs=input_x, outputs=X, name='dnn')
+    
+    def dnn_residual(self):
+        input_x = Input(shape = self.input_shape, name='input')
+        X = input_x
+        for i in range(self.residual_blocks):
+            if self.dropout_rate > 0:
+                X = Dropout(self.dropout_rate, name='dropout_res_'+str(i)+'_1')(X)
+            X_res = Dense(n_units, name='dense_res_'+str(i)+'_1', activation='relu')(X)
+            
+            if self.dropout_rate > 0:
+                X_res = Dropout(self.dropout_rate, name='dropout_res_'+str(i)+'_2')(X_res)
+            X_res = Dense(self.input_shape[-1], name='dense_res_'+str(i)+'_2', activation='relu')(X_res)
+            
+            X = Add(name='add_res_'+str(i))([X, X_res])
+            
+        if self.dropout_rate > 0:
+            X = Dropout(self.dropout_rate, name='dropout_output')(X)
+        X = Dense(self.n_outputs, name='dense_output')(X)    
+        X = Activation(self.activation, name = 'output')(X)
+
+        return Model(inputs=input_x, outputs=X, name='dnn_residual')
     
     def lstm_baseline(self):
-        input_x = Input(shape = self.input_shape)
+        input_x = Input(shape = self.input_shape, name='input')
         X = input_x
         X = BatchNormalization()(X)
         
@@ -516,10 +559,10 @@ class Model_generator:
         X = Dense(self.n_outputs)(X)
         X = Activation(self.activation, name = 'output')(X)
 
-        return Model(inputs=input_x, outputs=X)
+        return Model(inputs=input_x, outputs=X, name='lstm_baseline')
     
     def lstm(self):
-        input_x = Input(shape = self.input_shape)
+        input_x = Input(shape = self.input_shape, name='input')
         X = input_x
         X = BatchNormalization()(X)
         for i in range(self.lstm_blocks):
@@ -541,7 +584,7 @@ class Model_generator:
         X = Dense(self.n_outputs)(X)
         X = Activation(self.activation, name = 'output')(X)
 
-        return Model(inputs=input_x, outputs=X)
+        return Model(inputs=input_x, outputs=X, name='lstm')
     
     def attention_lstm(self):
         input_x = Input(shape = self.input_shape, name = 'input')
@@ -601,13 +644,13 @@ class Model_generator:
         crop_input = Cropping1D(cropping=(0, self.input_shape[0] - 1), name='crop_input')(input_x)
         if self.dropout_rate > 0:
             crop_input = Dropout(self.dropout_rate, name='dropout_crop_input')(crop_input)
-        flatten_crop = Flatten()(crop_input)
+        flatten_crop = Flatten(name='flatten_crop_input')(crop_input)
         query_input = Dense(10, name='query_input')(flatten_crop)
         key_input = Dense(10, name='key_input')(flatten_crop)
         attention_weights_input = AdditiveAttention(use_scale = False, name='attention_input')([query_input, flatten_crop, key_input])
         attention_weights_input = Dense(1, activation='softmax', name='attention_weights_input')(attention_weights_input)
         context_input = Multiply(name='context_input')([attention_weights_input, flatten_crop])
-        concat = Concatenate()([X, context_input])
+        concat = Concatenate(name='concat_output')([X, context_input])
         X = Dense(self.n_outputs, activation=self.activation, name = 'output')(concat)
 
         return Model(inputs=input_x, outputs=X, name='attention_lstm')
