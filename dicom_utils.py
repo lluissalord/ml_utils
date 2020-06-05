@@ -25,6 +25,7 @@ dicom_windows = {
 }
 
 def crop_brain(image, n_top_areas = 5, max_scale_diff = 3, plot = False, dimensions = None, area = None):
+    """ Crop image in order to only include square image of the "best" image of the brain """
     image = normalize_img(image, use_min_max = True)
     if dimensions is None:
         if (image.max() - image.min()) == 0 or np.isnan(image.max()) or np.isnan(image.min()):
@@ -96,6 +97,7 @@ def crop_brain(image, n_top_areas = 5, max_scale_diff = 3, plot = False, dimensi
     return final_image, best_area, (x,y,w,h)
 
 def pad_square(x):
+    """ Pad image to meet square dimensions """
     r,c = x.shape
     d = (c-r)/2
     pl,pr,pt,pb = 0,0,0,0
@@ -104,13 +106,14 @@ def pad_square(x):
     return np.pad(x, ((pt,pb),(pl,pr)), 'minimum')
 
 def get_first_of_dicom_field_as_int(x):
-    #get x[0] as in int is x is a 'pydicom.multival.MultiValue', otherwise get int(x)
+    """ Get first DICOM field as in int """
     if type(x) == pydicom.multival.MultiValue:
         return int(x[0])
     else:
         return int(x)
 
 def get_windowing(data):
+    """ Get DICOM parameters for windowing (window center, window width, intercept and slope) """
     dicom_fields = [data[('0028','1050')].value, #window center
                     data[('0028','1051')].value, #window width
                     data[('0028','1052')].value, #intercept
@@ -118,16 +121,19 @@ def get_windowing(data):
     return [get_first_of_dicom_field_as_int(x) for x in dicom_fields]
 
 def get_rows_columns(data):
+    """ Get rows and columns info from DICOM """
     dicom_fields = [data[('0028', '0010')].value, #Rows
                     data[('0028', '0011')].value] #Columns
     return [get_first_of_dicom_field_as_int(x) for x in dicom_fields]
 
 def get_subgroups(data):
-    # There are 3 groups, but we will create a fourth for Others:
-    # 1) Bits Stored 16bits
-    # 2) Bits Stored 12bits - Pixel Representation 0
-    # 3) Bits Stored 12bits - Pixel Representation 1
-    # -1) Others (in case new data appears)
+    """ Get value of subgroup depending on Bits Store and Pixel Representation values
+    There are 3 groups, but we will create a fourth for Others:
+    1) Bits Stored 16bits
+    2) Bits Stored 12bits - Pixel Representation 0
+    3) Bits Stored 12bits - Pixel Representation 1
+    -1) Others (in case new data appears)
+    """
     dicom_fields = [data[('0028', '0101')].value, #Bits Stored
                     data[('0028', '0103')].value] #Pixel Representation
     dicom_values = [get_first_of_dicom_field_as_int(x) for x in dicom_fields]
@@ -142,6 +148,7 @@ def get_subgroups(data):
 
 # According to https://www.kaggle.com/jhoward/cleaning-the-data-for-rapid-prototyping-fastai
 def correct_dcm(dcm):
+    """ Correct DCM image which were actually signed data, but were treated as unsigned """
     x = dcm.pixel_array + 1000
     px_mode = 4096
     x[x>=px_mode] = x[x>=px_mode] - px_mode
@@ -150,6 +157,7 @@ def correct_dcm(dcm):
     return dcm.pixel_array, dcm.RescaleIntercept
 
 def get_freqhist_bins(dcm_img, n_bins = 100):
+    """ Create equally distribute bins within DCM image intensity range """
     imsd = np.sort(dcm_img.reshape(-1))
     t = np.concatenate([[0.001],
                        np.arange(n_bins).astype(np.float64)/n_bins+(1/2/n_bins),
@@ -158,7 +166,7 @@ def get_freqhist_bins(dcm_img, n_bins = 100):
     return np.unique(imsd[t])
 
 def get_dcm_img(path, window_type = 'brain', verbose = True):
-    # Read and scale of DICOM images according to its metadata
+    """ Read and scale of DICOM images according to its metadata """
     dcm = pydicom.dcmread(path)
     window_center, window_width, intercept, slope = get_windowing(dcm)
     group = get_subgroups(dcm)   
@@ -184,6 +192,7 @@ def get_dcm_img(path, window_type = 'brain', verbose = True):
     return dcm_img, group
 
 def get_pixel_array(dcm, path=None):
+    """ Extract pixel array from DCM file """
     try:
         return dcm.pixel_array.astype(np.float32)
     except ValueError as e:
@@ -195,6 +204,7 @@ def get_pixel_array(dcm, path=None):
         return np.zeros((rows, columns), dtype=np.float32)
 
 def interpolate_img(dcm_img, bins = None, n_bins = 100):
+    """ Interpolate DCM image to equally distribute intensity on the image """
     # Equal distribution of intensity
     if bins is None: 
         bins = get_freqhist_bins(dcm_img, n_bins)
@@ -202,6 +212,7 @@ def interpolate_img(dcm_img, bins = None, n_bins = 100):
     return np.clip(interpolate.interp1d(bins, np.linspace(0., 1., len(bins)), fill_value="extrapolate")(dcm_img.flatten()).reshape(dcm_img.shape), 0., 1.)
 
 def normalize_img(dcm_img, mean = None, std = None, use_min_max = False):
+    """ Normalize image using min/max or z-score """
     # Normalization to zero mean and unit variance
     if use_min_max:
         img_max = dcm_img.max()
@@ -220,6 +231,7 @@ def normalize_img(dcm_img, mean = None, std = None, use_min_max = False):
     
 
 def preprocess_dicom(path, x, y, bins = None, n_bins = 100, mean = None, std = None, use_min_max = False, remove_empty = False, windows_type = 'brain', verbose = True): 
+    """ Process (open, interpolate, normalize and resize) the DICOM file on the specified path """
     area = 0
     dimensions = None
     if not type(windows_type) is list:
@@ -268,6 +280,7 @@ def preprocess_dicom(path, x, y, bins = None, n_bins = 100, mean = None, std = N
 # Samples from each group are extracted by trying to find an specific number of samples per group
 # This is done due to memory limitations of have all training metadata in a DataFrame
 def sample_groups(load_dir, samples_per_group = 5, max_trys = 1000):
+    """ Extract equally distributed number of samples of DICOM files paths """
     filenames = os.listdir(load_dir)
     filenames_groups = {1 : [], 2 : [], 3 : []}
     for group in tqdm_notebook([1,2,3], desc = 'Group sample'):
@@ -286,6 +299,7 @@ def sample_groups(load_dir, samples_per_group = 5, max_trys = 1000):
 # Firstly mean of equally distributed bin
 # Secondly mean of mean pixels values and mean of std pixel values using the previous bin mean
 def sample_bins_mean_std(load_dir, samples_per_group = 5, max_trys = 1000, n_bins = 100):
+    """ Extract the bins intensity mean, image mean and image standard deviation of each group """
     bins_mean = {}
     mean = {}
     std = {}
