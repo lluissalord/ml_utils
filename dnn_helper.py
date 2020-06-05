@@ -20,6 +20,7 @@ def KFolds_flow_from_dataframe(dataframe, generators, kfolds=10, directory=None,
                                weight_col=None, target_size=(256, 256), color_mode='rgb', classes=None,
                                class_mode='categorical', batch_size=32, shuffle=True, seed=None, save_to_dir=None,
                                save_prefix='', save_format='png', interpolation='nearest', validate_filenames=True):
+    """ Generate stratified kFolds generators for training and validation sets """
     train_gens = []
     valid_gens = []
     Kfolds_gens = []
@@ -72,6 +73,7 @@ def KFolds_flow_from_dataframe(dataframe, generators, kfolds=10, directory=None,
 
 def fold_training(KFolds_gens, k, model, optimizer='nadam', loss='binary_crossentropy', metrics=['accuracy'],
                   class_weight=None, models_dir='', callbacks_list=None, history_callback=None, plot_history=False):
+    """ Train using kFolds generators """
     model.compile(optimizer=optimizer,
                   loss=loss,
                   metrics=metrics)
@@ -98,6 +100,7 @@ def fold_training(KFolds_gens, k, model, optimizer='nadam', loss='binary_crossen
 
 
 def config_model_trainable(model, config, last_block=0, base_model=None):
+    """ Configure provided model to train the whole model, only top layer or from last_block layer to top (both included) """
     if not config in ['full', 'partial', 'top']:
         raise ValueError(
             f"config value is {config} parameter should be one of the following values: 'full','partial' or 'top'")
@@ -132,8 +135,8 @@ def config_model_trainable(model, config, last_block=0, base_model=None):
                     layer.trainable = False
 
 
-# A utility method to create a tf.data dataset from a Pandas Dataframe
 def df_to_dataset(dataframe, target='target', shuffle=True, batch_size=32):
+    """ Utility method to create a tf.data dataset from a Pandas Dataframe """
     dataframe = dataframe.copy()
     if target is not None:
         labels = dataframe.pop(target)
@@ -147,11 +150,13 @@ def df_to_dataset(dataframe, target='target', shuffle=True, batch_size=32):
 
 
 def dnn_plot_roc_auc(X, y_test, model, feature_selection, batch_size):
+    """ Plot ROC AUC diagram of provided model using X data and real y values """
     x_ds = df_to_dataset(X[feature_selection], target=None, shuffle=False, batch_size=batch_size)
     plot_roc_auc(y_test, model.predict(x_ds))
 
 
 def dice_coef(y_true, y_pred, smooth=1):
+    """ Calculate DICE coeficient given y_true and y_pred """
     y_true_f = K.flatten(y_true)
     y_pred_f = K.flatten(y_pred)
     intersection = K.sum(y_true_f * y_pred_f)
@@ -159,6 +164,7 @@ def dice_coef(y_true, y_pred, smooth=1):
 
 
 def dice_loss(y_true, y_pred):
+    """ Calculate DICE loss given y_true and y_pred """
     smooth = 1.0
     y_true_f = K.flatten(y_true)
     y_pred_f = K.flatten(y_pred)
@@ -170,12 +176,14 @@ def dice_loss(y_true, y_pred):
 
 
 def bce_dice_loss(y_true, y_pred, clip_loss = None):
+    """ Calculate binary cross entropy loss given y_true and y_pred """
     if clip_loss is None:
         return binary_crossentropy(y_true, y_pred) + dice_loss(y_true, y_pred)
     else:
         return tf.clip_by_value(binary_crossentropy(y_true, y_pred) + dice_loss(y_true, y_pred), -clip_loss, clip_loss)
 
 def make_pred(model, gen, steps = None):
+    """ Predict model output from provided generator """
     if steps is None:
         steps = gen.n // gen.batch_size
     y_pred = model.predict_generator(
@@ -190,6 +198,7 @@ def make_pred(model, gen, steps = None):
     return y_pred
 
 def save_train(model, history=None, models_dir="", json_path="", weights_path="", save_weights=True, history_path="", feature_selection=None, feature_selection_path=""):
+    """ Save training model (JSON and weights separetly), history (if provided) and feature selection (if provided) """
    
     if models_dir != "" and models_dir[-1] != "/" and models_dir[-1] != r"\ ".strip():
         models_dir = models_dir + "/"
@@ -234,6 +243,7 @@ def save_train(model, history=None, models_dir="", json_path="", weights_path=""
 
 
 def load_train(models_dir="", model_generator=None, json_path="", weights_path="", load_weights=True, history_path="", feature_selection_path=""):
+    """ Load training model (JSON and weights separetly), history (if provided) and feature selection (if provided) """
     
     if models_dir != "" and models_dir[-1] != "/" and models_dir[-1] != r"\ ".strip():
         models_dir = models_dir + "/"
@@ -285,7 +295,9 @@ def load_train(models_dir="", model_generator=None, json_path="", weights_path="
         
     return model, history, feature_selection
 
+# TODO: Review if EarlyStopping include flexibility to be use with batchs or if it could be done using EarlyStopping as parent object
 class BatchHistoryEarlyStopping(Callback):
+    """ EarlyStopping class based on batch evaluation """
     def __init__(
             self,
             valid_generator,
@@ -420,6 +432,7 @@ class BatchHistoryEarlyStopping(Callback):
 
 
 def visualize(history, key, y_label, x_label="epoch", title=None):
+    """ Plot history data with one plot per metric """
     plt.plot(history[key])
     plt.plot(history["val_" + key])
     if title is None:
@@ -432,6 +445,7 @@ def visualize(history, key, y_label, x_label="epoch", title=None):
 
 
 def visualize_acc_loss(history, output_name="", only_loss=False):
+    """ Plot accuracy loss data from history """
     if output_name != "":
         output_name = output_name + "_"
     if not only_loss:
@@ -446,6 +460,7 @@ def visualize_acc_loss(history, output_name="", only_loss=False):
 
 
 def visualize_training(history):
+    """ Plot all metrics from training history """
     if len(history.keys()) <= 2:
         visualize_acc_loss(history)
     else:
@@ -457,6 +472,7 @@ def visualize_training(history):
                 visualize_acc_loss(history, output_name=output_name)
                 
 class Model_generator:
+    """ Class used for generating models according to the parameters specified """
     def __init__(self, input_shape, n_outputs, n_units, model_type='dnn_baseline', activation='softmax', hidden_layers=2, hidden_layer_activation='relu', residual_blocks=10, lstm_blocks=1, dropout_rate=0, recurrent_dropout=0, lstm_l1=0, lstm_l2=0, droput_input_cols=None, remain_input_cols=None):
         self.input_shape = input_shape
         self.n_outputs = n_outputs
