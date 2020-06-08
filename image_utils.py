@@ -18,6 +18,7 @@ TRANSFORM_1_1_to_0_1 = 5
 TRANSFORM_0_1_to_1_1 = 6
 
 def crop_image_from_gray(img, tol=7):
+    """ Crop image which have values above tol in gray scale """
     if img.ndim == 2:
         mask = img > tol
         return img[np.ix_(mask.any(1), mask.any(0))]
@@ -36,6 +37,7 @@ def crop_image_from_gray(img, tol=7):
         return img
 
 def check_range(image):
+    """ Check range of values of the image """
     if image.min() < 0:
         return RANGE_1_1
     elif image.max() > 1:
@@ -44,6 +46,7 @@ def check_range(image):
         return RANGE_0_1
 
 def transform_range(image, flag):
+    """ Transform image with the specified transformation """
     if flag == TRANSFORM_NONE:
         return image
     elif flag == TRANSFORM_0_1_to_0_255:
