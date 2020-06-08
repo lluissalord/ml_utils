@@ -11,7 +11,7 @@ import catboost as cb
 from plot_utils import plot_scatter, get_subplot_rows_cols
 
 def covariate_shift(train, test, categorical_columns, n_samples, iterations = 200, weights_coef = 1, AUC_threshold = 0.8, importance_threshold = 0.9, max_loops = 20, test_size = 0.1, trys_all_influencer=5, calc_sample_weights=True, task_type="CPU", data_dir='', load_cov=False, save_cov=False, plot=True):
-
+    """ Select features without Covariate Shift between training and test set using iteratively CatBoostClassifier to identify relation between train and test """
     if not os.path.exists(data_dir + 'cov_shift_features.pkl') or not load_cov:
         train_sample = train.sample(n_samples)
         train_sample.loc[:,'origin'] = 0
@@ -142,6 +142,7 @@ def covariate_shift(train, test, categorical_columns, n_samples, iterations = 20
 
 def stadistic_difference_distributions(data, submission, time_column, test_percentage=0.2, p_value_threshold=None,
                                        verbose=False):
+    """ Calculate relation between initial and end part of the dataset for each column using Kolmogorov-Smirnov statistic on 2 samples """
     train, test = train_test_split(data.sort_values(time_column), test_size=test_percentage, shuffle=False)
 
     time_analysis_df = pd.DataFrame(False, columns=['train_test', 'train_submission', 'test_submission'],
@@ -183,6 +184,7 @@ def stadistic_difference_distributions(data, submission, time_column, test_perce
 
 def outliers_analysis(full_data, features_names=None, x_column=None, subplot_rows=None, subplot_cols=None, starting_index=0,
                       index_offset=0, z_score_threshold=3.5, use_mean=False, plot=True, num_bins=50):
+    """ Calculate and visualize outliers analysis from Modified Z-score with MAD """
     # Compatibility with numpy arrays
     if type(full_data) == np.ndarray:
         assert len(full_data.shape) <= 2
@@ -264,6 +266,7 @@ def outliers_analysis(full_data, features_names=None, x_column=None, subplot_row
 
 def feature_selection(classifier_initial, y_train, x_train, n_top_features=50, baseline_features=[],
                       min_importance=None):
+    """ Select features which have the top N feature importance and/or above baseline """
     classifier_model = classifier_initial.fit(x_train, y_train)
 
     feature_importance = sorted(zip(map(lambda x: round(x, 4), classifier_model.feature_importances_), x_train),
@@ -286,6 +289,7 @@ def feature_selection(classifier_initial, y_train, x_train, n_top_features=50, b
 
 
 def cumulative_feature_selection(df_feature_importance, cum_importance_threshold):
+    """ Select features which are below of the cumulative feature importance threshold """
     df_feature_importance = pd.DataFrame(df_feature_importance, columns=['importance'])
     df_feature_importance['cumulative_importance'] = df_feature_importance['importance'].cumsum() / \
                                                      df_feature_importance['importance'].sum()
@@ -302,6 +306,7 @@ def cumulative_feature_selection(df_feature_importance, cum_importance_threshold
 
 
 def collinear_feature_selection(x_train, df_feature_importance, collinear_threshold=0.98, plot=True):
+    """ Select features which have less collinearity below the threshold """
     correlation = x_train[df_feature_importance.index].corr()
 
     if plot:
@@ -352,6 +357,7 @@ def collinear_feature_selection(x_train, df_feature_importance, collinear_thresh
 
 
 def shadow_feature_selection(classifier_initial, y_train, x_train, eval_set=None, n_top_features=None, collinear_threshold=0.98, cum_importance_threshold=0.99, times_no_change_features=2, max_loops=50, n_iterations_mean=3, need_cat_features_index=False, categorical_columns=[], verbose=True, debug=False, plot_correlation=False):
+    """ Select features which have greater feature importance than random and than shuffle shadowed feature of itself """
     # Create 3 random features which will serve as baseline to reject features
     baseline_features = ['random_binary', 'random_uniform', 'random_integers']
     x_train = x_train.drop(baseline_features, axis=1, errors='ignore')
@@ -482,6 +488,7 @@ def _create_shadow(x, baseline_features):
 
 def get_feature_importance_mean(classifier_initial, y_train, x_train, n_iterations_mean=3,
                                 need_cat_features_index=False, categorical_columns=[], dict_shadow_names={}, eval_set=None):
+    """ Calculate feature importance mean between different training of the classifier """
     cat_features_index = None
     if need_cat_features_index:
         if dict_shadow_names=={}:
