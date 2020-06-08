@@ -7,6 +7,7 @@ from .plot_utils import plot_scatter
 
 
 def laggingData(X, data, lag, suffix='Prev_', data_cols=None, exclude_cols=['datetime'], output_data=False):
+    """ Generate new X containing lagged data """
     if data_cols is None:
         data_cols = [col for col in data.columns if col not in exclude_cols]
 
@@ -29,6 +30,7 @@ def laggingData(X, data, lag, suffix='Prev_', data_cols=None, exclude_cols=['dat
 
 
 def dataToSequential(data, seq_len, out_np=True, exclude_cols=['datetime'], dtype=np.float32):
+    """ Transform data to sequential data """
     new_data = data.copy()
     data_cols = [col for col in data.columns if col not in exclude_cols]
     for i in tqdm_notebook(range(1, seq_len + 1)):
@@ -43,30 +45,30 @@ def dataToSequential(data, seq_len, out_np=True, exclude_cols=['datetime'], dtyp
     return new_data
 
 
-# Transform from pandas 2D to numpy 3D
-# From shape (rows, cols * sequence_length) to (rows, sequence_length, cols)
 def pdToNpSequential(data, seq_len, dtype=np.float32):
+    """ Transform from pandas 2D (rows, cols * sequence_length) to numpy 3D (rows, sequence_length, cols)"""
     return np.array(data, dtype=dtype).reshape(data.shape[0], seq_len + 1, data.shape[1] // (seq_len + 1))
 
 
 # Input data for DNN should be numpy 3D data and it must no contain 'datetime' column
 def prepareInputData(data, seq_len, keep_datetime, dtype=np.float32):
+    """ Transform data to be used as input on DNN """
     if keep_datetime:
         return pdToNpSequential(data.drop('datetime', axis=1), seq_len, dtype=dtype)
 
     return pdToNpSequential(data, seq_len, dtype=dtype)
 
 
-# Medial average is the average excluding the maximum and minimum value
 def medial_average(x):
+    """ Calculate medial average which is average excluding the maximum and minimum value  """
     return x.loc[x.notnull()].sort_values().iloc[1:-1].mean()
 
 
 def seasonal_mean(x, freq, window_length=24, agg_type='mean'):
+    """ Calculate seasonal mean or seasonal median with the provided frequency and window length """
     temp_df = pd.DataFrame(x, index=x.index, columns=['value'])
     if freq == 1:
         tile_arr = np.arange(window_length)
-        # return np.array([nanmean(x[i::freq], axis=0) for i in range(freq)])
     else:
         tile_arr = np.repeat(np.arange(freq), window_length)
 
@@ -83,6 +85,7 @@ def seasonal_mean(x, freq, window_length=24, agg_type='mean'):
 
 def extract_seasonal_component(df, columns_to_treat, daily_windows=[], agg_type='mean', win_type='boxcar',
                                each_row_is='hour', plot=False):
+    """ Calculate Seasonal component  (additive and multiplicative) and trend for the given columns and for each daily window """
     if each_row_is != 'hour':
         raise NotImplementedError
 
