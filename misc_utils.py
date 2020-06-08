@@ -9,6 +9,7 @@ from tqdm import tqdm_notebook
 from sklearn.model_selection import train_test_split
 
 def extract_zips(zip_path, extract_dir):
+    """ Extract zip file """
     if not os.path.exists(extract_dir):
         os.makedirs(extract_dir)
 
@@ -16,7 +17,7 @@ def extract_zips(zip_path, extract_dir):
     print(f"File in {zip_path} extracted in directory {extract_dir}")
 
 def sizeof_fmt(num, suffix='B'):
-    ''' by Fred Cirera,  https://stackoverflow.com/a/1094933/1870254, modified'''
+    """ Transform number to readable unit """
     for unit in ['', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi']:
         if abs(num) < 1024.0:
             return "%3.1f %s%s" % (num, unit, suffix)
@@ -24,11 +25,13 @@ def sizeof_fmt(num, suffix='B'):
     return "%.1f %s%s" % (num, 'Yi', suffix)
 
 def get_var_list():
+    """ Print current variable size in memory """
     for name, size in sorted(((name, sys.getsizeof(value)) for name, value in locals().items()),
                              key=lambda x: -x[1])[:10]:
         print("{:>30}: {:>8}".format(name, sizeof_fmt(size)))
 
 def rebalance_data(df, n_ensemble, target, negative_downsampling=True, use_partial_data=False, ratio_partial_data=3):
+    """ Downsampling (negative or positive) data according to ratio and distribute it across number of ensemble """
     pos_rows = df[df[target] == 1].shape[0]
     neg_rows = df[df[target] == 0].shape[0]
 
@@ -71,6 +74,7 @@ def rebalance_data(df, n_ensemble, target, negative_downsampling=True, use_parti
     return all_batch_indexes
 
 def downsampling_data(df, targets, goal_percentages=None, positive_oversampling=True):
+    """ Downsample data to achieve or at least approximate to the goal percentage """
     if goal_percentages is None:
         return df
 
@@ -160,6 +164,7 @@ def downsampling_data(df, targets, goal_percentages=None, positive_oversampling=
 def oversampling_data(
     df, target, goal_percentage=1 / 3, positive_oversampling=True, max_ratio=10
 ):
+    """ Oversample data to achieve or at least approximate to the goal percentage """
     current_percentage = df[target].mean()
     current_percentage = (
         current_percentage if positive_oversampling else 1 - current_percentage
@@ -192,6 +197,7 @@ def oversampling_data(
         return df.sample(frac=1).reset_index(drop=True)
 
 def convert_Int_to_int(df, columns=None, verbose=True):
+    """ Convert Pandas Int dtype to corresponding numpy int dtype """
     if columns == None:
         columns = list(df.columns)
     df_int_cols = list(df[columns].dtypes[df.dtypes.astype(str).str.lower().str.startswith('int')].index)
@@ -208,6 +214,7 @@ def convert_Int_to_int(df, columns=None, verbose=True):
     return df
 
 def KFolds_stratified(dataframe, k=10, target="class", shuffle=True, seed=None):
+    """ Generate kFolds pairs of training and validation sets """
     train_folds = []
     valid_folds = []
     Kfolds = []
@@ -254,6 +261,7 @@ def KFolds_stratified(dataframe, k=10, target="class", shuffle=True, seed=None):
     return Kfolds
 
 def reduce_mem_usage(df, columns=None, verbose=True, debug=False):
+    """ Reduce memory usage of provided DataFrame using best dtype for each column """
     if columns == None:
         columns = df.columns
     elif len(columns) == 0:
