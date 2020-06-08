@@ -8,6 +8,7 @@ import seaborn as sns
 from scipy.stats import norm
 
 def get_subplot_rows_cols(num_plots, n_cols = [3,4,5]):
+    """ Calculate number row and cols for a pretty grid """
     max_cols = max(n_cols)
     if num_plots // max_cols == 0:
         subplot_rows = 1
@@ -34,6 +35,7 @@ def get_subplot_rows_cols(num_plots, n_cols = [3,4,5]):
 
 def plot_histograms(df, column_names, df_types, max_value_counts, subplot_rows=None, subplot_cols=None,
                     starting_index=0, index_offset=0, fit=norm):
+    """ Plot histogram plot grid for all the feature provided """
     # Set a good relation rows/cols for the plot if not specified
     if subplot_rows is None or subplot_cols is None:
         subplot_rows, subplot_cols = get_subplot_rows_cols(len(column_names), [3,4,5])
@@ -60,6 +62,7 @@ def plot_histograms(df, column_names, df_types, max_value_counts, subplot_rows=N
     plt.rcParams['figure.figsize'] = [10, 6]
 
 def plot_roc_auc(y_true, y_pred):
+    """ Plot ROC AUC """
     fpr, tpr, threshold = metrics.roc_curve(y_true, y_pred)
     roc_auc = metrics.auc(fpr, tpr)
 
@@ -77,6 +80,7 @@ def plot_roc_auc(y_true, y_pred):
 
 # Settings for axis to plot X data as dates correctly
 def plot_date(x, y, axes=None, title=None, color='b'):
+    """ Plot data correctly using X date data """
     if axes is None:
         fig = plt.figure()
         axes = fig.add_subplot(111)
@@ -138,10 +142,11 @@ def plot_date(x, y, axes=None, title=None, color='b'):
     axes.xaxis.set_major_locator(major_loc)
     axes.xaxis.set_major_formatter(major_format)
 
-# Here we define a function to draw scatter plots where we can highlight points as the outliers
+
 def plot_scatter(data, x_column, y_column, title=None, axes=None, highlight_column=None, highlight_color='r',
                  normal_color='b'):
-    # print(data[highlight_column].astype(int))
+    """ Plot scatter plots where we can highlight points as the outliers """
+
     if highlight_column != None:
         data.loc[data[highlight_column] == True, highlight_column] = highlight_color
         data.loc[data[highlight_column] == False, highlight_column] = normal_color
@@ -170,7 +175,7 @@ def plot_scatter(data, x_column, y_column, title=None, axes=None, highlight_colu
 
 def plot_list_scatters(data, list_dict, subplot_cols=None, subplot_rows=None, starting_index=0, index_offset=0, fig=None,
                        axes=None):
-    
+    """ Plot several scatter plots contained in data depending on setting provided in list_dict """
     # Set a good relation rows/cols for the plot if not specified
     if subplot_rows is None or subplot_cols is None:
         subplot_rows, subplot_cols = get_subplot_rows_cols(len(list_dict), [3,4,5])
