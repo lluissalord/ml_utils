@@ -1,0 +1,881 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.7.2" />
+<title>utils.misc_utils API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{font-weight:bold}#index h4 + ul{margin-bottom:.6em}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>utils.misc_utils</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">import sys
+import os
+import shutil
+import pandas as pd
+import numpy as np
+
+from tqdm import tqdm_notebook
+
+from sklearn.model_selection import train_test_split
+
+def extract_zips(zip_path, extract_dir):
+    &#34;&#34;&#34; Extract zip file &#34;&#34;&#34;
+    if not os.path.exists(extract_dir):
+        os.makedirs(extract_dir)
+
+    shutil.unpack_archive(zip_path, extract_dir=extract_dir)
+    print(f&#34;File in {zip_path} extracted in directory {extract_dir}&#34;)
+
+def sizeof_fmt(num, suffix=&#39;B&#39;):
+    &#34;&#34;&#34; Transform number to readable unit &#34;&#34;&#34;
+    for unit in [&#39;&#39;, &#39;Ki&#39;, &#39;Mi&#39;, &#39;Gi&#39;, &#39;Ti&#39;, &#39;Pi&#39;, &#39;Ei&#39;, &#39;Zi&#39;]:
+        if abs(num) &lt; 1024.0:
+            return &#34;%3.1f %s%s&#34; % (num, unit, suffix)
+        num /= 1024.0
+    return &#34;%.1f %s%s&#34; % (num, &#39;Yi&#39;, suffix)
+
+def get_var_list():
+    &#34;&#34;&#34; Print current variable size in memory &#34;&#34;&#34;
+    for name, size in sorted(((name, sys.getsizeof(value)) for name, value in locals().items()),
+                             key=lambda x: -x[1])[:10]:
+        print(&#34;{:&gt;30}: {:&gt;8}&#34;.format(name, sizeof_fmt(size)))
+
+def rebalance_data(df, n_ensemble, target, negative_downsampling=True, use_partial_data=False, ratio_partial_data=3):
+    &#34;&#34;&#34; Downsampling (negative or positive) data according to ratio and distribute it across number of ensemble &#34;&#34;&#34;
+    pos_rows = df[df[target] == 1].shape[0]
+    neg_rows = df[df[target] == 0].shape[0]
+
+    # max_ratio = 2
+    # max_n_models = 10
+    # min_n_model = (total_rows / ((1 + max_ratio) * pos_rows))
+
+    if negative_downsampling:
+        ref_rows = pos_rows
+        ref_df = df[df[target] == 1]
+        downsampling_rows = neg_rows
+        downsampling_df = df[df[target] == 0]
+    else:
+        ref_rows = neg_rows
+        ref_df = df[df[target] == 0]
+        downsampling_rows = pos_rows
+        downsampling_df = df[df[target] == 1]
+
+    if use_partial_data:
+        ratio = ratio_partial_data
+        length_downsampling = int(ratio * ref_rows)
+    else:
+        ratio = (downsampling_rows / (n_ensemble * ref_rows))
+        length_downsampling = int(downsampling_rows / n_ensemble)
+    print(f&#39;Using {n_ensemble} ensembles, you are setting a ratio of {ratio}.&#39;)
+    print(f&#39;Each model will be train with {int((1 + ratio) * ref_rows)} samples.&#39;)
+
+    all_batch_indexes = pd.DataFrame(columns=range(n_ensemble))
+    used_index = np.array([])
+
+    for i in tqdm_notebook(range(n_ensemble)):
+        # For downsampling we use random sample of lenght &#39;length_downsampling&#39; which have not been previously used
+        all_batch_indexes[i] = pd.concat([
+            ref_df,
+            downsampling_df[~downsampling_df.index.isin(used_index)].sample(length_downsampling, random_state=42)
+        ]).sort_index().index
+
+        used_index = np.append(used_index, all_batch_indexes[i].values)
+
+    return all_batch_indexes
+
+def downsampling_data(df, targets, goal_percentages=None, positive_oversampling=True):
+    &#34;&#34;&#34; Downsample data to achieve or at least approximate to the goal percentage &#34;&#34;&#34;
+    if goal_percentages is None:
+        return df
+
+    if not positive_oversampling:
+        pass
+
+    total_rows = np.empty(len(targets))
+    for i in range(len(targets)):
+        condition = df[targets[i]] == 1
+        total_rows[i] = len(df[condition].index) // goal_percentages[i]
+
+    i_min = np.argmin(total_rows)
+
+    # Choose between:
+    # 1) Use previous conditions to not allow targets which have been already used (exact method)
+    # 2) Store indexes already used to not duplicate (aproximate method)
+    prev_conditions = df[targets[i_min]] == 1
+    used_index = np.array([])
+
+    sort_totals = dict(sorted(zip(total_rows, range(len(total_rows)))))
+    totals_dict = dict([(value, key) for key, value in sort_totals.items()])
+
+    first_loop = True
+    for i, total in totals_dict.items():
+        if i == i_min:
+            continue
+
+        print(f&#34;Treating target {i}&#34;)
+        taget_cond = df[targets[i]] == 1
+
+        num_samples = int(total_rows[i_min] * goal_percentages[i])
+
+        if first_loop:
+            num_samples_yet = 0
+            downsampling_df = df[taget_cond &amp; ~prev_conditions].copy()
+            first_loop = False
+        else:
+            num_samples_yet = len(downsampling_df[taget_cond])
+            num_samples_add = num_samples - num_samples_yet
+
+            if num_samples_add &gt; 0:
+                if num_samples_add &gt; len(df[taget_cond &amp; ~prev_conditions].index):
+                    print(
+                        f&#34;Rows added from target {i} are {len(df[taget_cond &amp; ~prev_conditions].index)}&#34;
+                    )
+                    downsampling_df = pd.concat(
+                        [downsampling_df, df[taget_cond &amp; ~prev_conditions]]
+                    )
+                else:
+                    print(f&#34;Rows added from target {i} are {num_samples_add}&#34;)
+                    downsampling_df = pd.concat(
+                        [
+                            downsampling_df,
+                            df[taget_cond &amp; ~prev_conditions].sample(
+                                num_samples_add, random_state=42
+                            ),
+                        ]
+                    )
+            else:
+                downsampling_df = downsampling_df.drop(
+                    downsampling_df[taget_cond].sample(-num_samples_add).index
+                )
+                print(f&#34;No Rows added from target {i}&#34;)
+
+        prev_conditions = prev_conditions | taget_cond
+
+    num_samples_add = int(
+        total_rows[i_min]
+        - len(downsampling_df.index)
+        - int(total_rows[i_min] * goal_percentages[i_min])
+    )
+    print(f&#34;Rows with no positive target {num_samples_add}&#34;)
+
+    if num_samples_add &gt; 0:
+        if num_samples_add &gt; len(df[~prev_conditions].index):
+            downsampling_df = pd.concat([downsampling_df, df[~prev_conditions]])
+        else:
+            downsampling_df = pd.concat(
+                [
+                    downsampling_df,
+                    df[~prev_conditions].sample(num_samples_add, random_state=42),
+                ]
+            )
+
+    return pd.concat([df[df[targets[i_min]] == 1], downsampling_df]).sort_index()
+        
+def oversampling_data(
+    df, target, goal_percentage=1 / 3, positive_oversampling=True, max_ratio=10
+):
+    &#34;&#34;&#34; Oversample data to achieve or at least approximate to the goal percentage &#34;&#34;&#34;
+    current_percentage = df[target].mean()
+    current_percentage = (
+        current_percentage if positive_oversampling else 1 - current_percentage
+    )
+    if goal_percentage &lt;= current_percentage:
+        return df
+    else:
+        max_rows = int(np.round(goal_percentage * len(df)))
+        current_rows = int(np.round(current_percentage * len(df)))
+        ratio = int(np.ceil(goal_percentage // current_percentage) - 1)
+
+        exceeds_max_ratio = ratio &gt; max_ratio
+        if exceeds_max_ratio:
+            ratio = max_ratio
+
+        ratio = max_ratio if ratio &gt; max_ratio else ratio
+        over_df = df[df[target] == positive_oversampling]
+        i = 0
+        while i &lt; ratio:
+            df = pd.concat([df, over_df])
+            i = i + 1
+
+        if not exceeds_max_ratio and current_rows * (1 + ratio) &lt; max_rows:
+            over_df = df[df[target] == positive_oversampling].sample(
+                max_rows - current_rows * (1 + ratio), replace=True
+            )
+            df = pd.concat([df, over_df])
+
+        # Shuffle and reindex dataframe
+        return df.sample(frac=1).reset_index(drop=True)
+
+def convert_Int_to_int(df, columns=None, verbose=True):
+    &#34;&#34;&#34; Convert Pandas Int dtype to corresponding numpy int dtype &#34;&#34;&#34;
+    if columns == None:
+        columns = list(df.columns)
+    df_int_cols = list(df[columns].dtypes[df.dtypes.astype(str).str.lower().str.startswith(&#39;int&#39;)].index)
+    df_int_cols_not_null = df[df_int_cols].dtypes[df[df_int_cols].notnull().any()]
+
+    numerics = {&#39;Int8&#39;: np.int8, &#39;Int16&#39;: np.int16, &#39;Int32&#39;: np.int32, &#39;Int64&#39;: np.int64}
+
+    for col_type, np_type in tqdm_notebook(numerics.items(), disable=not verbose):
+        cols_to_convert = list(df_int_cols_not_null[df_int_cols_not_null == col_type].index)
+
+        if len(cols_to_convert) &gt; 0:
+            df[cols_to_convert] = df[cols_to_convert].astype(np_type)
+
+    return df
+
+def KFolds_stratified(dataframe, k=10, target=&#34;class&#34;, shuffle=True, seed=None):
+    &#34;&#34;&#34; Generate kFolds pairs of training and validation sets &#34;&#34;&#34;
+    train_folds = []
+    valid_folds = []
+    Kfolds = []
+
+    stratify_df = dataframe[target] if shuffle else None
+    remain_df, kfold_df = train_test_split(
+        dataframe,
+        test_size=1 / (k),
+        stratify=stratify_df,
+        shuffle=shuffle,
+        random_state=seed,
+    )
+
+    train_folds.append(kfold_df)
+
+    i = 1
+    while i &lt; k - 1:
+        try:
+            stratify_df = remain_df[target] if shuffle else None
+            remain_df, kfold_df = train_test_split(
+                remain_df,
+                test_size=1 / (k - i),
+                stratify=stratify_df,
+                shuffle=shuffle,
+                random_state=seed,
+            )
+        except ValueError as e:
+            print(f&#34;Stratify is not posible at kfold {i} due to: {e}&#34;)
+            remain_df, kfold_df = train_test_split(
+                remain_df, test_sie=1 / (k - i), shuffle=shuffle, random_state=seed
+            )
+
+        train_folds.append(kfold_df)
+        valid_folds.append(kfold_df)
+
+        i = i + 1
+
+    valid_folds.append(remain_df)
+    i = 0
+    while i &lt; k - 1:
+        Kfolds.append((train_folds[i], valid_folds[i]))
+        i = i + 1
+
+    return Kfolds
+
+def reduce_mem_usage(df, columns=None, verbose=True, debug=False):
+    &#34;&#34;&#34; Reduce memory usage of provided DataFrame using best dtype for each column &#34;&#34;&#34;
+    if columns == None:
+        columns = df.columns
+    elif len(columns) == 0:
+        return df
+
+    if verbose:
+        print(&#34;Starting reducing memory usage of provided DataFrame&#34;)
+        if debug:
+            print(&#34;Identifying integers and float columns&#34;)
+
+    df_float_cols = list(df[columns].dtypes[df.dtypes.astype(str).str.startswith(&#39;float&#39;)].index)
+
+    float_to_int_cols = np.equal(df[df_float_cols].fillna(0) - df[df_float_cols].fillna(0).apply(np.floor), 0).all()
+    float_to_int_cols = list(df[df_float_cols].dtypes[float_to_int_cols].index)
+    df_float_cols = list(set(df_float_cols) - set(float_to_int_cols))
+
+    df_int_cols = list(
+        df[columns].dtypes[df.dtypes.astype(str).str.lower().str.startswith(&#39;int&#39;)].index) + float_to_int_cols
+    df_int_cols_not_null = df[df_int_cols].dtypes[df[df_int_cols].notnull().any()]
+    df_cols = df_float_cols + df_int_cols
+
+    numerics = {&#39;Int8&#39;: np.int8, &#39;Int16&#39;: np.int16, &#39;Int32&#39;: np.int32, &#39;Int64&#39;: np.int64, &#39;float32&#39;: np.float32,
+                &#39;float64&#39;: np.float64}
+
+    df_types = pd.DataFrame(0, index=df_cols, columns=list(numerics.keys()))
+    df_types_min_max = pd.DataFrame(0, index=[&#39;min&#39;, &#39;max&#39;], columns=list(numerics.keys()))
+    df_min_max = pd.DataFrame(0, index=[&#39;min&#39;, &#39;max&#39;], columns=df_cols)
+
+    for col_type, np_type in numerics.items():
+        if str(col_type)[:3].lower() == &#39;int&#39;:
+            df_types_min_max.loc[&#39;min&#39;, col_type] = np.iinfo(np_type).min
+            df_types_min_max.loc[&#39;max&#39;, col_type] = np.iinfo(np_type).max
+        else:
+            df_types_min_max.loc[&#39;min&#39;, col_type] = np.finfo(np_type).min
+            df_types_min_max.loc[&#39;max&#39;, col_type] = np.finfo(np_type).max
+
+    if debug:
+        print(&#34;Collecting min and max values of all columns&#34;)
+
+    df_min_max.loc[&#39;min&#39;] = df[df_cols].min(skipna=True).T
+    df_min_max.loc[&#39;max&#39;] = df[df_cols].max(skipna=True).T
+
+    df_max = pd.DataFrame(0, index=df_cols, columns=list(numerics.keys()))
+    df_max.loc[df_cols, list(numerics.keys())] = df_min_max.loc[&#39;max&#39;, df_cols]
+    df_max = df_max &lt; df_types_min_max.loc[&#39;max&#39;, list(numerics.keys())]
+
+    df_min = pd.DataFrame(0, index=df_cols, columns=list(numerics.keys()))
+    df_min.loc[df_cols, list(numerics.keys())] = df_min_max.loc[&#39;min&#39;, df_cols]
+    df_min = df_min &gt; df_types_min_max.loc[&#39;min&#39;, list(numerics.keys())]
+
+    df_types = df_max &amp; df_min
+    df_types.loc[df_float_cols, [&#39;Int8&#39;, &#39;Int16&#39;, &#39;Int32&#39;, &#39;Int64&#39;]] = False
+    df_types.loc[df_int_cols, [&#39;float32&#39;, &#39;float64&#39;]] = False
+
+    if debug:
+        print(&#34;Collecting current types of each column&#34;)
+
+    df_current_types = pd.DataFrame(False, index=df_cols, columns=list(numerics.keys()))
+    for col_type in numerics.keys():
+        df_current_types.loc[list(df[df_cols].dtypes[df[df_cols].dtypes == col_type].index), col_type] = True
+
+    if debug:
+        print(&#34;Calculating initial memory usage&#34;)
+
+    start_mem = df.memory_usage(deep=True).sum() / 1024 ** 2
+    cols_converted = []
+
+    if debug:
+        print(&#34;Starting converting columns to the optimal types&#34;)
+
+    for col_type, np_type in tqdm_notebook(numerics.items(), disable=not verbose):
+        cols_able_to_convert = list(df_types[col_type][df_types[col_type]].index)
+        cols_current_type = list(df_current_types.loc[df_current_types[col_type], col_type].index)
+        cols_to_convert = list(set(cols_able_to_convert) - set(cols_converted) - set(cols_current_type))
+        cols_not_changed = [col for col in cols_able_to_convert if col in cols_current_type]
+
+        if col_type[:3] == &#39;Int&#39;:
+            cols_to_convert_int_not_null = [col for col in cols_to_convert if col in df_int_cols_not_null]
+
+            if len(cols_to_convert_int_not_null) &gt; 0:
+                df[cols_to_convert_int_not_null] = df[cols_to_convert_int_not_null].astype(np_type)
+
+                cols_to_convert = list(set(cols_to_convert) - set(cols_to_convert_int_not_null))
+        
+        if len(cols_to_convert) &gt; 0:
+            if verbose:
+                print(&#34;Converting to &#34;, col_type, &#34; &#34;, len(cols_to_convert), &#34; columns&#34;)
+
+            df[cols_to_convert] = df[cols_to_convert].astype(col_type)
+
+        cols_converted = cols_converted + cols_to_convert + cols_not_changed
+
+    if debug:
+        print(&#34;Calculating final memory usage&#34;)
+    end_mem = df.memory_usage(deep=True).sum() / 1024 ** 2
+    if verbose: print(&#39;Mem. usage decreased to {:5.2f} Mb ({:.1f}% reduction)&#39;.format(end_mem, 100 * (
+                start_mem - end_mem) / start_mem))
+
+    return df</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="utils.misc_utils.KFolds_stratified"><code class="name flex">
+<span>def <span class="ident">KFolds_stratified</span></span>(<span>dataframe, k=10, target='class', shuffle=True, seed=None)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Generate kFolds pairs of training and validation sets</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def KFolds_stratified(dataframe, k=10, target=&#34;class&#34;, shuffle=True, seed=None):
+    &#34;&#34;&#34; Generate kFolds pairs of training and validation sets &#34;&#34;&#34;
+    train_folds = []
+    valid_folds = []
+    Kfolds = []
+
+    stratify_df = dataframe[target] if shuffle else None
+    remain_df, kfold_df = train_test_split(
+        dataframe,
+        test_size=1 / (k),
+        stratify=stratify_df,
+        shuffle=shuffle,
+        random_state=seed,
+    )
+
+    train_folds.append(kfold_df)
+
+    i = 1
+    while i &lt; k - 1:
+        try:
+            stratify_df = remain_df[target] if shuffle else None
+            remain_df, kfold_df = train_test_split(
+                remain_df,
+                test_size=1 / (k - i),
+                stratify=stratify_df,
+                shuffle=shuffle,
+                random_state=seed,
+            )
+        except ValueError as e:
+            print(f&#34;Stratify is not posible at kfold {i} due to: {e}&#34;)
+            remain_df, kfold_df = train_test_split(
+                remain_df, test_sie=1 / (k - i), shuffle=shuffle, random_state=seed
+            )
+
+        train_folds.append(kfold_df)
+        valid_folds.append(kfold_df)
+
+        i = i + 1
+
+    valid_folds.append(remain_df)
+    i = 0
+    while i &lt; k - 1:
+        Kfolds.append((train_folds[i], valid_folds[i]))
+        i = i + 1
+
+    return Kfolds</code></pre>
+</details>
+</dd>
+<dt id="utils.misc_utils.convert_Int_to_int"><code class="name flex">
+<span>def <span class="ident">convert_Int_to_int</span></span>(<span>df, columns=None, verbose=True)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Convert Pandas Int dtype to corresponding numpy int dtype</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def convert_Int_to_int(df, columns=None, verbose=True):
+    &#34;&#34;&#34; Convert Pandas Int dtype to corresponding numpy int dtype &#34;&#34;&#34;
+    if columns == None:
+        columns = list(df.columns)
+    df_int_cols = list(df[columns].dtypes[df.dtypes.astype(str).str.lower().str.startswith(&#39;int&#39;)].index)
+    df_int_cols_not_null = df[df_int_cols].dtypes[df[df_int_cols].notnull().any()]
+
+    numerics = {&#39;Int8&#39;: np.int8, &#39;Int16&#39;: np.int16, &#39;Int32&#39;: np.int32, &#39;Int64&#39;: np.int64}
+
+    for col_type, np_type in tqdm_notebook(numerics.items(), disable=not verbose):
+        cols_to_convert = list(df_int_cols_not_null[df_int_cols_not_null == col_type].index)
+
+        if len(cols_to_convert) &gt; 0:
+            df[cols_to_convert] = df[cols_to_convert].astype(np_type)
+
+    return df</code></pre>
+</details>
+</dd>
+<dt id="utils.misc_utils.downsampling_data"><code class="name flex">
+<span>def <span class="ident">downsampling_data</span></span>(<span>df, targets, goal_percentages=None, positive_oversampling=True)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Downsample data to achieve or at least approximate to the goal percentage</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def downsampling_data(df, targets, goal_percentages=None, positive_oversampling=True):
+    &#34;&#34;&#34; Downsample data to achieve or at least approximate to the goal percentage &#34;&#34;&#34;
+    if goal_percentages is None:
+        return df
+
+    if not positive_oversampling:
+        pass
+
+    total_rows = np.empty(len(targets))
+    for i in range(len(targets)):
+        condition = df[targets[i]] == 1
+        total_rows[i] = len(df[condition].index) // goal_percentages[i]
+
+    i_min = np.argmin(total_rows)
+
+    # Choose between:
+    # 1) Use previous conditions to not allow targets which have been already used (exact method)
+    # 2) Store indexes already used to not duplicate (aproximate method)
+    prev_conditions = df[targets[i_min]] == 1
+    used_index = np.array([])
+
+    sort_totals = dict(sorted(zip(total_rows, range(len(total_rows)))))
+    totals_dict = dict([(value, key) for key, value in sort_totals.items()])
+
+    first_loop = True
+    for i, total in totals_dict.items():
+        if i == i_min:
+            continue
+
+        print(f&#34;Treating target {i}&#34;)
+        taget_cond = df[targets[i]] == 1
+
+        num_samples = int(total_rows[i_min] * goal_percentages[i])
+
+        if first_loop:
+            num_samples_yet = 0
+            downsampling_df = df[taget_cond &amp; ~prev_conditions].copy()
+            first_loop = False
+        else:
+            num_samples_yet = len(downsampling_df[taget_cond])
+            num_samples_add = num_samples - num_samples_yet
+
+            if num_samples_add &gt; 0:
+                if num_samples_add &gt; len(df[taget_cond &amp; ~prev_conditions].index):
+                    print(
+                        f&#34;Rows added from target {i} are {len(df[taget_cond &amp; ~prev_conditions].index)}&#34;
+                    )
+                    downsampling_df = pd.concat(
+                        [downsampling_df, df[taget_cond &amp; ~prev_conditions]]
+                    )
+                else:
+                    print(f&#34;Rows added from target {i} are {num_samples_add}&#34;)
+                    downsampling_df = pd.concat(
+                        [
+                            downsampling_df,
+                            df[taget_cond &amp; ~prev_conditions].sample(
+                                num_samples_add, random_state=42
+                            ),
+                        ]
+                    )
+            else:
+                downsampling_df = downsampling_df.drop(
+                    downsampling_df[taget_cond].sample(-num_samples_add).index
+                )
+                print(f&#34;No Rows added from target {i}&#34;)
+
+        prev_conditions = prev_conditions | taget_cond
+
+    num_samples_add = int(
+        total_rows[i_min]
+        - len(downsampling_df.index)
+        - int(total_rows[i_min] * goal_percentages[i_min])
+    )
+    print(f&#34;Rows with no positive target {num_samples_add}&#34;)
+
+    if num_samples_add &gt; 0:
+        if num_samples_add &gt; len(df[~prev_conditions].index):
+            downsampling_df = pd.concat([downsampling_df, df[~prev_conditions]])
+        else:
+            downsampling_df = pd.concat(
+                [
+                    downsampling_df,
+                    df[~prev_conditions].sample(num_samples_add, random_state=42),
+                ]
+            )
+
+    return pd.concat([df[df[targets[i_min]] == 1], downsampling_df]).sort_index()</code></pre>
+</details>
+</dd>
+<dt id="utils.misc_utils.extract_zips"><code class="name flex">
+<span>def <span class="ident">extract_zips</span></span>(<span>zip_path, extract_dir)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Extract zip file</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def extract_zips(zip_path, extract_dir):
+    &#34;&#34;&#34; Extract zip file &#34;&#34;&#34;
+    if not os.path.exists(extract_dir):
+        os.makedirs(extract_dir)
+
+    shutil.unpack_archive(zip_path, extract_dir=extract_dir)
+    print(f&#34;File in {zip_path} extracted in directory {extract_dir}&#34;)</code></pre>
+</details>
+</dd>
+<dt id="utils.misc_utils.get_var_list"><code class="name flex">
+<span>def <span class="ident">get_var_list</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Print current variable size in memory</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_var_list():
+    &#34;&#34;&#34; Print current variable size in memory &#34;&#34;&#34;
+    for name, size in sorted(((name, sys.getsizeof(value)) for name, value in locals().items()),
+                             key=lambda x: -x[1])[:10]:
+        print(&#34;{:&gt;30}: {:&gt;8}&#34;.format(name, sizeof_fmt(size)))</code></pre>
+</details>
+</dd>
+<dt id="utils.misc_utils.oversampling_data"><code class="name flex">
+<span>def <span class="ident">oversampling_data</span></span>(<span>df, target, goal_percentage=0.3333333333333333, positive_oversampling=True, max_ratio=10)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Oversample data to achieve or at least approximate to the goal percentage</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def oversampling_data(
+    df, target, goal_percentage=1 / 3, positive_oversampling=True, max_ratio=10
+):
+    &#34;&#34;&#34; Oversample data to achieve or at least approximate to the goal percentage &#34;&#34;&#34;
+    current_percentage = df[target].mean()
+    current_percentage = (
+        current_percentage if positive_oversampling else 1 - current_percentage
+    )
+    if goal_percentage &lt;= current_percentage:
+        return df
+    else:
+        max_rows = int(np.round(goal_percentage * len(df)))
+        current_rows = int(np.round(current_percentage * len(df)))
+        ratio = int(np.ceil(goal_percentage // current_percentage) - 1)
+
+        exceeds_max_ratio = ratio &gt; max_ratio
+        if exceeds_max_ratio:
+            ratio = max_ratio
+
+        ratio = max_ratio if ratio &gt; max_ratio else ratio
+        over_df = df[df[target] == positive_oversampling]
+        i = 0
+        while i &lt; ratio:
+            df = pd.concat([df, over_df])
+            i = i + 1
+
+        if not exceeds_max_ratio and current_rows * (1 + ratio) &lt; max_rows:
+            over_df = df[df[target] == positive_oversampling].sample(
+                max_rows - current_rows * (1 + ratio), replace=True
+            )
+            df = pd.concat([df, over_df])
+
+        # Shuffle and reindex dataframe
+        return df.sample(frac=1).reset_index(drop=True)</code></pre>
+</details>
+</dd>
+<dt id="utils.misc_utils.rebalance_data"><code class="name flex">
+<span>def <span class="ident">rebalance_data</span></span>(<span>df, n_ensemble, target, negative_downsampling=True, use_partial_data=False, ratio_partial_data=3)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Downsampling (negative or positive) data according to ratio and distribute it across number of ensemble</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def rebalance_data(df, n_ensemble, target, negative_downsampling=True, use_partial_data=False, ratio_partial_data=3):
+    &#34;&#34;&#34; Downsampling (negative or positive) data according to ratio and distribute it across number of ensemble &#34;&#34;&#34;
+    pos_rows = df[df[target] == 1].shape[0]
+    neg_rows = df[df[target] == 0].shape[0]
+
+    # max_ratio = 2
+    # max_n_models = 10
+    # min_n_model = (total_rows / ((1 + max_ratio) * pos_rows))
+
+    if negative_downsampling:
+        ref_rows = pos_rows
+        ref_df = df[df[target] == 1]
+        downsampling_rows = neg_rows
+        downsampling_df = df[df[target] == 0]
+    else:
+        ref_rows = neg_rows
+        ref_df = df[df[target] == 0]
+        downsampling_rows = pos_rows
+        downsampling_df = df[df[target] == 1]
+
+    if use_partial_data:
+        ratio = ratio_partial_data
+        length_downsampling = int(ratio * ref_rows)
+    else:
+        ratio = (downsampling_rows / (n_ensemble * ref_rows))
+        length_downsampling = int(downsampling_rows / n_ensemble)
+    print(f&#39;Using {n_ensemble} ensembles, you are setting a ratio of {ratio}.&#39;)
+    print(f&#39;Each model will be train with {int((1 + ratio) * ref_rows)} samples.&#39;)
+
+    all_batch_indexes = pd.DataFrame(columns=range(n_ensemble))
+    used_index = np.array([])
+
+    for i in tqdm_notebook(range(n_ensemble)):
+        # For downsampling we use random sample of lenght &#39;length_downsampling&#39; which have not been previously used
+        all_batch_indexes[i] = pd.concat([
+            ref_df,
+            downsampling_df[~downsampling_df.index.isin(used_index)].sample(length_downsampling, random_state=42)
+        ]).sort_index().index
+
+        used_index = np.append(used_index, all_batch_indexes[i].values)
+
+    return all_batch_indexes</code></pre>
+</details>
+</dd>
+<dt id="utils.misc_utils.reduce_mem_usage"><code class="name flex">
+<span>def <span class="ident">reduce_mem_usage</span></span>(<span>df, columns=None, verbose=True, debug=False)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Reduce memory usage of provided DataFrame using best dtype for each column</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def reduce_mem_usage(df, columns=None, verbose=True, debug=False):
+    &#34;&#34;&#34; Reduce memory usage of provided DataFrame using best dtype for each column &#34;&#34;&#34;
+    if columns == None:
+        columns = df.columns
+    elif len(columns) == 0:
+        return df
+
+    if verbose:
+        print(&#34;Starting reducing memory usage of provided DataFrame&#34;)
+        if debug:
+            print(&#34;Identifying integers and float columns&#34;)
+
+    df_float_cols = list(df[columns].dtypes[df.dtypes.astype(str).str.startswith(&#39;float&#39;)].index)
+
+    float_to_int_cols = np.equal(df[df_float_cols].fillna(0) - df[df_float_cols].fillna(0).apply(np.floor), 0).all()
+    float_to_int_cols = list(df[df_float_cols].dtypes[float_to_int_cols].index)
+    df_float_cols = list(set(df_float_cols) - set(float_to_int_cols))
+
+    df_int_cols = list(
+        df[columns].dtypes[df.dtypes.astype(str).str.lower().str.startswith(&#39;int&#39;)].index) + float_to_int_cols
+    df_int_cols_not_null = df[df_int_cols].dtypes[df[df_int_cols].notnull().any()]
+    df_cols = df_float_cols + df_int_cols
+
+    numerics = {&#39;Int8&#39;: np.int8, &#39;Int16&#39;: np.int16, &#39;Int32&#39;: np.int32, &#39;Int64&#39;: np.int64, &#39;float32&#39;: np.float32,
+                &#39;float64&#39;: np.float64}
+
+    df_types = pd.DataFrame(0, index=df_cols, columns=list(numerics.keys()))
+    df_types_min_max = pd.DataFrame(0, index=[&#39;min&#39;, &#39;max&#39;], columns=list(numerics.keys()))
+    df_min_max = pd.DataFrame(0, index=[&#39;min&#39;, &#39;max&#39;], columns=df_cols)
+
+    for col_type, np_type in numerics.items():
+        if str(col_type)[:3].lower() == &#39;int&#39;:
+            df_types_min_max.loc[&#39;min&#39;, col_type] = np.iinfo(np_type).min
+            df_types_min_max.loc[&#39;max&#39;, col_type] = np.iinfo(np_type).max
+        else:
+            df_types_min_max.loc[&#39;min&#39;, col_type] = np.finfo(np_type).min
+            df_types_min_max.loc[&#39;max&#39;, col_type] = np.finfo(np_type).max
+
+    if debug:
+        print(&#34;Collecting min and max values of all columns&#34;)
+
+    df_min_max.loc[&#39;min&#39;] = df[df_cols].min(skipna=True).T
+    df_min_max.loc[&#39;max&#39;] = df[df_cols].max(skipna=True).T
+
+    df_max = pd.DataFrame(0, index=df_cols, columns=list(numerics.keys()))
+    df_max.loc[df_cols, list(numerics.keys())] = df_min_max.loc[&#39;max&#39;, df_cols]
+    df_max = df_max &lt; df_types_min_max.loc[&#39;max&#39;, list(numerics.keys())]
+
+    df_min = pd.DataFrame(0, index=df_cols, columns=list(numerics.keys()))
+    df_min.loc[df_cols, list(numerics.keys())] = df_min_max.loc[&#39;min&#39;, df_cols]
+    df_min = df_min &gt; df_types_min_max.loc[&#39;min&#39;, list(numerics.keys())]
+
+    df_types = df_max &amp; df_min
+    df_types.loc[df_float_cols, [&#39;Int8&#39;, &#39;Int16&#39;, &#39;Int32&#39;, &#39;Int64&#39;]] = False
+    df_types.loc[df_int_cols, [&#39;float32&#39;, &#39;float64&#39;]] = False
+
+    if debug:
+        print(&#34;Collecting current types of each column&#34;)
+
+    df_current_types = pd.DataFrame(False, index=df_cols, columns=list(numerics.keys()))
+    for col_type in numerics.keys():
+        df_current_types.loc[list(df[df_cols].dtypes[df[df_cols].dtypes == col_type].index), col_type] = True
+
+    if debug:
+        print(&#34;Calculating initial memory usage&#34;)
+
+    start_mem = df.memory_usage(deep=True).sum() / 1024 ** 2
+    cols_converted = []
+
+    if debug:
+        print(&#34;Starting converting columns to the optimal types&#34;)
+
+    for col_type, np_type in tqdm_notebook(numerics.items(), disable=not verbose):
+        cols_able_to_convert = list(df_types[col_type][df_types[col_type]].index)
+        cols_current_type = list(df_current_types.loc[df_current_types[col_type], col_type].index)
+        cols_to_convert = list(set(cols_able_to_convert) - set(cols_converted) - set(cols_current_type))
+        cols_not_changed = [col for col in cols_able_to_convert if col in cols_current_type]
+
+        if col_type[:3] == &#39;Int&#39;:
+            cols_to_convert_int_not_null = [col for col in cols_to_convert if col in df_int_cols_not_null]
+
+            if len(cols_to_convert_int_not_null) &gt; 0:
+                df[cols_to_convert_int_not_null] = df[cols_to_convert_int_not_null].astype(np_type)
+
+                cols_to_convert = list(set(cols_to_convert) - set(cols_to_convert_int_not_null))
+        
+        if len(cols_to_convert) &gt; 0:
+            if verbose:
+                print(&#34;Converting to &#34;, col_type, &#34; &#34;, len(cols_to_convert), &#34; columns&#34;)
+
+            df[cols_to_convert] = df[cols_to_convert].astype(col_type)
+
+        cols_converted = cols_converted + cols_to_convert + cols_not_changed
+
+    if debug:
+        print(&#34;Calculating final memory usage&#34;)
+    end_mem = df.memory_usage(deep=True).sum() / 1024 ** 2
+    if verbose: print(&#39;Mem. usage decreased to {:5.2f} Mb ({:.1f}% reduction)&#39;.format(end_mem, 100 * (
+                start_mem - end_mem) / start_mem))
+
+    return df</code></pre>
+</details>
+</dd>
+<dt id="utils.misc_utils.sizeof_fmt"><code class="name flex">
+<span>def <span class="ident">sizeof_fmt</span></span>(<span>num, suffix='B')</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Transform number to readable unit</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sizeof_fmt(num, suffix=&#39;B&#39;):
+    &#34;&#34;&#34; Transform number to readable unit &#34;&#34;&#34;
+    for unit in [&#39;&#39;, &#39;Ki&#39;, &#39;Mi&#39;, &#39;Gi&#39;, &#39;Ti&#39;, &#39;Pi&#39;, &#39;Ei&#39;, &#39;Zi&#39;]:
+        if abs(num) &lt; 1024.0:
+            return &#34;%3.1f %s%s&#34; % (num, unit, suffix)
+        num /= 1024.0
+    return &#34;%.1f %s%s&#34; % (num, &#39;Yi&#39;, suffix)</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="utils" href="index.html">utils</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="two-column">
+<li><code><a title="utils.misc_utils.KFolds_stratified" href="#utils.misc_utils.KFolds_stratified">KFolds_stratified</a></code></li>
+<li><code><a title="utils.misc_utils.convert_Int_to_int" href="#utils.misc_utils.convert_Int_to_int">convert_Int_to_int</a></code></li>
+<li><code><a title="utils.misc_utils.downsampling_data" href="#utils.misc_utils.downsampling_data">downsampling_data</a></code></li>
+<li><code><a title="utils.misc_utils.extract_zips" href="#utils.misc_utils.extract_zips">extract_zips</a></code></li>
+<li><code><a title="utils.misc_utils.get_var_list" href="#utils.misc_utils.get_var_list">get_var_list</a></code></li>
+<li><code><a title="utils.misc_utils.oversampling_data" href="#utils.misc_utils.oversampling_data">oversampling_data</a></code></li>
+<li><code><a title="utils.misc_utils.rebalance_data" href="#utils.misc_utils.rebalance_data">rebalance_data</a></code></li>
+<li><code><a title="utils.misc_utils.reduce_mem_usage" href="#utils.misc_utils.reduce_mem_usage">reduce_mem_usage</a></code></li>
+<li><code><a title="utils.misc_utils.sizeof_fmt" href="#utils.misc_utils.sizeof_fmt">sizeof_fmt</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.7.2</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

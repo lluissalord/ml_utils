@@ -1,0 +1,871 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.7.2" />
+<title>utils.dicom_utils API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{font-weight:bold}#index h4 + ul{margin-bottom:.6em}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>utils.dicom_utils</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">import numpy as np
+import pandas as pd
+import cv2
+import pydicom
+from matplotlib import pyplot as plt
+from scipy import interpolate
+import warnings
+import os
+
+from tqdm import tqdm_notebook
+
+# From https://radiopaedia.org/articles/windowing-ct
+dicom_windows = {
+    &#39;brain&#39; : (80,40),
+    &#39;subdural&#39;:(200,80),
+    &#39;stroke&#39;:(8,32),
+    &#39;brain_bone&#39;:(2800,600),
+    &#39;brain_soft&#39;:(375,40),
+    &#39;lungs&#39;:(1500,-600),
+    &#39;mediastinum&#39;:(350,50),
+    &#39;abdomen_soft&#39;:(400,50),
+    &#39;liver&#39;:(150,30),
+    &#39;spine_soft&#39;:(250,50),
+    &#39;spine_bone&#39;:(1800,400)
+}
+
+def crop_brain(image, n_top_areas = 5, max_scale_diff = 3, plot = False, dimensions = None, area = None):
+    &#34;&#34;&#34; Crop image in order to only include square image of the &#34;best&#34; image of the brain &#34;&#34;&#34;
+    image = normalize_img(image, use_min_max = True)
+    if dimensions is None:
+        if (image.max() - image.min()) == 0 or np.isnan(image.max()) or np.isnan(image.min()):
+            raise ValueError(&#39;Empty image&#39;)
+        gray = np.uint8(image * 255)
+        blur = cv2.blur(gray, (5, 5)) # blur the image
+        # Detect edges using Canny
+        #canny_output = cv2.Canny(blur, threshold, threshold * 2)
+        # Find contours
+        contours, _ = cv2.findContours(blur, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        # Cycle through contours and add area to array
+        areas = []
+        for c in contours:
+            areas.append(cv2.contourArea(c))
+
+        # Sort array of areas by size
+        sorted_areas = sorted(zip(areas, contours), key=lambda x: x[0], reverse=True)
+        biggest_area = sorted_areas[0][0]
+
+        # Approximate contours to polygons + get bounding rects and circles
+        contours_poly = []
+        boundRect = []
+        min_dist_to_center = np.inf
+        best_contour_idx = 0
+        for i, c in enumerate(sorted_areas):
+            # Only treat contours which are in top 5 and less than &#39;max_scale_diff&#39; times smaller than the biggest one
+            if c[0] &gt; 0 and i &lt; n_top_areas and biggest_area/c[0] &lt; max_scale_diff:
+                contour_poly = cv2.approxPolyDP(c[1], 3, True)
+                contours_poly.append(contour_poly)
+                boundRect.append(cv2.boundingRect(contour_poly))
+                center, _ = cv2.minEnclosingCircle(contour_poly)
+
+                # Calculate distance from contour center to center of image
+                dist = (gray.shape[0]//2 - center[0])**2 + (gray.shape[1]//2 - center[1])**2
+                if min_dist_to_center &gt; dist:
+                    best_contour_idx = i
+                    min_dist_to_center = dist
+            else:
+                break
+
+        # Get boundaries of the Rectangle which includes the contour
+        x,y,w,h = boundRect[best_contour_idx]
+        best_area = sorted_areas[best_contour_idx]
+    else:
+        x,y,w,h = dimensions
+        best_area = area
+    # Crop the image
+    cropped = image[y:y+h,x:x+w]
+    # Pad needed pixels
+    final_image = pad_square(cropped)
+    
+    # Show three images (original, cropped, final)
+    if plot:
+        fig=plt.figure(figsize  = (10,30))    
+        ax = fig.add_subplot(1, 3, 1)
+        plt.imshow(image)
+        ax.add_patch(patches.Rectangle(
+            (x, y),
+            w,
+            h,
+            fill=False      # remove background
+         )) 
+        fig.add_subplot(1, 3, 2)
+        plt.imshow(cropped)
+        fig.add_subplot(1, 3, 3)
+        plt.imshow(final_image)
+        plt.show()
+    return final_image, best_area, (x,y,w,h)
+
+def pad_square(x):
+    &#34;&#34;&#34; Pad image to meet square dimensions &#34;&#34;&#34;
+    r,c = x.shape
+    d = (c-r)/2
+    pl,pr,pt,pb = 0,0,0,0
+    if d&gt;0: pt,pd = int(np.floor( d)),int(np.ceil( d))        
+    else:   pl,pr = int(np.floor(-d)),int(np.ceil(-d))
+    return np.pad(x, ((pt,pb),(pl,pr)), &#39;minimum&#39;)
+
+def get_first_of_dicom_field_as_int(x):
+    &#34;&#34;&#34; Get first DICOM field as in int &#34;&#34;&#34;
+    if type(x) == pydicom.multival.MultiValue:
+        return int(x[0])
+    else:
+        return int(x)
+
+def get_windowing(data):
+    &#34;&#34;&#34; Get DICOM parameters for windowing (window center, window width, intercept and slope) &#34;&#34;&#34;
+    dicom_fields = [data[(&#39;0028&#39;,&#39;1050&#39;)].value, #window center
+                    data[(&#39;0028&#39;,&#39;1051&#39;)].value, #window width
+                    data[(&#39;0028&#39;,&#39;1052&#39;)].value, #intercept
+                    data[(&#39;0028&#39;,&#39;1053&#39;)].value] #slope
+    return [get_first_of_dicom_field_as_int(x) for x in dicom_fields]
+
+def get_rows_columns(data):
+    &#34;&#34;&#34; Get rows and columns info from DICOM &#34;&#34;&#34;
+    dicom_fields = [data[(&#39;0028&#39;, &#39;0010&#39;)].value, #Rows
+                    data[(&#39;0028&#39;, &#39;0011&#39;)].value] #Columns
+    return [get_first_of_dicom_field_as_int(x) for x in dicom_fields]
+
+def get_subgroups(data):
+    &#34;&#34;&#34; Get value of subgroup depending on Bits Store and Pixel Representation values
+    There are 3 groups, but we will create a fourth for Others:
+    1) Bits Stored 16bits
+    2) Bits Stored 12bits - Pixel Representation 0
+    3) Bits Stored 12bits - Pixel Representation 1
+    -1) Others (in case new data appears)
+    &#34;&#34;&#34;
+    dicom_fields = [data[(&#39;0028&#39;, &#39;0101&#39;)].value, #Bits Stored
+                    data[(&#39;0028&#39;, &#39;0103&#39;)].value] #Pixel Representation
+    dicom_values = [get_first_of_dicom_field_as_int(x) for x in dicom_fields]
+    if dicom_values[0] == 16:
+        return 1
+    elif dicom_values[0] == 12 and dicom_values[1] == 0:
+        return 2
+    elif dicom_values[0] == 12 and dicom_values[1] == 1:
+        return 3
+    else:
+        return -1
+
+# According to https://www.kaggle.com/jhoward/cleaning-the-data-for-rapid-prototyping-fastai
+def correct_dcm(dcm):
+    &#34;&#34;&#34; Correct DCM image which were actually signed data, but were treated as unsigned &#34;&#34;&#34;
+    x = dcm.pixel_array + 1000
+    px_mode = 4096
+    x[x&gt;=px_mode] = x[x&gt;=px_mode] - px_mode
+    dcm.PixelData = x.tobytes()
+    dcm.RescaleIntercept = -1000
+    return dcm.pixel_array, dcm.RescaleIntercept
+
+def get_freqhist_bins(dcm_img, n_bins = 100):
+    &#34;&#34;&#34; Create equally distribute bins within DCM image intensity range &#34;&#34;&#34;
+    imsd = np.sort(dcm_img.reshape(-1))
+    t = np.concatenate([[0.001],
+                       np.arange(n_bins).astype(np.float64)/n_bins+(1/2/n_bins),
+                       [0.999]])
+    t = (len(imsd)*t).astype(np.int64)
+    return np.unique(imsd[t])
+
+def get_dcm_img(path, window_type = &#39;brain&#39;, verbose = True):
+    &#34;&#34;&#34; Read and scale of DICOM images according to its metadata &#34;&#34;&#34;
+    dcm = pydicom.dcmread(path)
+    window_center, window_width, intercept, slope = get_windowing(dcm)
+    group = get_subgroups(dcm)   
+    
+    if group == 2 and (int(intercept) &gt; -100):
+        dcm_img, intercept = correct_dcm(dcm)
+        dcm_img = dcm_img * slope + intercept
+    else:
+        dcm_img = get_pixel_array(dcm, path)  * slope + intercept
+    
+    window_center = dicom_windows[window_type][1]
+    window_width = dicom_windows[window_type][0]
+    min_px = window_center - window_width//2
+    max_px = window_center + window_width//2
+    dcm_img[dcm_img&lt;min_px] = min_px
+    dcm_img[dcm_img&gt;max_px] = max_px
+    
+    if (dcm_img.max() - dcm_img.min()) == 0:
+        dcm_img[:, :] = 0
+        if verbose:
+            warnings.warn(&#39;Empty image from path: &#39; + path, UserWarning)
+    
+    return dcm_img, group
+
+def get_pixel_array(dcm, path=None):
+    &#34;&#34;&#34; Extract pixel array from DCM file &#34;&#34;&#34;
+    try:
+        return dcm.pixel_array.astype(np.float32)
+    except ValueError as e:
+        rows, columns = get_rows_columns(dcm)
+        if path is None:
+            print(&#34;DICOM pixel data could not be extracted due to: &#34;, e)
+        else:
+            print(f&#34;DICOM pixel data could not be extracted from {path} due to: &#34;, e)
+        return np.zeros((rows, columns), dtype=np.float32)
+
+def interpolate_img(dcm_img, bins = None, n_bins = 100):
+    &#34;&#34;&#34; Interpolate DCM image to equally distribute intensity on the image &#34;&#34;&#34;
+    # Equal distribution of intensity
+    if bins is None: 
+        bins = get_freqhist_bins(dcm_img, n_bins)
+    
+    return np.clip(interpolate.interp1d(bins, np.linspace(0., 1., len(bins)), fill_value=&#34;extrapolate&#34;)(dcm_img.flatten()).reshape(dcm_img.shape), 0., 1.)
+
+def normalize_img(dcm_img, mean = None, std = None, use_min_max = False):
+    &#34;&#34;&#34; Normalize image using min/max or z-score &#34;&#34;&#34;
+    # Normalization to zero mean and unit variance
+    if use_min_max:
+        img_max = dcm_img.max()
+        img_min = dcm_img.min()
+        if (img_max - img_min) != 0:
+            return (dcm_img - img_min) / (img_max - img_min)
+        else:
+            return dcm_img
+    else:
+        if mean is None: 
+            mean = dcm_img.mean()
+
+        if std is None: 
+            std = dcm_img.std()
+        return (dcm_img - mean) / std
+    
+
+def preprocess_dicom(path, x, y, bins = None, n_bins = 100, mean = None, std = None, use_min_max = False, remove_empty = False, windows_type = &#39;brain&#39;, verbose = True): 
+    &#34;&#34;&#34; Process (open, interpolate, normalize and resize) the DICOM file on the specified path &#34;&#34;&#34;
+    area = 0
+    dimensions = None
+    if not type(windows_type) is list:
+        windows_type = [windows_type,]
+        
+    final_dcm_img = np.empty((x,y,len(windows_type)))
+    for i,window_type in enumerate(windows_type):
+        dcm_img, group = get_dcm_img(path, window_type, verbose)
+
+        # Crop image to show only the brain part (only posible if the image is not empyt)
+        try:
+            isEmpty = False
+            dcm_img, area, dimensions = crop_brain(dcm_img, area = area, dimensions= dimensions)
+        except ValueError as e:
+            isEmpty = True
+            area = 0
+            if verbose:
+                print(&#34;DICOM image from &#34;, path, &#34; is not cropped because gave the following error: &#34;, e)
+        finally:
+            if isEmpty and remove_empty:
+                return None, None
+            else:
+                # If distributed by groups (different than -1) then use only the values of the group
+                if group != -1:
+                    if type(bins) == dict:
+                        bins = bins[group]
+                    if type(mean) == dict:
+                        mean = mean[group]
+                    if type(std) == dict:
+                        std = std[group]
+
+                if not isEmpty:
+                    try:
+                        dcm_img = interpolate_img(dcm_img, bins, n_bins)
+                    except ValueError as e:
+                        if verbose:
+                            print(&#34;DICOM image from &#34;, path, &#34; is not bin interpolated because gave the following error: &#34;, e)
+                dcm_img = normalize_img(dcm_img, mean, std, use_min_max)
+
+                # Rescale to the defined image size
+                if dcm_img.shape != (x, y):
+                    dcm_img = cv2.resize(dcm_img, (x, y), interpolation=cv2.INTER_NEAREST)
+            final_dcm_img[:,:,i] = dcm_img
+    return final_dcm_img, area
+
+# Samples from each group are extracted by trying to find an specific number of samples per group
+# This is done due to memory limitations of have all training metadata in a DataFrame
+def sample_groups(load_dir, samples_per_group = 5, max_trys = 1000):
+    &#34;&#34;&#34; Extract equally distributed number of samples of DICOM files paths &#34;&#34;&#34;
+    filenames = os.listdir(load_dir)
+    filenames_groups = {1 : [], 2 : [], 3 : []}
+    for group in tqdm_notebook([1,2,3], desc = &#39;Group sample&#39;):
+        count_samples = 0
+        for _ in tqdm_notebook(range(max_trys), desc = &#39;Try&#39;):
+            filename = np.random.choice(filenames, size = 1, replace = False)[0]
+            sample_group = get_subgroups(pydicom.dcmread(load_dir + filename))
+            if sample_group == group:
+                filenames_groups[group].append(load_dir + filename)
+                count_samples += 1
+                if count_samples &gt;= samples_per_group:
+                    break
+    return filenames_groups
+
+# For each group it is computed:
+# Firstly mean of equally distributed bin
+# Secondly mean of mean pixels values and mean of std pixel values using the previous bin mean
+def sample_bins_mean_std(load_dir, samples_per_group = 5, max_trys = 1000, n_bins = 100):
+    &#34;&#34;&#34; Extract the bins intensity mean, image mean and image standard deviation of each group &#34;&#34;&#34;
+    bins_mean = {}
+    mean = {}
+    std = {}
+    groups_paths = sample_groups(load_dir, samples_per_group = samples_per_group, max_trys = max_trys)
+    for group in [1,2,3]:    
+        # Do not proceed if there is no images
+        if len(groups_paths[group]) == 0:
+            bins_mean[group] = []
+            mean[group] = np.nan
+            std[group] = np.nan
+            continue
+                    
+        filenames = groups_paths[group]
+    
+        dcm_img_array = []
+        for filename in tqdm_notebook(filenames, desc = &#39;Calc bins&#39;):
+            dcm_img, _ = get_dcm_img(filename)
+            dcm_img_array.append(dcm_img)
+            #bins_array.append(get_freqhist_bins(dcm_img, n_bins))
+
+        #bins_mean[group] = np.array(bins_array).mean(axis = 0)
+        bins_mean[group] = get_freqhist_bins(np.array(dcm_img_array).reshape(-1), n_bins)
+    
+        dcm_img_array = []
+        for filename in tqdm_notebook(filenames, desc = &#39;Calc mean &amp; std&#39;):
+            dcm_img, _ = get_dcm_img(filename)
+            dcm_img_array.append(interpolate_img(dcm_img, bins_mean[group], n_bins))
+    
+        mean[group] = np.array(dcm_img_array).flatten().mean()
+        std[group] = np.array(dcm_img_array).flatten().std()
+    
+    return bins_mean, mean, std</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="utils.dicom_utils.correct_dcm"><code class="name flex">
+<span>def <span class="ident">correct_dcm</span></span>(<span>dcm)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Correct DCM image which were actually signed data, but were treated as unsigned</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def correct_dcm(dcm):
+    &#34;&#34;&#34; Correct DCM image which were actually signed data, but were treated as unsigned &#34;&#34;&#34;
+    x = dcm.pixel_array + 1000
+    px_mode = 4096
+    x[x&gt;=px_mode] = x[x&gt;=px_mode] - px_mode
+    dcm.PixelData = x.tobytes()
+    dcm.RescaleIntercept = -1000
+    return dcm.pixel_array, dcm.RescaleIntercept</code></pre>
+</details>
+</dd>
+<dt id="utils.dicom_utils.crop_brain"><code class="name flex">
+<span>def <span class="ident">crop_brain</span></span>(<span>image, n_top_areas=5, max_scale_diff=3, plot=False, dimensions=None, area=None)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Crop image in order to only include square image of the "best" image of the brain</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def crop_brain(image, n_top_areas = 5, max_scale_diff = 3, plot = False, dimensions = None, area = None):
+    &#34;&#34;&#34; Crop image in order to only include square image of the &#34;best&#34; image of the brain &#34;&#34;&#34;
+    image = normalize_img(image, use_min_max = True)
+    if dimensions is None:
+        if (image.max() - image.min()) == 0 or np.isnan(image.max()) or np.isnan(image.min()):
+            raise ValueError(&#39;Empty image&#39;)
+        gray = np.uint8(image * 255)
+        blur = cv2.blur(gray, (5, 5)) # blur the image
+        # Detect edges using Canny
+        #canny_output = cv2.Canny(blur, threshold, threshold * 2)
+        # Find contours
+        contours, _ = cv2.findContours(blur, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        # Cycle through contours and add area to array
+        areas = []
+        for c in contours:
+            areas.append(cv2.contourArea(c))
+
+        # Sort array of areas by size
+        sorted_areas = sorted(zip(areas, contours), key=lambda x: x[0], reverse=True)
+        biggest_area = sorted_areas[0][0]
+
+        # Approximate contours to polygons + get bounding rects and circles
+        contours_poly = []
+        boundRect = []
+        min_dist_to_center = np.inf
+        best_contour_idx = 0
+        for i, c in enumerate(sorted_areas):
+            # Only treat contours which are in top 5 and less than &#39;max_scale_diff&#39; times smaller than the biggest one
+            if c[0] &gt; 0 and i &lt; n_top_areas and biggest_area/c[0] &lt; max_scale_diff:
+                contour_poly = cv2.approxPolyDP(c[1], 3, True)
+                contours_poly.append(contour_poly)
+                boundRect.append(cv2.boundingRect(contour_poly))
+                center, _ = cv2.minEnclosingCircle(contour_poly)
+
+                # Calculate distance from contour center to center of image
+                dist = (gray.shape[0]//2 - center[0])**2 + (gray.shape[1]//2 - center[1])**2
+                if min_dist_to_center &gt; dist:
+                    best_contour_idx = i
+                    min_dist_to_center = dist
+            else:
+                break
+
+        # Get boundaries of the Rectangle which includes the contour
+        x,y,w,h = boundRect[best_contour_idx]
+        best_area = sorted_areas[best_contour_idx]
+    else:
+        x,y,w,h = dimensions
+        best_area = area
+    # Crop the image
+    cropped = image[y:y+h,x:x+w]
+    # Pad needed pixels
+    final_image = pad_square(cropped)
+    
+    # Show three images (original, cropped, final)
+    if plot:
+        fig=plt.figure(figsize  = (10,30))    
+        ax = fig.add_subplot(1, 3, 1)
+        plt.imshow(image)
+        ax.add_patch(patches.Rectangle(
+            (x, y),
+            w,
+            h,
+            fill=False      # remove background
+         )) 
+        fig.add_subplot(1, 3, 2)
+        plt.imshow(cropped)
+        fig.add_subplot(1, 3, 3)
+        plt.imshow(final_image)
+        plt.show()
+    return final_image, best_area, (x,y,w,h)</code></pre>
+</details>
+</dd>
+<dt id="utils.dicom_utils.get_dcm_img"><code class="name flex">
+<span>def <span class="ident">get_dcm_img</span></span>(<span>path, window_type='brain', verbose=True)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Read and scale of DICOM images according to its metadata</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_dcm_img(path, window_type = &#39;brain&#39;, verbose = True):
+    &#34;&#34;&#34; Read and scale of DICOM images according to its metadata &#34;&#34;&#34;
+    dcm = pydicom.dcmread(path)
+    window_center, window_width, intercept, slope = get_windowing(dcm)
+    group = get_subgroups(dcm)   
+    
+    if group == 2 and (int(intercept) &gt; -100):
+        dcm_img, intercept = correct_dcm(dcm)
+        dcm_img = dcm_img * slope + intercept
+    else:
+        dcm_img = get_pixel_array(dcm, path)  * slope + intercept
+    
+    window_center = dicom_windows[window_type][1]
+    window_width = dicom_windows[window_type][0]
+    min_px = window_center - window_width//2
+    max_px = window_center + window_width//2
+    dcm_img[dcm_img&lt;min_px] = min_px
+    dcm_img[dcm_img&gt;max_px] = max_px
+    
+    if (dcm_img.max() - dcm_img.min()) == 0:
+        dcm_img[:, :] = 0
+        if verbose:
+            warnings.warn(&#39;Empty image from path: &#39; + path, UserWarning)
+    
+    return dcm_img, group</code></pre>
+</details>
+</dd>
+<dt id="utils.dicom_utils.get_first_of_dicom_field_as_int"><code class="name flex">
+<span>def <span class="ident">get_first_of_dicom_field_as_int</span></span>(<span>x)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Get first DICOM field as in int</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_first_of_dicom_field_as_int(x):
+    &#34;&#34;&#34; Get first DICOM field as in int &#34;&#34;&#34;
+    if type(x) == pydicom.multival.MultiValue:
+        return int(x[0])
+    else:
+        return int(x)</code></pre>
+</details>
+</dd>
+<dt id="utils.dicom_utils.get_freqhist_bins"><code class="name flex">
+<span>def <span class="ident">get_freqhist_bins</span></span>(<span>dcm_img, n_bins=100)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Create equally distribute bins within DCM image intensity range</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_freqhist_bins(dcm_img, n_bins = 100):
+    &#34;&#34;&#34; Create equally distribute bins within DCM image intensity range &#34;&#34;&#34;
+    imsd = np.sort(dcm_img.reshape(-1))
+    t = np.concatenate([[0.001],
+                       np.arange(n_bins).astype(np.float64)/n_bins+(1/2/n_bins),
+                       [0.999]])
+    t = (len(imsd)*t).astype(np.int64)
+    return np.unique(imsd[t])</code></pre>
+</details>
+</dd>
+<dt id="utils.dicom_utils.get_pixel_array"><code class="name flex">
+<span>def <span class="ident">get_pixel_array</span></span>(<span>dcm, path=None)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Extract pixel array from DCM file</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_pixel_array(dcm, path=None):
+    &#34;&#34;&#34; Extract pixel array from DCM file &#34;&#34;&#34;
+    try:
+        return dcm.pixel_array.astype(np.float32)
+    except ValueError as e:
+        rows, columns = get_rows_columns(dcm)
+        if path is None:
+            print(&#34;DICOM pixel data could not be extracted due to: &#34;, e)
+        else:
+            print(f&#34;DICOM pixel data could not be extracted from {path} due to: &#34;, e)
+        return np.zeros((rows, columns), dtype=np.float32)</code></pre>
+</details>
+</dd>
+<dt id="utils.dicom_utils.get_rows_columns"><code class="name flex">
+<span>def <span class="ident">get_rows_columns</span></span>(<span>data)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Get rows and columns info from DICOM</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_rows_columns(data):
+    &#34;&#34;&#34; Get rows and columns info from DICOM &#34;&#34;&#34;
+    dicom_fields = [data[(&#39;0028&#39;, &#39;0010&#39;)].value, #Rows
+                    data[(&#39;0028&#39;, &#39;0011&#39;)].value] #Columns
+    return [get_first_of_dicom_field_as_int(x) for x in dicom_fields]</code></pre>
+</details>
+</dd>
+<dt id="utils.dicom_utils.get_subgroups"><code class="name flex">
+<span>def <span class="ident">get_subgroups</span></span>(<span>data)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Get value of subgroup depending on Bits Store and Pixel Representation values
+There are 3 groups, but we will create a fourth for Others:
+1) Bits Stored 16bits
+2) Bits Stored 12bits - Pixel Representation 0
+3) Bits Stored 12bits - Pixel Representation 1
+-1) Others (in case new data appears)</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_subgroups(data):
+    &#34;&#34;&#34; Get value of subgroup depending on Bits Store and Pixel Representation values
+    There are 3 groups, but we will create a fourth for Others:
+    1) Bits Stored 16bits
+    2) Bits Stored 12bits - Pixel Representation 0
+    3) Bits Stored 12bits - Pixel Representation 1
+    -1) Others (in case new data appears)
+    &#34;&#34;&#34;
+    dicom_fields = [data[(&#39;0028&#39;, &#39;0101&#39;)].value, #Bits Stored
+                    data[(&#39;0028&#39;, &#39;0103&#39;)].value] #Pixel Representation
+    dicom_values = [get_first_of_dicom_field_as_int(x) for x in dicom_fields]
+    if dicom_values[0] == 16:
+        return 1
+    elif dicom_values[0] == 12 and dicom_values[1] == 0:
+        return 2
+    elif dicom_values[0] == 12 and dicom_values[1] == 1:
+        return 3
+    else:
+        return -1</code></pre>
+</details>
+</dd>
+<dt id="utils.dicom_utils.get_windowing"><code class="name flex">
+<span>def <span class="ident">get_windowing</span></span>(<span>data)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Get DICOM parameters for windowing (window center, window width, intercept and slope)</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_windowing(data):
+    &#34;&#34;&#34; Get DICOM parameters for windowing (window center, window width, intercept and slope) &#34;&#34;&#34;
+    dicom_fields = [data[(&#39;0028&#39;,&#39;1050&#39;)].value, #window center
+                    data[(&#39;0028&#39;,&#39;1051&#39;)].value, #window width
+                    data[(&#39;0028&#39;,&#39;1052&#39;)].value, #intercept
+                    data[(&#39;0028&#39;,&#39;1053&#39;)].value] #slope
+    return [get_first_of_dicom_field_as_int(x) for x in dicom_fields]</code></pre>
+</details>
+</dd>
+<dt id="utils.dicom_utils.interpolate_img"><code class="name flex">
+<span>def <span class="ident">interpolate_img</span></span>(<span>dcm_img, bins=None, n_bins=100)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Interpolate DCM image to equally distribute intensity on the image</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def interpolate_img(dcm_img, bins = None, n_bins = 100):
+    &#34;&#34;&#34; Interpolate DCM image to equally distribute intensity on the image &#34;&#34;&#34;
+    # Equal distribution of intensity
+    if bins is None: 
+        bins = get_freqhist_bins(dcm_img, n_bins)
+    
+    return np.clip(interpolate.interp1d(bins, np.linspace(0., 1., len(bins)), fill_value=&#34;extrapolate&#34;)(dcm_img.flatten()).reshape(dcm_img.shape), 0., 1.)</code></pre>
+</details>
+</dd>
+<dt id="utils.dicom_utils.normalize_img"><code class="name flex">
+<span>def <span class="ident">normalize_img</span></span>(<span>dcm_img, mean=None, std=None, use_min_max=False)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Normalize image using min/max or z-score</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def normalize_img(dcm_img, mean = None, std = None, use_min_max = False):
+    &#34;&#34;&#34; Normalize image using min/max or z-score &#34;&#34;&#34;
+    # Normalization to zero mean and unit variance
+    if use_min_max:
+        img_max = dcm_img.max()
+        img_min = dcm_img.min()
+        if (img_max - img_min) != 0:
+            return (dcm_img - img_min) / (img_max - img_min)
+        else:
+            return dcm_img
+    else:
+        if mean is None: 
+            mean = dcm_img.mean()
+
+        if std is None: 
+            std = dcm_img.std()
+        return (dcm_img - mean) / std</code></pre>
+</details>
+</dd>
+<dt id="utils.dicom_utils.pad_square"><code class="name flex">
+<span>def <span class="ident">pad_square</span></span>(<span>x)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Pad image to meet square dimensions</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def pad_square(x):
+    &#34;&#34;&#34; Pad image to meet square dimensions &#34;&#34;&#34;
+    r,c = x.shape
+    d = (c-r)/2
+    pl,pr,pt,pb = 0,0,0,0
+    if d&gt;0: pt,pd = int(np.floor( d)),int(np.ceil( d))        
+    else:   pl,pr = int(np.floor(-d)),int(np.ceil(-d))
+    return np.pad(x, ((pt,pb),(pl,pr)), &#39;minimum&#39;)</code></pre>
+</details>
+</dd>
+<dt id="utils.dicom_utils.preprocess_dicom"><code class="name flex">
+<span>def <span class="ident">preprocess_dicom</span></span>(<span>path, x, y, bins=None, n_bins=100, mean=None, std=None, use_min_max=False, remove_empty=False, windows_type='brain', verbose=True)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Process (open, interpolate, normalize and resize) the DICOM file on the specified path</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def preprocess_dicom(path, x, y, bins = None, n_bins = 100, mean = None, std = None, use_min_max = False, remove_empty = False, windows_type = &#39;brain&#39;, verbose = True): 
+    &#34;&#34;&#34; Process (open, interpolate, normalize and resize) the DICOM file on the specified path &#34;&#34;&#34;
+    area = 0
+    dimensions = None
+    if not type(windows_type) is list:
+        windows_type = [windows_type,]
+        
+    final_dcm_img = np.empty((x,y,len(windows_type)))
+    for i,window_type in enumerate(windows_type):
+        dcm_img, group = get_dcm_img(path, window_type, verbose)
+
+        # Crop image to show only the brain part (only posible if the image is not empyt)
+        try:
+            isEmpty = False
+            dcm_img, area, dimensions = crop_brain(dcm_img, area = area, dimensions= dimensions)
+        except ValueError as e:
+            isEmpty = True
+            area = 0
+            if verbose:
+                print(&#34;DICOM image from &#34;, path, &#34; is not cropped because gave the following error: &#34;, e)
+        finally:
+            if isEmpty and remove_empty:
+                return None, None
+            else:
+                # If distributed by groups (different than -1) then use only the values of the group
+                if group != -1:
+                    if type(bins) == dict:
+                        bins = bins[group]
+                    if type(mean) == dict:
+                        mean = mean[group]
+                    if type(std) == dict:
+                        std = std[group]
+
+                if not isEmpty:
+                    try:
+                        dcm_img = interpolate_img(dcm_img, bins, n_bins)
+                    except ValueError as e:
+                        if verbose:
+                            print(&#34;DICOM image from &#34;, path, &#34; is not bin interpolated because gave the following error: &#34;, e)
+                dcm_img = normalize_img(dcm_img, mean, std, use_min_max)
+
+                # Rescale to the defined image size
+                if dcm_img.shape != (x, y):
+                    dcm_img = cv2.resize(dcm_img, (x, y), interpolation=cv2.INTER_NEAREST)
+            final_dcm_img[:,:,i] = dcm_img
+    return final_dcm_img, area</code></pre>
+</details>
+</dd>
+<dt id="utils.dicom_utils.sample_bins_mean_std"><code class="name flex">
+<span>def <span class="ident">sample_bins_mean_std</span></span>(<span>load_dir, samples_per_group=5, max_trys=1000, n_bins=100)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Extract the bins intensity mean, image mean and image standard deviation of each group</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sample_bins_mean_std(load_dir, samples_per_group = 5, max_trys = 1000, n_bins = 100):
+    &#34;&#34;&#34; Extract the bins intensity mean, image mean and image standard deviation of each group &#34;&#34;&#34;
+    bins_mean = {}
+    mean = {}
+    std = {}
+    groups_paths = sample_groups(load_dir, samples_per_group = samples_per_group, max_trys = max_trys)
+    for group in [1,2,3]:    
+        # Do not proceed if there is no images
+        if len(groups_paths[group]) == 0:
+            bins_mean[group] = []
+            mean[group] = np.nan
+            std[group] = np.nan
+            continue
+                    
+        filenames = groups_paths[group]
+    
+        dcm_img_array = []
+        for filename in tqdm_notebook(filenames, desc = &#39;Calc bins&#39;):
+            dcm_img, _ = get_dcm_img(filename)
+            dcm_img_array.append(dcm_img)
+            #bins_array.append(get_freqhist_bins(dcm_img, n_bins))
+
+        #bins_mean[group] = np.array(bins_array).mean(axis = 0)
+        bins_mean[group] = get_freqhist_bins(np.array(dcm_img_array).reshape(-1), n_bins)
+    
+        dcm_img_array = []
+        for filename in tqdm_notebook(filenames, desc = &#39;Calc mean &amp; std&#39;):
+            dcm_img, _ = get_dcm_img(filename)
+            dcm_img_array.append(interpolate_img(dcm_img, bins_mean[group], n_bins))
+    
+        mean[group] = np.array(dcm_img_array).flatten().mean()
+        std[group] = np.array(dcm_img_array).flatten().std()
+    
+    return bins_mean, mean, std</code></pre>
+</details>
+</dd>
+<dt id="utils.dicom_utils.sample_groups"><code class="name flex">
+<span>def <span class="ident">sample_groups</span></span>(<span>load_dir, samples_per_group=5, max_trys=1000)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Extract equally distributed number of samples of DICOM files paths</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sample_groups(load_dir, samples_per_group = 5, max_trys = 1000):
+    &#34;&#34;&#34; Extract equally distributed number of samples of DICOM files paths &#34;&#34;&#34;
+    filenames = os.listdir(load_dir)
+    filenames_groups = {1 : [], 2 : [], 3 : []}
+    for group in tqdm_notebook([1,2,3], desc = &#39;Group sample&#39;):
+        count_samples = 0
+        for _ in tqdm_notebook(range(max_trys), desc = &#39;Try&#39;):
+            filename = np.random.choice(filenames, size = 1, replace = False)[0]
+            sample_group = get_subgroups(pydicom.dcmread(load_dir + filename))
+            if sample_group == group:
+                filenames_groups[group].append(load_dir + filename)
+                count_samples += 1
+                if count_samples &gt;= samples_per_group:
+                    break
+    return filenames_groups</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="utils" href="index.html">utils</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="utils.dicom_utils.correct_dcm" href="#utils.dicom_utils.correct_dcm">correct_dcm</a></code></li>
+<li><code><a title="utils.dicom_utils.crop_brain" href="#utils.dicom_utils.crop_brain">crop_brain</a></code></li>
+<li><code><a title="utils.dicom_utils.get_dcm_img" href="#utils.dicom_utils.get_dcm_img">get_dcm_img</a></code></li>
+<li><code><a title="utils.dicom_utils.get_first_of_dicom_field_as_int" href="#utils.dicom_utils.get_first_of_dicom_field_as_int">get_first_of_dicom_field_as_int</a></code></li>
+<li><code><a title="utils.dicom_utils.get_freqhist_bins" href="#utils.dicom_utils.get_freqhist_bins">get_freqhist_bins</a></code></li>
+<li><code><a title="utils.dicom_utils.get_pixel_array" href="#utils.dicom_utils.get_pixel_array">get_pixel_array</a></code></li>
+<li><code><a title="utils.dicom_utils.get_rows_columns" href="#utils.dicom_utils.get_rows_columns">get_rows_columns</a></code></li>
+<li><code><a title="utils.dicom_utils.get_subgroups" href="#utils.dicom_utils.get_subgroups">get_subgroups</a></code></li>
+<li><code><a title="utils.dicom_utils.get_windowing" href="#utils.dicom_utils.get_windowing">get_windowing</a></code></li>
+<li><code><a title="utils.dicom_utils.interpolate_img" href="#utils.dicom_utils.interpolate_img">interpolate_img</a></code></li>
+<li><code><a title="utils.dicom_utils.normalize_img" href="#utils.dicom_utils.normalize_img">normalize_img</a></code></li>
+<li><code><a title="utils.dicom_utils.pad_square" href="#utils.dicom_utils.pad_square">pad_square</a></code></li>
+<li><code><a title="utils.dicom_utils.preprocess_dicom" href="#utils.dicom_utils.preprocess_dicom">preprocess_dicom</a></code></li>
+<li><code><a title="utils.dicom_utils.sample_bins_mean_std" href="#utils.dicom_utils.sample_bins_mean_std">sample_bins_mean_std</a></code></li>
+<li><code><a title="utils.dicom_utils.sample_groups" href="#utils.dicom_utils.sample_groups">sample_groups</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.7.2</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

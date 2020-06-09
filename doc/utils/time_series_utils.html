@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.7.2" />
+<title>utils.time_series_utils API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{font-weight:bold}#index h4 + ul{margin-bottom:.6em}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>utils.time_series_utils</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">import numpy as np
+import pandas as pd
+from tqdm import tqdm_notebook
+import matplotlib.pyplot as plt
+
+from .plot_utils import plot_scatter
+
+
+def laggingData(X, data, lag, suffix=&#39;Prev_&#39;, data_cols=None, exclude_cols=[&#39;datetime&#39;], output_data=False):
+    &#34;&#34;&#34; Generate new X containing lagged data &#34;&#34;&#34;
+    if data_cols is None:
+        data_cols = [col for col in data.columns if col not in exclude_cols]
+
+    # Set temporal Y which will be added to shifted X
+    temp_data = data[data_cols].copy()
+    temp_data.columns = [suffix + col for col in data_cols]
+    cols_created = list(temp_data.columns)
+
+    # Shift X to match the temporal Y and remove NaNs from end of X
+    new_X = pd.concat([X.shift(-lag), temp_data], axis=1, sort=False)
+    new_X = new_X.iloc[0: -lag].reset_index(drop=True)
+
+    # Create the new Y which does not contain the info added to X
+    if output_data:
+        new_data = data.iloc[lag:].reset_index(drop=True)
+
+        return new_X, new_data, cols_created
+    else:
+        return new_X, cols_created
+
+
+def dataToSequential(data, seq_len, out_np=True, exclude_cols=[&#39;datetime&#39;], dtype=np.float32):
+    &#34;&#34;&#34; Transform data to sequential data &#34;&#34;&#34;
+    new_data = data.copy()
+    data_cols = [col for col in data.columns if col not in exclude_cols]
+    for i in tqdm_notebook(range(1, seq_len + 1)):
+        columns = [&#39;Prev_&#39; + str(i) + &#39;_&#39; + col for col in data_cols]
+        new_data[columns] = data[data_cols].shift(i).reset_index(drop=True)
+
+    new_data = new_data.iloc[seq_len:].reset_index(drop=True)
+
+    if out_np:
+        return pdToNpSequential(new_data, seq_len, dtype)
+
+    return new_data
+
+
+def pdToNpSequential(data, seq_len, dtype=np.float32):
+    &#34;&#34;&#34; Transform from pandas 2D (rows, cols * sequence_length) to numpy 3D (rows, sequence_length, cols)&#34;&#34;&#34;
+    return np.array(data, dtype=dtype).reshape(data.shape[0], seq_len + 1, data.shape[1] // (seq_len + 1))
+
+
+# Input data for DNN should be numpy 3D data and it must no contain &#39;datetime&#39; column
+def prepareInputData(data, seq_len, keep_datetime, dtype=np.float32):
+    &#34;&#34;&#34; Transform data to be used as input on DNN &#34;&#34;&#34;
+    if keep_datetime:
+        return pdToNpSequential(data.drop(&#39;datetime&#39;, axis=1), seq_len, dtype=dtype)
+
+    return pdToNpSequential(data, seq_len, dtype=dtype)
+
+
+def medial_average(x):
+    &#34;&#34;&#34; Calculate medial average which is average excluding the maximum and minimum value  &#34;&#34;&#34;
+    return x.loc[x.notnull()].sort_values().iloc[1:-1].mean()
+
+
+def seasonal_mean(x, freq, window_length=24, agg_type=&#39;mean&#39;):
+    &#34;&#34;&#34; Calculate seasonal mean or seasonal median with the provided frequency and window length &#34;&#34;&#34;
+    temp_df = pd.DataFrame(x, index=x.index, columns=[&#39;value&#39;])
+    if freq == 1:
+        tile_arr = np.arange(window_length)
+    else:
+        tile_arr = np.repeat(np.arange(freq), window_length)
+
+    # Set same values for the points which should be aggregated
+    temp_df[&#39;window_point&#39;] = np.tile(tile_arr, len(x.index) // (window_length * freq) + 1)[:len(x.index)]
+    if agg_type == &#39;mean&#39;:
+        agg_func = np.mean
+    elif agg_type == &#39;median&#39;:
+        agg_func = np.median
+    else:
+        raise NotImplementedError(&#34;agg_type different than mean or median have not been implemented&#34;)
+    return temp_df.groupby([&#39;window_point&#39;])[&#39;value&#39;].transform(agg_func)
+
+
+def extract_seasonal_component(df, columns_to_treat, daily_windows=[], agg_type=&#39;mean&#39;, win_type=&#39;boxcar&#39;,
+                               each_row_is=&#39;hour&#39;, plot=False):
+    &#34;&#34;&#34; Calculate Seasonal component  (additive and multiplicative) and trend for the given columns and for each daily window &#34;&#34;&#34;
+    if each_row_is != &#39;hour&#39;:
+        raise NotImplementedError
+
+    cols_created = []
+    temp_df = df.copy()
+    for col in columns_to_treat:
+
+        # Calculate number of non-null values on each day for the current column
+        daily_nonull_window = df[col].iloc[0:24].notnull().sum()
+
+        temp_df[&#39;adjusted_add_&#39; + col] = temp_df[col].copy()
+        temp_df[&#39;adjusted_mult_&#39; + col] = temp_df[col].copy()
+        for days in sorted(daily_windows, reverse=True):
+
+            # As the window only takes non-null values, we have to set the window to only take the exact number of days
+            rolling_window = daily_nonull_window * days
+            if win_type == &#39;exponential&#39;:
+                rolling_window = (rolling_window, days / 2)
+            else:
+                if agg_type == &#39;median&#39;:
+                    win_type = None
+
+            # Trend is the result of the moving average over the rolling window
+            temp_df.loc[temp_df[&#39;adjusted_add_&#39; + col].notnull(), str(days) + &#39;_trend_&#39; + col] = temp_df.loc[
+                temp_df[&#39;adjusted_add_&#39; + col].notnull(), &#39;adjusted_add_&#39; + col].rolling(window=rolling_window,
+                                                                                         win_type=win_type).agg(
+                agg_type)
+
+            # Seasonal component is the result of the seasonal_mean on the time series substracted (or divided) by trend
+            temp_df[str(days) + &#39;_seasonal_comp_add_&#39; + col] = seasonal_mean(
+                temp_df[&#39;adjusted_add_&#39; + col] - temp_df[str(days) + &#39;_trend_&#39; + col], days, agg_type=agg_type)
+            temp_df[str(days) + &#39;_seasonal_comp_mult_&#39; + col] = seasonal_mean(
+                temp_df[&#39;adjusted_mult_&#39; + col] / temp_df[str(days) + &#39;_trend_&#39; + col], days, agg_type=agg_type)
+
+            # Adjusted serie is achieve substracting (or dividing) the data serie by the seasonal component
+            temp_df[&#39;adjusted_add_&#39; + col] = temp_df[&#39;adjusted_add_&#39; + col] - temp_df[
+                str(days) + &#39;_seasonal_comp_add_&#39; + col]
+            temp_df[&#39;adjusted_mult_&#39; + col] = temp_df[&#39;adjusted_mult_&#39; + col] / temp_df[
+                str(days) + &#39;_seasonal_comp_mult_&#39; + col]
+
+            cols_created.append(str(days) + &#39;_trend_&#39; + col)
+            cols_created.append(str(days) + &#39;_seasonal_comp_add_&#39; + col)
+            cols_created.append(str(days) + &#39;_seasonal_comp_mult_&#39; + col)
+
+        cols_created.append(&#39;adjusted_add_&#39; + col)
+        cols_created.append(&#39;adjusted_mult_&#39; + col)
+
+    if plot:
+        nrow = 0
+        # Resize for better visualization of subplots
+        subplot_rows = (len(daily_windows) + 1) * len(columns_to_treat)
+        subplot_cols = 3
+        plt.rcParams[&#39;figure.figsize&#39;] = [subplot_cols * 5, subplot_rows * 4]
+
+        fig, axes = plt.subplots(subplot_rows, subplot_cols, sharex=False, sharey=False)
+
+        for col in columns_to_treat:
+            plot_scatter(temp_df, &#39;datetime&#39;, col, axes=axes[nrow, 0])
+            plot_scatter(temp_df, &#39;datetime&#39;, &#39;adjusted_add_&#39; + col, axes=axes[nrow, 1])
+            plot_scatter(temp_df, &#39;datetime&#39;, &#39;adjusted_mult_&#39; + col, axes=axes[nrow, 2])
+            nrow += 1
+            for days in sorted(daily_windows, reverse=True):
+                if days == 1:
+                    freq = 1
+                else:
+                    freq = 24
+                plot_scatter(temp_df, &#39;datetime&#39;, str(days) + &#39;_trend_&#39; + col, axes=axes[nrow, 0])
+                plot_scatter(temp_df.iloc[:days * 24:freq], &#39;datetime&#39;, str(days) + &#39;_seasonal_comp_add_&#39; + col,
+                             axes=axes[nrow, 1])
+                plot_scatter(temp_df.iloc[:days * 24:freq], &#39;datetime&#39;, str(days) + &#39;_seasonal_comp_mult_&#39; + col,
+                             axes=axes[nrow, 2])
+                nrow += 1
+
+        # Resize to original settings
+        plt.rcParams[&#39;figure.figsize&#39;] = [10, 6]
+
+    return temp_df[cols_created], cols_created</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="utils.time_series_utils.dataToSequential"><code class="name flex">
+<span>def <span class="ident">dataToSequential</span></span>(<span>data, seq_len, out_np=True, exclude_cols=['datetime'], dtype=numpy.float32)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Transform data to sequential data</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def dataToSequential(data, seq_len, out_np=True, exclude_cols=[&#39;datetime&#39;], dtype=np.float32):
+    &#34;&#34;&#34; Transform data to sequential data &#34;&#34;&#34;
+    new_data = data.copy()
+    data_cols = [col for col in data.columns if col not in exclude_cols]
+    for i in tqdm_notebook(range(1, seq_len + 1)):
+        columns = [&#39;Prev_&#39; + str(i) + &#39;_&#39; + col for col in data_cols]
+        new_data[columns] = data[data_cols].shift(i).reset_index(drop=True)
+
+    new_data = new_data.iloc[seq_len:].reset_index(drop=True)
+
+    if out_np:
+        return pdToNpSequential(new_data, seq_len, dtype)
+
+    return new_data</code></pre>
+</details>
+</dd>
+<dt id="utils.time_series_utils.extract_seasonal_component"><code class="name flex">
+<span>def <span class="ident">extract_seasonal_component</span></span>(<span>df, columns_to_treat, daily_windows=[], agg_type='mean', win_type='boxcar', each_row_is='hour', plot=False)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Calculate Seasonal component
+(additive and multiplicative) and trend for the given columns and for each daily window</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def extract_seasonal_component(df, columns_to_treat, daily_windows=[], agg_type=&#39;mean&#39;, win_type=&#39;boxcar&#39;,
+                               each_row_is=&#39;hour&#39;, plot=False):
+    &#34;&#34;&#34; Calculate Seasonal component  (additive and multiplicative) and trend for the given columns and for each daily window &#34;&#34;&#34;
+    if each_row_is != &#39;hour&#39;:
+        raise NotImplementedError
+
+    cols_created = []
+    temp_df = df.copy()
+    for col in columns_to_treat:
+
+        # Calculate number of non-null values on each day for the current column
+        daily_nonull_window = df[col].iloc[0:24].notnull().sum()
+
+        temp_df[&#39;adjusted_add_&#39; + col] = temp_df[col].copy()
+        temp_df[&#39;adjusted_mult_&#39; + col] = temp_df[col].copy()
+        for days in sorted(daily_windows, reverse=True):
+
+            # As the window only takes non-null values, we have to set the window to only take the exact number of days
+            rolling_window = daily_nonull_window * days
+            if win_type == &#39;exponential&#39;:
+                rolling_window = (rolling_window, days / 2)
+            else:
+                if agg_type == &#39;median&#39;:
+                    win_type = None
+
+            # Trend is the result of the moving average over the rolling window
+            temp_df.loc[temp_df[&#39;adjusted_add_&#39; + col].notnull(), str(days) + &#39;_trend_&#39; + col] = temp_df.loc[
+                temp_df[&#39;adjusted_add_&#39; + col].notnull(), &#39;adjusted_add_&#39; + col].rolling(window=rolling_window,
+                                                                                         win_type=win_type).agg(
+                agg_type)
+
+            # Seasonal component is the result of the seasonal_mean on the time series substracted (or divided) by trend
+            temp_df[str(days) + &#39;_seasonal_comp_add_&#39; + col] = seasonal_mean(
+                temp_df[&#39;adjusted_add_&#39; + col] - temp_df[str(days) + &#39;_trend_&#39; + col], days, agg_type=agg_type)
+            temp_df[str(days) + &#39;_seasonal_comp_mult_&#39; + col] = seasonal_mean(
+                temp_df[&#39;adjusted_mult_&#39; + col] / temp_df[str(days) + &#39;_trend_&#39; + col], days, agg_type=agg_type)
+
+            # Adjusted serie is achieve substracting (or dividing) the data serie by the seasonal component
+            temp_df[&#39;adjusted_add_&#39; + col] = temp_df[&#39;adjusted_add_&#39; + col] - temp_df[
+                str(days) + &#39;_seasonal_comp_add_&#39; + col]
+            temp_df[&#39;adjusted_mult_&#39; + col] = temp_df[&#39;adjusted_mult_&#39; + col] / temp_df[
+                str(days) + &#39;_seasonal_comp_mult_&#39; + col]
+
+            cols_created.append(str(days) + &#39;_trend_&#39; + col)
+            cols_created.append(str(days) + &#39;_seasonal_comp_add_&#39; + col)
+            cols_created.append(str(days) + &#39;_seasonal_comp_mult_&#39; + col)
+
+        cols_created.append(&#39;adjusted_add_&#39; + col)
+        cols_created.append(&#39;adjusted_mult_&#39; + col)
+
+    if plot:
+        nrow = 0
+        # Resize for better visualization of subplots
+        subplot_rows = (len(daily_windows) + 1) * len(columns_to_treat)
+        subplot_cols = 3
+        plt.rcParams[&#39;figure.figsize&#39;] = [subplot_cols * 5, subplot_rows * 4]
+
+        fig, axes = plt.subplots(subplot_rows, subplot_cols, sharex=False, sharey=False)
+
+        for col in columns_to_treat:
+            plot_scatter(temp_df, &#39;datetime&#39;, col, axes=axes[nrow, 0])
+            plot_scatter(temp_df, &#39;datetime&#39;, &#39;adjusted_add_&#39; + col, axes=axes[nrow, 1])
+            plot_scatter(temp_df, &#39;datetime&#39;, &#39;adjusted_mult_&#39; + col, axes=axes[nrow, 2])
+            nrow += 1
+            for days in sorted(daily_windows, reverse=True):
+                if days == 1:
+                    freq = 1
+                else:
+                    freq = 24
+                plot_scatter(temp_df, &#39;datetime&#39;, str(days) + &#39;_trend_&#39; + col, axes=axes[nrow, 0])
+                plot_scatter(temp_df.iloc[:days * 24:freq], &#39;datetime&#39;, str(days) + &#39;_seasonal_comp_add_&#39; + col,
+                             axes=axes[nrow, 1])
+                plot_scatter(temp_df.iloc[:days * 24:freq], &#39;datetime&#39;, str(days) + &#39;_seasonal_comp_mult_&#39; + col,
+                             axes=axes[nrow, 2])
+                nrow += 1
+
+        # Resize to original settings
+        plt.rcParams[&#39;figure.figsize&#39;] = [10, 6]
+
+    return temp_df[cols_created], cols_created</code></pre>
+</details>
+</dd>
+<dt id="utils.time_series_utils.laggingData"><code class="name flex">
+<span>def <span class="ident">laggingData</span></span>(<span>X, data, lag, suffix='Prev_', data_cols=None, exclude_cols=['datetime'], output_data=False)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Generate new X containing lagged data</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def laggingData(X, data, lag, suffix=&#39;Prev_&#39;, data_cols=None, exclude_cols=[&#39;datetime&#39;], output_data=False):
+    &#34;&#34;&#34; Generate new X containing lagged data &#34;&#34;&#34;
+    if data_cols is None:
+        data_cols = [col for col in data.columns if col not in exclude_cols]
+
+    # Set temporal Y which will be added to shifted X
+    temp_data = data[data_cols].copy()
+    temp_data.columns = [suffix + col for col in data_cols]
+    cols_created = list(temp_data.columns)
+
+    # Shift X to match the temporal Y and remove NaNs from end of X
+    new_X = pd.concat([X.shift(-lag), temp_data], axis=1, sort=False)
+    new_X = new_X.iloc[0: -lag].reset_index(drop=True)
+
+    # Create the new Y which does not contain the info added to X
+    if output_data:
+        new_data = data.iloc[lag:].reset_index(drop=True)
+
+        return new_X, new_data, cols_created
+    else:
+        return new_X, cols_created</code></pre>
+</details>
+</dd>
+<dt id="utils.time_series_utils.medial_average"><code class="name flex">
+<span>def <span class="ident">medial_average</span></span>(<span>x)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Calculate medial average which is average excluding the maximum and minimum value</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def medial_average(x):
+    &#34;&#34;&#34; Calculate medial average which is average excluding the maximum and minimum value  &#34;&#34;&#34;
+    return x.loc[x.notnull()].sort_values().iloc[1:-1].mean()</code></pre>
+</details>
+</dd>
+<dt id="utils.time_series_utils.pdToNpSequential"><code class="name flex">
+<span>def <span class="ident">pdToNpSequential</span></span>(<span>data, seq_len, dtype=numpy.float32)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Transform from pandas 2D (rows, cols * sequence_length) to numpy 3D (rows, sequence_length, cols)</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def pdToNpSequential(data, seq_len, dtype=np.float32):
+    &#34;&#34;&#34; Transform from pandas 2D (rows, cols * sequence_length) to numpy 3D (rows, sequence_length, cols)&#34;&#34;&#34;
+    return np.array(data, dtype=dtype).reshape(data.shape[0], seq_len + 1, data.shape[1] // (seq_len + 1))</code></pre>
+</details>
+</dd>
+<dt id="utils.time_series_utils.prepareInputData"><code class="name flex">
+<span>def <span class="ident">prepareInputData</span></span>(<span>data, seq_len, keep_datetime, dtype=numpy.float32)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Transform data to be used as input on DNN</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def prepareInputData(data, seq_len, keep_datetime, dtype=np.float32):
+    &#34;&#34;&#34; Transform data to be used as input on DNN &#34;&#34;&#34;
+    if keep_datetime:
+        return pdToNpSequential(data.drop(&#39;datetime&#39;, axis=1), seq_len, dtype=dtype)
+
+    return pdToNpSequential(data, seq_len, dtype=dtype)</code></pre>
+</details>
+</dd>
+<dt id="utils.time_series_utils.seasonal_mean"><code class="name flex">
+<span>def <span class="ident">seasonal_mean</span></span>(<span>x, freq, window_length=24, agg_type='mean')</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Calculate seasonal mean or seasonal median with the provided frequency and window length</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def seasonal_mean(x, freq, window_length=24, agg_type=&#39;mean&#39;):
+    &#34;&#34;&#34; Calculate seasonal mean or seasonal median with the provided frequency and window length &#34;&#34;&#34;
+    temp_df = pd.DataFrame(x, index=x.index, columns=[&#39;value&#39;])
+    if freq == 1:
+        tile_arr = np.arange(window_length)
+    else:
+        tile_arr = np.repeat(np.arange(freq), window_length)
+
+    # Set same values for the points which should be aggregated
+    temp_df[&#39;window_point&#39;] = np.tile(tile_arr, len(x.index) // (window_length * freq) + 1)[:len(x.index)]
+    if agg_type == &#39;mean&#39;:
+        agg_func = np.mean
+    elif agg_type == &#39;median&#39;:
+        agg_func = np.median
+    else:
+        raise NotImplementedError(&#34;agg_type different than mean or median have not been implemented&#34;)
+    return temp_df.groupby([&#39;window_point&#39;])[&#39;value&#39;].transform(agg_func)</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="utils" href="index.html">utils</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="utils.time_series_utils.dataToSequential" href="#utils.time_series_utils.dataToSequential">dataToSequential</a></code></li>
+<li><code><a title="utils.time_series_utils.extract_seasonal_component" href="#utils.time_series_utils.extract_seasonal_component">extract_seasonal_component</a></code></li>
+<li><code><a title="utils.time_series_utils.laggingData" href="#utils.time_series_utils.laggingData">laggingData</a></code></li>
+<li><code><a title="utils.time_series_utils.medial_average" href="#utils.time_series_utils.medial_average">medial_average</a></code></li>
+<li><code><a title="utils.time_series_utils.pdToNpSequential" href="#utils.time_series_utils.pdToNpSequential">pdToNpSequential</a></code></li>
+<li><code><a title="utils.time_series_utils.prepareInputData" href="#utils.time_series_utils.prepareInputData">prepareInputData</a></code></li>
+<li><code><a title="utils.time_series_utils.seasonal_mean" href="#utils.time_series_utils.seasonal_mean">seasonal_mean</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.7.2</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

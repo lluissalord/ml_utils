@@ -1,0 +1,2094 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.7.2" />
+<title>utils.dnn_helper API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{font-weight:bold}#index h4 + ul{margin-bottom:.6em}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>utils.dnn_helper</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">import pickle
+from matplotlib import pyplot as plt
+import numpy as np
+import os
+import shutil
+import warnings
+
+from sklearn.model_selection import train_test_split
+
+from tensorflow.keras.callbacks import Callback
+
+from plot_utils import plot_roc_auc
+
+
+def KFolds_flow_from_dataframe(dataframe, generators, kfolds=10, directory=None, x_col=&#39;filename&#39;, y_col=&#39;class&#39;,
+                               weight_col=None, target_size=(256, 256), color_mode=&#39;rgb&#39;, classes=None,
+                               class_mode=&#39;categorical&#39;, batch_size=32, shuffle=True, seed=None, save_to_dir=None,
+                               save_prefix=&#39;&#39;, save_format=&#39;png&#39;, interpolation=&#39;nearest&#39;, validate_filenames=True):
+    &#34;&#34;&#34; Generate stratified kFolds generators for training and validation sets &#34;&#34;&#34;
+    train_gens = []
+    valid_gens = []
+    Kfolds_gens = []
+
+    stratify_df = dataframe[y_col] if shuffle else None
+    remain_df, kfold_df = train_test_split(dataframe, test_size=1 / (kfolds), stratify=stratify_df,
+                                           shuffle=shuffle, random_state=seed)
+
+    train_gens.append(
+        generators[0].flow_from_dataframe(kfold_df, directory, x_col, y_col, weight_col, target_size, color_mode,
+                                          classes, class_mode, batch_size, shuffle, seed, save_to_dir, save_prefix,
+                                          save_format, None, interpolation, validate_filenames)
+    )
+
+    i = 1
+    while i &lt; kfolds - 1:
+        try:
+            stratify_df = remain_df[y_col] if shuffle else None
+            remain_df, kfold_df = train_test_split(remain_df, test_size=1 / (kfolds - i), stratify=stratify_df,
+                                                   shuffle=shuffle, random_state=seed)
+        except ValueError as e:
+            print(f&#34;Stratify is not posible at kfold {i} due to: {e}&#34;)
+            remain_df, kfold_df = train_test_split(remain_df, test_size=1 / (kfolds - i), shuffle=shuffle, random_state=seed)
+
+        train_gens.append(
+            generators[0].flow_from_dataframe(kfold_df, directory, x_col, y_col, weight_col, target_size, color_mode,
+                                              classes, class_mode, batch_size, shuffle, seed, save_to_dir, save_prefix,
+                                              save_format, None, interpolation, validate_filenames)
+        )
+        valid_gens.append(
+            generators[1].flow_from_dataframe(kfold_df, directory, x_col, y_col, weight_col, target_size, color_mode,
+                                              classes, class_mode, batch_size, shuffle, seed, save_to_dir, save_prefix,
+                                              save_format, None, interpolation, validate_filenames)
+        )
+
+        i = i + 1
+    remain_gen = generators[1].flow_from_dataframe(remain_df, directory, x_col, y_col, weight_col, target_size,
+                                                   color_mode, classes, class_mode, batch_size, shuffle, seed,
+                                                   save_to_dir, save_prefix, save_format, None, interpolation,
+                                                   validate_filenames)
+    valid_gens.append(remain_gen)
+
+    i = 0
+    while i &lt; kfolds - 1:
+        Kfolds_gens.append((train_gens[i], valid_gens[i]))
+        i = i + 1
+
+    return Kfolds_gens
+
+
+def fold_training(KFolds_gens, k, model, optimizer=&#39;nadam&#39;, loss=&#39;binary_crossentropy&#39;, metrics=[&#39;accuracy&#39;],
+                  class_weight=None, models_dir=&#39;&#39;, callbacks_list=None, history_callback=None, plot_history=False):
+    &#34;&#34;&#34; Train using kFolds generators &#34;&#34;&#34;
+    model.compile(optimizer=optimizer,
+                  loss=loss,
+                  metrics=metrics)
+    train_gen = KFolds_gens[k][0]
+    valid_gen = KFolds_gens[k][1]
+    history = model.fit_generator(train_gen,
+                                  steps_per_epoch=train_gen.n // train_gen.batch_size,
+                                  epochs=1,
+                                  validation_data=valid_gen,
+                                  validation_steps=valid_gen.n // valid_gen.batch_size,
+                                  class_weight=class_weight,
+                                  # use_multiprocessing = True,
+                                  # workers = 2 * multiprocessing.cpu_count(),
+                                  callbacks=callbacks_list)
+
+    if history_callback is not None:
+        history = history_callback
+
+    save_train(model, history, models_dir)
+    if plot_history:
+        visualize_training(history.history)
+
+    return model, history
+
+
+def config_model_trainable(model, config, last_block=0, base_model=None):
+    &#34;&#34;&#34; Configure provided model to train the whole model, only top layer or from last_block layer to top (both included) &#34;&#34;&#34;
+    if not config in [&#39;full&#39;, &#39;partial&#39;, &#39;top&#39;]:
+        raise ValueError(
+            f&#34;config value is {config} parameter should be one of the following values: &#39;full&#39;,&#39;partial&#39; or &#39;top&#39;&#34;)
+
+    trainable_reference = config == &#39;full&#39;
+
+    # train only the top layers (which were randomly initialized)
+    # i.e. freeze all layers of the based model that is already pre-trained.
+    if config == &#39;top&#39;:
+        if base_model is None:
+            raise ValueError(&#34;config value is {config}, but base model have been not passed on function&#34;)
+
+        for layer in base_model.layers:
+            layer.trainable = False
+
+    # if config = &#39;partial&#39; train only the layers after last_block
+    # otherwise train all the layers
+    else:
+        if type(last_block) is int:
+            for layer in model.layers[:last_block]:
+                layer.trainable = trainable_reference
+            for layer in model.layers[last_block:]:
+                layer.trainable = True
+        else:
+            set_trainable = trainable_reference
+            for layer in model.layers:
+                if layer.name == last_block:
+                    set_trainable = True
+                if set_trainable:
+                    layer.trainable = True
+                else:
+                    layer.trainable = False
+
+
+def df_to_dataset(dataframe, target=&#39;target&#39;, shuffle=True, batch_size=32):
+    &#34;&#34;&#34; Utility method to create a tf.data dataset from a Pandas Dataframe &#34;&#34;&#34;
+
+    from tensorflow.data import Dataset
+
+    dataframe = dataframe.copy()
+    if target is not None:
+        labels = dataframe.pop(target)
+        ds = Dataset.from_tensor_slices((dict(dataframe), labels))
+    else:
+        ds = Dataset.from_tensor_slices((dict(dataframe)))
+    if shuffle:
+        ds = ds.shuffle(buffer_size=len(dataframe))
+    ds = ds.batch(batch_size)
+    return ds
+
+
+def dnn_plot_roc_auc(X, y_test, model, feature_selection, batch_size):
+    &#34;&#34;&#34; Plot ROC AUC diagram of provided model using X data and real y values &#34;&#34;&#34;
+    x_ds = df_to_dataset(X[feature_selection], target=None, shuffle=False, batch_size=batch_size)
+    plot_roc_auc(y_test, model.predict(x_ds))
+
+
+def dice_coef(y_true, y_pred, smooth=1):
+    &#34;&#34;&#34; Calculate DICE coeficient given y_true and y_pred &#34;&#34;&#34;
+
+    from tensorflow.keras import backend as K
+
+    y_true_f = K.flatten(y_true)
+    y_pred_f = K.flatten(y_pred)
+    intersection = K.sum(y_true_f * y_pred_f)
+    return (2.0 * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
+
+
+def dice_loss(y_true, y_pred):
+    &#34;&#34;&#34; Calculate DICE loss given y_true and y_pred &#34;&#34;&#34;
+
+    from tensorflow.keras import backend as K
+
+    smooth = 1.0
+    y_true_f = K.flatten(y_true)
+    y_pred_f = K.flatten(y_pred)
+    intersection = y_true_f * y_pred_f
+    score = (2.0 * K.sum(intersection) + smooth) / (
+            K.sum(y_true_f) + K.sum(y_pred_f) + smooth
+    )
+    return 1.0 - score
+
+
+def bce_dice_loss(y_true, y_pred, clip_loss = None):
+    &#34;&#34;&#34; Calculate binary cross entropy loss given y_true and y_pred &#34;&#34;&#34;
+
+    from tensorflow.keras.losses import binary_crossentropy
+    from tensorflow import clip_by_value
+
+    if clip_loss is None:
+        return binary_crossentropy(y_true, y_pred) + dice_loss(y_true, y_pred)
+    else:
+        return clip_by_value(binary_crossentropy(y_true, y_pred) + dice_loss(y_true, y_pred), -clip_loss, clip_loss)
+
+def make_pred(model, gen, steps = None):
+    &#34;&#34;&#34; Predict model output from provided generator &#34;&#34;&#34;
+    if steps is None:
+        steps = gen.n // gen.batch_size
+    y_pred = model.predict_generator(
+            gen,
+            steps=steps,
+            verbose=1,
+        )
+    
+    if type(y_pred[0]) is list:
+        y_pred = np.array([y.reshape(-1) for y in y_pred])
+    
+    return y_pred
+
+def save_train(model, history=None, models_dir=&#34;&#34;, json_path=&#34;&#34;, weights_path=&#34;&#34;, save_weights=True, history_path=&#34;&#34;, feature_selection=None, feature_selection_path=&#34;&#34;):
+    &#34;&#34;&#34; Save training model (JSON and weights separetly), history (if provided) and feature selection (if provided) &#34;&#34;&#34;
+   
+    if models_dir != &#34;&#34; and models_dir[-1] != &#34;/&#34; and models_dir[-1] != r&#34;\ &#34;.strip():
+        models_dir = models_dir + &#34;/&#34;
+    
+    # Save model structure on JSON file
+    if json_path == &#34;&#34;:
+        json_path = models_dir + &#34;model.json&#34;
+    try:
+        # serialize model to JSON
+        model_json = model.to_json()
+        with open(json_path, &#34;w&#34;) as json_file:
+            json_file.write(model_json)   
+    except NotImplementedError as e:
+        print(&#34;Model JSON could not be save due to: &#34;, e)
+
+    # Save weights
+    if save_weights:
+        if weights_path == &#34;&#34;:
+            weights_path = models_dir + &#34;model_weights&#34;
+        # serialize weights to HDF5
+        model.save_weights(weights_path)
+
+    # Save history
+    if history is None:
+        history = model.history.history
+    else:
+        for key in history:
+            history[key] = history[key] + model.history.history.get(key,[])
+    
+    if history_path == &#34;&#34;:
+        history_path = models_dir + &#34;model_history.pickle&#34;
+    with open(history_path, &#39;wb&#39;) as pickle_file:
+        pickle.dump(history, pickle_file)
+    
+    # Save feature selection
+    if feature_selection is not None:
+        if feature_selection_path == &#34;&#34;:
+            feature_selection_path = models_dir + &#34;feature_selection.pickle&#34;
+        
+        with open(feature_selection_path, &#39;wb&#39;) as pickle_file:
+            pickle.dump(feature_selection, pickle_file)
+
+
+def load_train(models_dir=&#34;&#34;, model_generator=None, json_path=&#34;&#34;, weights_path=&#34;&#34;, load_weights=True, history_path=&#34;&#34;, feature_selection_path=&#34;&#34;):
+    &#34;&#34;&#34; Load training model (JSON and weights separetly), history (if provided) and feature selection (if provided) &#34;&#34;&#34;
+    
+    from tensorflow.keras.models import model_from_json
+
+    if models_dir != &#34;&#34; and models_dir[-1] != &#34;/&#34; and models_dir[-1] != r&#34;\ &#34;.strip():
+        models_dir = models_dir + &#34;/&#34;
+    
+    # Load JSON and create model
+    if json_path == &#34;&#34;:
+        json_path = models_dir + &#34;model.json&#34;
+    try:
+        with open(json_path, &#34;r&#34;) as json_file:
+            loaded_model_json = json_file.read()
+            model = model_from_json(loaded_model_json)
+            print(&#34;Loaded model from &#34; + json_path)
+    except FileNotFoundError:
+        if model_generator is not None:
+            #Create a new model
+            model = model_generator.get_model()
+            print(&#34;Loaded model from model generator&#34;)
+        else:
+            raise ValueError(f&#34;Model could not be loaded because file was not found in path {json_path} and no model generator was provided&#34;)
+    
+    # Load weights into new model
+    if load_weights:
+        if weights_path == &#34;&#34;:
+            weights_path = models_dir + &#34;model_weights&#34;
+        model.load_weights(weights_path)
+        print(&#34;Loaded weights model from &#34; + weights_path)
+    
+    # Load history
+    if history_path == &#34;&#34;:
+        history_path = models_dir + &#34;model_history.pickle&#34;
+    try:
+        with open(history_path, &#39;rb&#39;) as pickle_file:
+            history = pickle.load(pickle_file)
+            print(&#34;Loaded history from &#34; + history_path)
+    except IOError:
+        print(&#34;History not loaded because the following file was not found: &#34;, history_path)
+        history = None
+        
+    # Load feature selection
+    if feature_selection_path == &#34;&#34;:
+        feature_selection_path = models_dir + &#34;feature_selection.pickle&#34;
+    try:
+        with open(feature_selection_path, &#39;rb&#39;) as pickle_file:
+            feature_selection = pickle.load(pickle_file)
+            print(&#34;Loaded feature_selection from &#34; + feature_selection_path)
+    except IOError:
+        print(&#34;Feature selection not loaded because the following file was not found: &#34;, feature_selection_path)
+        feature_selection = None
+        
+    return model, history, feature_selection
+
+# TODO: Review if EarlyStopping include flexibility to be use with batchs or if it could be done using EarlyStopping as parent object
+class BatchHistoryEarlyStopping(Callback):
+    &#34;&#34;&#34; EarlyStopping class based on batch evaluation &#34;&#34;&#34;
+    def __init__(
+            self,
+            valid_generator,
+            targets,
+            batch_freq=100,
+            reset_on_train=True,
+            early_stopping=False,
+            monitor=&#34;val_loss&#34;,
+            min_delta=0,
+            patience=0,
+            verbose=0,
+            mode=&#34;auto&#34;,
+            baseline=None,
+            restore_best_weights=False,
+    ):
+
+        super().__init__()
+        self.valid_generator = valid_generator
+        self.targets = targets
+        self.batch_freq = batch_freq
+        self.reset_on_train = reset_on_train
+        self.early_stopping = early_stopping
+        if self.early_stopping:
+            self.monitor = monitor
+            self.baseline = baseline
+            self.patience = patience
+            self.verbose = verbose
+            self.min_delta = min_delta
+            self.wait = 0
+            self.stopped_batch = 0
+            self.restore_best_weights = restore_best_weights
+            self.best_weights = None
+
+            if mode not in [&#34;auto&#34;, &#34;min&#34;, &#34;max&#34;]:
+                warnings.warn(
+                    &#34;EarlyStopping mode %s is unknown, &#34;
+                    &#34;fallback to auto mode.&#34; % mode,
+                    RuntimeWarning,
+                )
+                mode = &#34;auto&#34;
+
+            if mode == &#34;min&#34;:
+                self.monitor_op = np.less
+            elif mode == &#34;max&#34;:
+                self.monitor_op = np.greater
+            else:
+                if &#34;acc&#34; in self.monitor:
+                    self.monitor_op = np.greater
+                else:
+                    self.monitor_op = np.less
+
+            if self.monitor_op == np.greater:
+                self.min_delta *= 1
+            else:
+                self.min_delta *= -1
+
+    def on_train_begin(self, logs={}):
+        if self.reset_on_train:
+            self.reset_stats()
+
+    def on_batch_end(self, batch, logs={}):
+        if batch != 0 and batch % self.batch_freq == 0:
+            # Save validation metrics
+            valid_metrics = self.model.evaluate_generator(self.valid_generator)
+            for i, value in enumerate(valid_metrics):
+                self.history[self.metrics[i]] = self.history[self.metrics[i]] + [value]
+
+            # Save training metrics
+            i = len(self.metrics) // 2
+            while i &lt; len(self.metrics):
+                self.history[self.metrics[i]] = self.history[self.metrics[i]] + [
+                    logs[self.metrics[i]]
+                ]
+                i = i + 1
+
+            if self.early_stopping:
+                current = self.get_monitor_value(self.history)
+                if current is None:
+                    return
+
+                if self.monitor_op(current - self.min_delta, self.best):
+                    self.best = current
+                    self.wait = 0
+                    if self.restore_best_weights:
+                        self.best_weights = self.model.get_weights()
+                else:
+                    self.wait += 1
+                    if self.wait &gt;= self.patience:
+                        self.stopped_batch = batch
+                        self.model.stop_training = True
+                        if self.restore_best_weights:
+                            if self.verbose &gt; 0:
+                                print(
+                                    &#34;Restoring model weights from the end of &#34;
+                                    &#34;the best epoch&#34;
+                                )
+                            self.model.set_weights(self.best_weights)
+
+    def on_train_end(self, logs=None):
+        if self.early_stopping and self.stopped_epoch &gt; 0 and self.verbose &gt; 0:
+            print(&#34;Batch %05d: early stopping&#34; % (self.stopped_batch + 1))
+
+    def get_monitor_value(self, logs):
+        monitor_value = logs.get(self.monitor)
+        if monitor_value is None:
+            warnings.warn(
+                &#34;Early stopping conditioned on metric `%s` &#34;
+                &#34;which is not available. Available metrics are: %s&#34;
+                % (self.monitor, &#34;,&#34;.join(list(logs.keys()))),
+                RuntimeWarning,
+            )
+        return monitor_value[-1]
+
+    def reset_stats(self):
+        self.metrics = (
+                [&#34;loss&#34;]
+                + [&#34;pred_&#34; + target + &#34;_loss&#34; for target in self.targets]
+                + [&#34;pred_&#34; + target + &#34;_accuracy&#34; for target in self.targets]
+        )
+        self.metrics = [&#34;val_&#34; + metric for metric in self.metrics] + self.metrics
+        metrics_values = [[]] * len(self.metrics)
+        self.history = dict(zip(self.metrics, metrics_values))
+
+        if self.early_stopping:
+            # Allow instances to be re-used
+            self.wait = 0
+            self.stopped_epoch = 0
+            if self.baseline is not None:
+                self.best = self.baseline
+            else:
+                self.best = np.Inf if self.monitor_op == np.less else -np.Inf
+
+
+def visualize(history, key, y_label, x_label=&#34;epoch&#34;, title=None):
+    &#34;&#34;&#34; Plot history data with one plot per metric &#34;&#34;&#34;
+    plt.plot(history[key])
+    plt.plot(history[&#34;val_&#34; + key])
+    if title is None:
+        title = &#34;model_&#34; + key
+    plt.title(title)
+    plt.ylabel(y_label)
+    plt.xlabel(x_label)
+    plt.legend([&#34;train&#34;, &#34;valid&#34;], loc=&#34;upper left&#34;)
+    plt.show()
+
+
+def visualize_acc_loss(history, output_name=&#34;&#34;, only_loss=False):
+    &#34;&#34;&#34; Plot accuracy loss data from history &#34;&#34;&#34;
+    if output_name != &#34;&#34;:
+        output_name = output_name + &#34;_&#34;
+    if not only_loss:
+        try:
+            metric = &#34;acc&#34;
+            visualize(history, output_name + metric, metric)
+        except KeyError:
+            metric = &#34;accuracy&#34;
+            visualize(history, output_name + metric, metric)
+    metric = &#34;loss&#34;
+    visualize(history, output_name + metric, metric)
+
+
+def visualize_training(history):
+    &#34;&#34;&#34; Plot all metrics from training history &#34;&#34;&#34;
+    if len(history.keys()) &lt;= 2:
+        visualize_acc_loss(history)
+    else:
+        for key in history:
+            if key == &#34;loss&#34;:
+                visualize_acc_loss(history, only_loss=True)
+            elif key[:4] != &#34;val_&#34; and key[-5:] == &#34;_loss&#34;:
+                output_name = key[:-5]
+                visualize_acc_loss(history, output_name=output_name)
+                
+class Model_generator:
+    &#34;&#34;&#34; Class used for generating models according to the parameters specified &#34;&#34;&#34;
+    def __init__(self, input_shape, n_outputs, n_units, model_type=&#39;dnn_baseline&#39;, activation=&#39;softmax&#39;, hidden_layers=2, hidden_layer_activation=&#39;relu&#39;, residual_blocks=10, lstm_blocks=1, dropout_rate=0, recurrent_dropout=0, lstm_l1=0, lstm_l2=0, droput_input_cols=None, remain_input_cols=None):
+        self.input_shape = input_shape
+        self.n_outputs = n_outputs
+        self.n_units = n_units
+        self.model_type = model_type
+        self.model_type_list = [&#39;dnn_baseline&#39;, &#39;dnn&#39;, &#39;dnn_residual&#39;, &#39;lstm_baseline&#39;, &#39;lstm&#39;, &#39;attention_lstm&#39;, &#39;attention_lstm_residual&#39;, &#39;attention_lstm_dropout_input&#39;]
+        self.activation = activation
+        self.hidden_layers = hidden_layers
+        self.hidden_layer_activation = hidden_layer_activation
+        self.residual_blocks = residual_blocks
+        self.lstm_blocks = lstm_blocks
+        self.dropout_rate = dropout_rate
+        self.recurrent_dropout = recurrent_dropout
+        self.lstm_l1 = lstm_l1
+        self.lstm_l2 = lstm_l2
+        self.droput_input_cols = droput_input_cols
+        self.remain_input_cols = remain_input_cols
+
+    def get_model(self, model_type=None):
+        if model_type is None:
+            model_type = self.model_type
+        if model_type not in self.model_type_list:
+            raise ValueError(f&#39;Model type {model_type} not in list. Choose one of the following model types: {self.model_type_list}&#39;)
+            
+        if model_type == &#39;dnn_baseline&#39;:
+            return self.dnn_baseline()
+        elif model_type == &#39;dnn&#39;:
+            return self.dnn()
+        elif model_type == &#39;dnn_residual&#39;:
+            return self.dnn_residual()
+        elif model_type == &#39;lstm_baseline&#39;:
+            return self.lstm_baseline()
+        elif model_type == &#39;lstm&#39;:
+            return self.lstm()
+        elif model_type == &#39;attention_lstm&#39;:
+            return self.attention_lstm()
+        elif model_type == &#39;attention_lstm_residual&#39;:
+            return self.attention_lstm_residual()
+        elif model_type == &#39;attention_lstm_dropout_input&#39;:
+            return self.attention_lstm_dropout_input()
+        else:
+            print(&#34;Implementation error, model_type {model_type} is missing&#34;)
+
+    def dnn_baseline(self):
+        input_x = Input(shape = self.input_shape, name=&#39;input&#39;)
+        X = input_x
+        X = Dense(self.n_outputs)(X)
+        X = Activation(self.activation, name = &#39;output&#39;)(X)
+
+        return Model(inputs=input_x, outputs=X, name=&#39;dnn_baseline&#39;)
+    
+    def dnn(self):
+        input_x = Input(shape = self.input_shape, name=&#39;input&#39;)
+        X = input_x
+        for i in range(self.hidden_layers):
+            if self.dropout_rate &gt; 0:
+                X = Dropout(self.dropout_rate, name=&#39;dropout_&#39;+str(i))(X)
+            X = Dense(n_units//(2**i), name=&#39;dense_&#39;+str(i), activation=self.hidden_layer_activation)(X)
+            
+        if self.dropout_rate &gt; 0:
+            X = Dropout(self.dropout_rate, name=&#39;dropout_output&#39;)(X)
+        X = Dense(self.n_outputs, name=&#39;dense_output&#39;)(X)    
+        X = Activation(self.activation, name = &#39;output&#39;)(X)
+
+        return Model(inputs=input_x, outputs=X, name=&#39;dnn&#39;)
+    
+    def dnn_residual(self):
+        input_x = Input(shape = self.input_shape, name=&#39;input&#39;)
+        X = input_x
+        for i in range(self.residual_blocks):
+            if self.dropout_rate &gt; 0:
+                X = Dropout(self.dropout_rate, name=&#39;dropout_res_&#39;+str(i)+&#39;_1&#39;)(X)
+            X_res = Dense(n_units, name=&#39;dense_res_&#39;+str(i)+&#39;_1&#39;, activation=&#39;relu&#39;)(X)
+            
+            if self.dropout_rate &gt; 0:
+                X_res = Dropout(self.dropout_rate, name=&#39;dropout_res_&#39;+str(i)+&#39;_2&#39;)(X_res)
+            X_res = Dense(self.input_shape[-1], name=&#39;dense_res_&#39;+str(i)+&#39;_2&#39;, activation=&#39;relu&#39;)(X_res)
+            
+            X = Add(name=&#39;add_res_&#39;+str(i))([X, X_res])
+            
+        if self.dropout_rate &gt; 0:
+            X = Dropout(self.dropout_rate, name=&#39;dropout_output&#39;)(X)
+        X = Dense(self.n_outputs, name=&#39;dense_output&#39;)(X)    
+        X = Activation(self.activation, name = &#39;output&#39;)(X)
+
+        return Model(inputs=input_x, outputs=X, name=&#39;dnn_residual&#39;)
+    
+    def lstm_baseline(self):
+        input_x = Input(shape = self.input_shape, name=&#39;input&#39;)
+        X = input_x
+        X = BatchNormalization()(X)
+        
+        X = LSTM(self.n_units, return_sequences = False, 
+                 recurrent_dropout=self.recurrent_dropout, 
+                 kernel_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+                 activity_regularizer=l1_l2(self.lstm_l1, self.lstm_l2))(X)
+        if self.dropout_rate &gt; 0:
+            X = Dropout(self.dropout_rate)(X)
+        X = BatchNormalization()(X)
+        X = Dense(self.n_outputs)(X)
+        X = Activation(self.activation, name = &#39;output&#39;)(X)
+
+        return Model(inputs=input_x, outputs=X, name=&#39;lstm_baseline&#39;)
+    
+    def lstm(self):
+        input_x = Input(shape = self.input_shape, name=&#39;input&#39;)
+        X = input_x
+        X = BatchNormalization()(X)
+        for i in range(self.lstm_blocks):
+            X = LSTM(self.n_units, return_sequences = True, 
+                 recurrent_dropout=self.recurrent_dropout, 
+                 kernel_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+                 activity_regularizer=l1_l2(self.lstm_l1, self.lstm_l2))(X)
+            if self.dropout_rate &gt; 0:
+                X = Dropout(self.dropout_rate)(X)
+            X = BatchNormalization()(X)
+                
+        X = LSTM(self.n_units, return_sequences = False, 
+                 recurrent_dropout=self.recurrent_dropout, 
+                 kernel_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+                 activity_regularizer=l1_l2(self.lstm_l1, self.lstm_l2))(X)
+        if self.dropout_rate &gt; 0:
+            X = Dropout(self.dropout_rate)(X)
+        X = BatchNormalization()(X)
+        X = Dense(self.n_outputs)(X)
+        X = Activation(self.activation, name = &#39;output&#39;)(X)
+
+        return Model(inputs=input_x, outputs=X, name=&#39;lstm&#39;)
+    
+    def attention_lstm(self):
+        input_x = Input(shape = self.input_shape, name = &#39;input&#39;)
+        X = input_x
+        
+        for i in range(self.lstm_blocks):
+            query = Dense(10, name=&#39;query_&#39; + str(i))(X)
+            key = Dense(10, name=&#39;key_&#39; + str(i))(X)
+            attention_weights = AdditiveAttention(use_scale = False, name=&#39;attention_&#39;+str(i))([query, X, key])
+            attention_weights = Dense(1, activation=&#39;softmax&#39;, name=&#39;attention_weights_&#39;+str(i))(attention_weights)
+            context = Multiply(name=&#39;context_&#39;+str(i))([attention_weights,X])
+            X = LSTM(self.n_units, return_sequences = True, 
+                     recurrent_dropout=self.recurrent_dropout, 
+                     kernel_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+                     activity_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+                     name = &#39;lstm_&#39; + str(i))(context)
+            if self.dropout_rate &gt; 0:
+                X = Dropout(self.dropout_rate, name=&#39;dropout_&#39;+str(i))(X)
+                
+        X = LSTM(self.n_units, return_sequences = False, 
+                 recurrent_dropout=self.recurrent_dropout, 
+                 kernel_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+                 activity_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+                 name = &#39;lstm_last&#39;)(X)
+        if self.dropout_rate &gt; 0:
+            X = Dropout(self.dropout_rate, name=&#39;dropout_last&#39;)(X)
+        X = Dense(self.n_outputs, activation=self.activation, name = &#39;output&#39;)(X)
+
+        return Model(inputs=input_x, outputs=X, name=&#39;attention_lstm&#39;)
+    
+    def attention_lstm_residual(self):
+        input_x = Input(shape = self.input_shape, name = &#39;input&#39;)
+        X = input_x
+        
+        for i in range(self.lstm_blocks):
+            query = Dense(10, name=&#39;query_&#39; + str(i))(X)
+            key = Dense(10, name=&#39;key_&#39; + str(i))(X)
+            attention_weights = AdditiveAttention(use_scale = False, name=&#39;attention_&#39;+str(i))([query, X, key])
+            attention_weights = Dense(1, activation=&#39;softmax&#39;, name=&#39;attention_weights_&#39;+str(i))(attention_weights)
+            context = Multiply(name=&#39;context_&#39;+str(i))([attention_weights,X])
+            X = LSTM(self.n_units, return_sequences = True, 
+                     recurrent_dropout=self.recurrent_dropout, 
+                     kernel_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+                     activity_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+                     name = &#39;lstm_&#39; + str(i))(context)
+            if self.dropout_rate &gt; 0:
+                X = Dropout(self.dropout_rate, name=&#39;dropout_&#39;+str(i))(X)
+                
+        X = LSTM(self.n_units, return_sequences = False, 
+                 recurrent_dropout=self.recurrent_dropout, 
+                 kernel_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+                 activity_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+                 name = &#39;lstm_last&#39;)(X)
+        if self.dropout_rate &gt; 0:
+            X = Dropout(self.dropout_rate, name=&#39;dropout_last&#39;)(X)
+        
+        crop_input = Cropping1D(cropping=(0, self.input_shape[0] - 1), name=&#39;crop_input&#39;)(input_x)
+        if self.dropout_rate &gt; 0:
+            crop_input = Dropout(self.dropout_rate, name=&#39;dropout_crop_input&#39;)(crop_input)
+        flatten_crop = Flatten(name=&#39;flatten_crop_input&#39;)(crop_input)
+        query_input = Dense(10, name=&#39;query_input&#39;)(flatten_crop)
+        key_input = Dense(10, name=&#39;key_input&#39;)(flatten_crop)
+        attention_weights_input = AdditiveAttention(use_scale = False, name=&#39;attention_input&#39;)([query_input, flatten_crop, key_input])
+        attention_weights_input = Dense(1, activation=&#39;softmax&#39;, name=&#39;attention_weights_input&#39;)(attention_weights_input)
+        context_input = Multiply(name=&#39;context_input&#39;)([attention_weights_input, flatten_crop])
+        concat = Concatenate(name=&#39;concat_output&#39;)([X, context_input])
+        X = Dense(self.n_outputs, activation=self.activation, name = &#39;output&#39;)(concat)
+
+        return Model(inputs=input_x, outputs=X, name=&#39;attention_lstm&#39;)
+    
+    def attention_lstm_dropout_input(self):
+        dropout_input = Input(shape = (seq_len, droput_input_cols), name = &#39;dropout_input&#39;)
+        remain_input = Input(shape = (seq_len, remain_input_cols), name = &#39;remain_input&#39;)
+
+        dropout_x = Dropout(self.dropout_rate)(dropout_input)
+
+        X = Concatenate(axis=-1)([remain_input, dropout_x])
+        
+        for i in range(self.lstm_blocks):
+            query = Dense(10)(X)
+            key = Dense(10)(X)
+            context = AdditiveAttention()([query, X, key])
+            #context = one_step_attention(a)
+            X = LSTM(self.n_units, return_sequences = True, recurrent_dropout=self.recurrent_dropout)(context)
+            if self.dropout_rate &gt; 0:
+                X = Dropout(self.dropout_rate)(X)
+                
+        X = LSTM(self.n_units, return_sequences = False, recurrent_dropout=self.recurrent_dropout)(X)
+        if self.dropout_rate &gt; 0:
+            X = Dropout(self.dropout_rate)(X)
+        X = Dense(self.n_outputs)(X)
+        X = Activation(self.activation, name = &#39;output&#39;)(X)
+
+        return Model(inputs=[dropout_input, remain_input], outputs=X)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="utils.dnn_helper.KFolds_flow_from_dataframe"><code class="name flex">
+<span>def <span class="ident">KFolds_flow_from_dataframe</span></span>(<span>dataframe, generators, kfolds=10, directory=None, x_col='filename', y_col='class', weight_col=None, target_size=(256, 256), color_mode='rgb', classes=None, class_mode='categorical', batch_size=32, shuffle=True, seed=None, save_to_dir=None, save_prefix='', save_format='png', interpolation='nearest', validate_filenames=True)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Generate stratified kFolds generators for training and validation sets</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def KFolds_flow_from_dataframe(dataframe, generators, kfolds=10, directory=None, x_col=&#39;filename&#39;, y_col=&#39;class&#39;,
+                               weight_col=None, target_size=(256, 256), color_mode=&#39;rgb&#39;, classes=None,
+                               class_mode=&#39;categorical&#39;, batch_size=32, shuffle=True, seed=None, save_to_dir=None,
+                               save_prefix=&#39;&#39;, save_format=&#39;png&#39;, interpolation=&#39;nearest&#39;, validate_filenames=True):
+    &#34;&#34;&#34; Generate stratified kFolds generators for training and validation sets &#34;&#34;&#34;
+    train_gens = []
+    valid_gens = []
+    Kfolds_gens = []
+
+    stratify_df = dataframe[y_col] if shuffle else None
+    remain_df, kfold_df = train_test_split(dataframe, test_size=1 / (kfolds), stratify=stratify_df,
+                                           shuffle=shuffle, random_state=seed)
+
+    train_gens.append(
+        generators[0].flow_from_dataframe(kfold_df, directory, x_col, y_col, weight_col, target_size, color_mode,
+                                          classes, class_mode, batch_size, shuffle, seed, save_to_dir, save_prefix,
+                                          save_format, None, interpolation, validate_filenames)
+    )
+
+    i = 1
+    while i &lt; kfolds - 1:
+        try:
+            stratify_df = remain_df[y_col] if shuffle else None
+            remain_df, kfold_df = train_test_split(remain_df, test_size=1 / (kfolds - i), stratify=stratify_df,
+                                                   shuffle=shuffle, random_state=seed)
+        except ValueError as e:
+            print(f&#34;Stratify is not posible at kfold {i} due to: {e}&#34;)
+            remain_df, kfold_df = train_test_split(remain_df, test_size=1 / (kfolds - i), shuffle=shuffle, random_state=seed)
+
+        train_gens.append(
+            generators[0].flow_from_dataframe(kfold_df, directory, x_col, y_col, weight_col, target_size, color_mode,
+                                              classes, class_mode, batch_size, shuffle, seed, save_to_dir, save_prefix,
+                                              save_format, None, interpolation, validate_filenames)
+        )
+        valid_gens.append(
+            generators[1].flow_from_dataframe(kfold_df, directory, x_col, y_col, weight_col, target_size, color_mode,
+                                              classes, class_mode, batch_size, shuffle, seed, save_to_dir, save_prefix,
+                                              save_format, None, interpolation, validate_filenames)
+        )
+
+        i = i + 1
+    remain_gen = generators[1].flow_from_dataframe(remain_df, directory, x_col, y_col, weight_col, target_size,
+                                                   color_mode, classes, class_mode, batch_size, shuffle, seed,
+                                                   save_to_dir, save_prefix, save_format, None, interpolation,
+                                                   validate_filenames)
+    valid_gens.append(remain_gen)
+
+    i = 0
+    while i &lt; kfolds - 1:
+        Kfolds_gens.append((train_gens[i], valid_gens[i]))
+        i = i + 1
+
+    return Kfolds_gens</code></pre>
+</details>
+</dd>
+<dt id="utils.dnn_helper.bce_dice_loss"><code class="name flex">
+<span>def <span class="ident">bce_dice_loss</span></span>(<span>y_true, y_pred, clip_loss=None)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Calculate binary cross entropy loss given y_true and y_pred</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def bce_dice_loss(y_true, y_pred, clip_loss = None):
+    &#34;&#34;&#34; Calculate binary cross entropy loss given y_true and y_pred &#34;&#34;&#34;
+
+    from tensorflow.keras.losses import binary_crossentropy
+    from tensorflow import clip_by_value
+
+    if clip_loss is None:
+        return binary_crossentropy(y_true, y_pred) + dice_loss(y_true, y_pred)
+    else:
+        return clip_by_value(binary_crossentropy(y_true, y_pred) + dice_loss(y_true, y_pred), -clip_loss, clip_loss)</code></pre>
+</details>
+</dd>
+<dt id="utils.dnn_helper.config_model_trainable"><code class="name flex">
+<span>def <span class="ident">config_model_trainable</span></span>(<span>model, config, last_block=0, base_model=None)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Configure provided model to train the whole model, only top layer or from last_block layer to top (both included)</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def config_model_trainable(model, config, last_block=0, base_model=None):
+    &#34;&#34;&#34; Configure provided model to train the whole model, only top layer or from last_block layer to top (both included) &#34;&#34;&#34;
+    if not config in [&#39;full&#39;, &#39;partial&#39;, &#39;top&#39;]:
+        raise ValueError(
+            f&#34;config value is {config} parameter should be one of the following values: &#39;full&#39;,&#39;partial&#39; or &#39;top&#39;&#34;)
+
+    trainable_reference = config == &#39;full&#39;
+
+    # train only the top layers (which were randomly initialized)
+    # i.e. freeze all layers of the based model that is already pre-trained.
+    if config == &#39;top&#39;:
+        if base_model is None:
+            raise ValueError(&#34;config value is {config}, but base model have been not passed on function&#34;)
+
+        for layer in base_model.layers:
+            layer.trainable = False
+
+    # if config = &#39;partial&#39; train only the layers after last_block
+    # otherwise train all the layers
+    else:
+        if type(last_block) is int:
+            for layer in model.layers[:last_block]:
+                layer.trainable = trainable_reference
+            for layer in model.layers[last_block:]:
+                layer.trainable = True
+        else:
+            set_trainable = trainable_reference
+            for layer in model.layers:
+                if layer.name == last_block:
+                    set_trainable = True
+                if set_trainable:
+                    layer.trainable = True
+                else:
+                    layer.trainable = False</code></pre>
+</details>
+</dd>
+<dt id="utils.dnn_helper.df_to_dataset"><code class="name flex">
+<span>def <span class="ident">df_to_dataset</span></span>(<span>dataframe, target='target', shuffle=True, batch_size=32)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Utility method to create a tf.data dataset from a Pandas Dataframe</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def df_to_dataset(dataframe, target=&#39;target&#39;, shuffle=True, batch_size=32):
+    &#34;&#34;&#34; Utility method to create a tf.data dataset from a Pandas Dataframe &#34;&#34;&#34;
+
+    from tensorflow.data import Dataset
+
+    dataframe = dataframe.copy()
+    if target is not None:
+        labels = dataframe.pop(target)
+        ds = Dataset.from_tensor_slices((dict(dataframe), labels))
+    else:
+        ds = Dataset.from_tensor_slices((dict(dataframe)))
+    if shuffle:
+        ds = ds.shuffle(buffer_size=len(dataframe))
+    ds = ds.batch(batch_size)
+    return ds</code></pre>
+</details>
+</dd>
+<dt id="utils.dnn_helper.dice_coef"><code class="name flex">
+<span>def <span class="ident">dice_coef</span></span>(<span>y_true, y_pred, smooth=1)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Calculate DICE coeficient given y_true and y_pred</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def dice_coef(y_true, y_pred, smooth=1):
+    &#34;&#34;&#34; Calculate DICE coeficient given y_true and y_pred &#34;&#34;&#34;
+
+    from tensorflow.keras import backend as K
+
+    y_true_f = K.flatten(y_true)
+    y_pred_f = K.flatten(y_pred)
+    intersection = K.sum(y_true_f * y_pred_f)
+    return (2.0 * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)</code></pre>
+</details>
+</dd>
+<dt id="utils.dnn_helper.dice_loss"><code class="name flex">
+<span>def <span class="ident">dice_loss</span></span>(<span>y_true, y_pred)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Calculate DICE loss given y_true and y_pred</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def dice_loss(y_true, y_pred):
+    &#34;&#34;&#34; Calculate DICE loss given y_true and y_pred &#34;&#34;&#34;
+
+    from tensorflow.keras import backend as K
+
+    smooth = 1.0
+    y_true_f = K.flatten(y_true)
+    y_pred_f = K.flatten(y_pred)
+    intersection = y_true_f * y_pred_f
+    score = (2.0 * K.sum(intersection) + smooth) / (
+            K.sum(y_true_f) + K.sum(y_pred_f) + smooth
+    )
+    return 1.0 - score</code></pre>
+</details>
+</dd>
+<dt id="utils.dnn_helper.dnn_plot_roc_auc"><code class="name flex">
+<span>def <span class="ident">dnn_plot_roc_auc</span></span>(<span>X, y_test, model, feature_selection, batch_size)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Plot ROC AUC diagram of provided model using X data and real y values</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def dnn_plot_roc_auc(X, y_test, model, feature_selection, batch_size):
+    &#34;&#34;&#34; Plot ROC AUC diagram of provided model using X data and real y values &#34;&#34;&#34;
+    x_ds = df_to_dataset(X[feature_selection], target=None, shuffle=False, batch_size=batch_size)
+    plot_roc_auc(y_test, model.predict(x_ds))</code></pre>
+</details>
+</dd>
+<dt id="utils.dnn_helper.fold_training"><code class="name flex">
+<span>def <span class="ident">fold_training</span></span>(<span>KFolds_gens, k, model, optimizer='nadam', loss='binary_crossentropy', metrics=['accuracy'], class_weight=None, models_dir='', callbacks_list=None, history_callback=None, plot_history=False)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Train using kFolds generators</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def fold_training(KFolds_gens, k, model, optimizer=&#39;nadam&#39;, loss=&#39;binary_crossentropy&#39;, metrics=[&#39;accuracy&#39;],
+                  class_weight=None, models_dir=&#39;&#39;, callbacks_list=None, history_callback=None, plot_history=False):
+    &#34;&#34;&#34; Train using kFolds generators &#34;&#34;&#34;
+    model.compile(optimizer=optimizer,
+                  loss=loss,
+                  metrics=metrics)
+    train_gen = KFolds_gens[k][0]
+    valid_gen = KFolds_gens[k][1]
+    history = model.fit_generator(train_gen,
+                                  steps_per_epoch=train_gen.n // train_gen.batch_size,
+                                  epochs=1,
+                                  validation_data=valid_gen,
+                                  validation_steps=valid_gen.n // valid_gen.batch_size,
+                                  class_weight=class_weight,
+                                  # use_multiprocessing = True,
+                                  # workers = 2 * multiprocessing.cpu_count(),
+                                  callbacks=callbacks_list)
+
+    if history_callback is not None:
+        history = history_callback
+
+    save_train(model, history, models_dir)
+    if plot_history:
+        visualize_training(history.history)
+
+    return model, history</code></pre>
+</details>
+</dd>
+<dt id="utils.dnn_helper.load_train"><code class="name flex">
+<span>def <span class="ident">load_train</span></span>(<span>models_dir='', model_generator=None, json_path='', weights_path='', load_weights=True, history_path='', feature_selection_path='')</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Load training model (JSON and weights separetly), history (if provided) and feature selection (if provided)</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def load_train(models_dir=&#34;&#34;, model_generator=None, json_path=&#34;&#34;, weights_path=&#34;&#34;, load_weights=True, history_path=&#34;&#34;, feature_selection_path=&#34;&#34;):
+    &#34;&#34;&#34; Load training model (JSON and weights separetly), history (if provided) and feature selection (if provided) &#34;&#34;&#34;
+    
+    from tensorflow.keras.models import model_from_json
+
+    if models_dir != &#34;&#34; and models_dir[-1] != &#34;/&#34; and models_dir[-1] != r&#34;\ &#34;.strip():
+        models_dir = models_dir + &#34;/&#34;
+    
+    # Load JSON and create model
+    if json_path == &#34;&#34;:
+        json_path = models_dir + &#34;model.json&#34;
+    try:
+        with open(json_path, &#34;r&#34;) as json_file:
+            loaded_model_json = json_file.read()
+            model = model_from_json(loaded_model_json)
+            print(&#34;Loaded model from &#34; + json_path)
+    except FileNotFoundError:
+        if model_generator is not None:
+            #Create a new model
+            model = model_generator.get_model()
+            print(&#34;Loaded model from model generator&#34;)
+        else:
+            raise ValueError(f&#34;Model could not be loaded because file was not found in path {json_path} and no model generator was provided&#34;)
+    
+    # Load weights into new model
+    if load_weights:
+        if weights_path == &#34;&#34;:
+            weights_path = models_dir + &#34;model_weights&#34;
+        model.load_weights(weights_path)
+        print(&#34;Loaded weights model from &#34; + weights_path)
+    
+    # Load history
+    if history_path == &#34;&#34;:
+        history_path = models_dir + &#34;model_history.pickle&#34;
+    try:
+        with open(history_path, &#39;rb&#39;) as pickle_file:
+            history = pickle.load(pickle_file)
+            print(&#34;Loaded history from &#34; + history_path)
+    except IOError:
+        print(&#34;History not loaded because the following file was not found: &#34;, history_path)
+        history = None
+        
+    # Load feature selection
+    if feature_selection_path == &#34;&#34;:
+        feature_selection_path = models_dir + &#34;feature_selection.pickle&#34;
+    try:
+        with open(feature_selection_path, &#39;rb&#39;) as pickle_file:
+            feature_selection = pickle.load(pickle_file)
+            print(&#34;Loaded feature_selection from &#34; + feature_selection_path)
+    except IOError:
+        print(&#34;Feature selection not loaded because the following file was not found: &#34;, feature_selection_path)
+        feature_selection = None
+        
+    return model, history, feature_selection</code></pre>
+</details>
+</dd>
+<dt id="utils.dnn_helper.make_pred"><code class="name flex">
+<span>def <span class="ident">make_pred</span></span>(<span>model, gen, steps=None)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Predict model output from provided generator</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def make_pred(model, gen, steps = None):
+    &#34;&#34;&#34; Predict model output from provided generator &#34;&#34;&#34;
+    if steps is None:
+        steps = gen.n // gen.batch_size
+    y_pred = model.predict_generator(
+            gen,
+            steps=steps,
+            verbose=1,
+        )
+    
+    if type(y_pred[0]) is list:
+        y_pred = np.array([y.reshape(-1) for y in y_pred])
+    
+    return y_pred</code></pre>
+</details>
+</dd>
+<dt id="utils.dnn_helper.save_train"><code class="name flex">
+<span>def <span class="ident">save_train</span></span>(<span>model, history=None, models_dir='', json_path='', weights_path='', save_weights=True, history_path='', feature_selection=None, feature_selection_path='')</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Save training model (JSON and weights separetly), history (if provided) and feature selection (if provided)</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def save_train(model, history=None, models_dir=&#34;&#34;, json_path=&#34;&#34;, weights_path=&#34;&#34;, save_weights=True, history_path=&#34;&#34;, feature_selection=None, feature_selection_path=&#34;&#34;):
+    &#34;&#34;&#34; Save training model (JSON and weights separetly), history (if provided) and feature selection (if provided) &#34;&#34;&#34;
+   
+    if models_dir != &#34;&#34; and models_dir[-1] != &#34;/&#34; and models_dir[-1] != r&#34;\ &#34;.strip():
+        models_dir = models_dir + &#34;/&#34;
+    
+    # Save model structure on JSON file
+    if json_path == &#34;&#34;:
+        json_path = models_dir + &#34;model.json&#34;
+    try:
+        # serialize model to JSON
+        model_json = model.to_json()
+        with open(json_path, &#34;w&#34;) as json_file:
+            json_file.write(model_json)   
+    except NotImplementedError as e:
+        print(&#34;Model JSON could not be save due to: &#34;, e)
+
+    # Save weights
+    if save_weights:
+        if weights_path == &#34;&#34;:
+            weights_path = models_dir + &#34;model_weights&#34;
+        # serialize weights to HDF5
+        model.save_weights(weights_path)
+
+    # Save history
+    if history is None:
+        history = model.history.history
+    else:
+        for key in history:
+            history[key] = history[key] + model.history.history.get(key,[])
+    
+    if history_path == &#34;&#34;:
+        history_path = models_dir + &#34;model_history.pickle&#34;
+    with open(history_path, &#39;wb&#39;) as pickle_file:
+        pickle.dump(history, pickle_file)
+    
+    # Save feature selection
+    if feature_selection is not None:
+        if feature_selection_path == &#34;&#34;:
+            feature_selection_path = models_dir + &#34;feature_selection.pickle&#34;
+        
+        with open(feature_selection_path, &#39;wb&#39;) as pickle_file:
+            pickle.dump(feature_selection, pickle_file)</code></pre>
+</details>
+</dd>
+<dt id="utils.dnn_helper.visualize"><code class="name flex">
+<span>def <span class="ident">visualize</span></span>(<span>history, key, y_label, x_label='epoch', title=None)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Plot history data with one plot per metric</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def visualize(history, key, y_label, x_label=&#34;epoch&#34;, title=None):
+    &#34;&#34;&#34; Plot history data with one plot per metric &#34;&#34;&#34;
+    plt.plot(history[key])
+    plt.plot(history[&#34;val_&#34; + key])
+    if title is None:
+        title = &#34;model_&#34; + key
+    plt.title(title)
+    plt.ylabel(y_label)
+    plt.xlabel(x_label)
+    plt.legend([&#34;train&#34;, &#34;valid&#34;], loc=&#34;upper left&#34;)
+    plt.show()</code></pre>
+</details>
+</dd>
+<dt id="utils.dnn_helper.visualize_acc_loss"><code class="name flex">
+<span>def <span class="ident">visualize_acc_loss</span></span>(<span>history, output_name='', only_loss=False)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Plot accuracy loss data from history</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def visualize_acc_loss(history, output_name=&#34;&#34;, only_loss=False):
+    &#34;&#34;&#34; Plot accuracy loss data from history &#34;&#34;&#34;
+    if output_name != &#34;&#34;:
+        output_name = output_name + &#34;_&#34;
+    if not only_loss:
+        try:
+            metric = &#34;acc&#34;
+            visualize(history, output_name + metric, metric)
+        except KeyError:
+            metric = &#34;accuracy&#34;
+            visualize(history, output_name + metric, metric)
+    metric = &#34;loss&#34;
+    visualize(history, output_name + metric, metric)</code></pre>
+</details>
+</dd>
+<dt id="utils.dnn_helper.visualize_training"><code class="name flex">
+<span>def <span class="ident">visualize_training</span></span>(<span>history)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Plot all metrics from training history</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def visualize_training(history):
+    &#34;&#34;&#34; Plot all metrics from training history &#34;&#34;&#34;
+    if len(history.keys()) &lt;= 2:
+        visualize_acc_loss(history)
+    else:
+        for key in history:
+            if key == &#34;loss&#34;:
+                visualize_acc_loss(history, only_loss=True)
+            elif key[:4] != &#34;val_&#34; and key[-5:] == &#34;_loss&#34;:
+                output_name = key[:-5]
+                visualize_acc_loss(history, output_name=output_name)</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="utils.dnn_helper.BatchHistoryEarlyStopping"><code class="flex name class">
+<span>class <span class="ident">BatchHistoryEarlyStopping</span></span>
+<span>(</span><span>valid_generator, targets, batch_freq=100, reset_on_train=True, early_stopping=False, monitor='val_loss', min_delta=0, patience=0, verbose=0, mode='auto', baseline=None, restore_best_weights=False)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>EarlyStopping class based on batch evaluation</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class BatchHistoryEarlyStopping(Callback):
+    &#34;&#34;&#34; EarlyStopping class based on batch evaluation &#34;&#34;&#34;
+    def __init__(
+            self,
+            valid_generator,
+            targets,
+            batch_freq=100,
+            reset_on_train=True,
+            early_stopping=False,
+            monitor=&#34;val_loss&#34;,
+            min_delta=0,
+            patience=0,
+            verbose=0,
+            mode=&#34;auto&#34;,
+            baseline=None,
+            restore_best_weights=False,
+    ):
+
+        super().__init__()
+        self.valid_generator = valid_generator
+        self.targets = targets
+        self.batch_freq = batch_freq
+        self.reset_on_train = reset_on_train
+        self.early_stopping = early_stopping
+        if self.early_stopping:
+            self.monitor = monitor
+            self.baseline = baseline
+            self.patience = patience
+            self.verbose = verbose
+            self.min_delta = min_delta
+            self.wait = 0
+            self.stopped_batch = 0
+            self.restore_best_weights = restore_best_weights
+            self.best_weights = None
+
+            if mode not in [&#34;auto&#34;, &#34;min&#34;, &#34;max&#34;]:
+                warnings.warn(
+                    &#34;EarlyStopping mode %s is unknown, &#34;
+                    &#34;fallback to auto mode.&#34; % mode,
+                    RuntimeWarning,
+                )
+                mode = &#34;auto&#34;
+
+            if mode == &#34;min&#34;:
+                self.monitor_op = np.less
+            elif mode == &#34;max&#34;:
+                self.monitor_op = np.greater
+            else:
+                if &#34;acc&#34; in self.monitor:
+                    self.monitor_op = np.greater
+                else:
+                    self.monitor_op = np.less
+
+            if self.monitor_op == np.greater:
+                self.min_delta *= 1
+            else:
+                self.min_delta *= -1
+
+    def on_train_begin(self, logs={}):
+        if self.reset_on_train:
+            self.reset_stats()
+
+    def on_batch_end(self, batch, logs={}):
+        if batch != 0 and batch % self.batch_freq == 0:
+            # Save validation metrics
+            valid_metrics = self.model.evaluate_generator(self.valid_generator)
+            for i, value in enumerate(valid_metrics):
+                self.history[self.metrics[i]] = self.history[self.metrics[i]] + [value]
+
+            # Save training metrics
+            i = len(self.metrics) // 2
+            while i &lt; len(self.metrics):
+                self.history[self.metrics[i]] = self.history[self.metrics[i]] + [
+                    logs[self.metrics[i]]
+                ]
+                i = i + 1
+
+            if self.early_stopping:
+                current = self.get_monitor_value(self.history)
+                if current is None:
+                    return
+
+                if self.monitor_op(current - self.min_delta, self.best):
+                    self.best = current
+                    self.wait = 0
+                    if self.restore_best_weights:
+                        self.best_weights = self.model.get_weights()
+                else:
+                    self.wait += 1
+                    if self.wait &gt;= self.patience:
+                        self.stopped_batch = batch
+                        self.model.stop_training = True
+                        if self.restore_best_weights:
+                            if self.verbose &gt; 0:
+                                print(
+                                    &#34;Restoring model weights from the end of &#34;
+                                    &#34;the best epoch&#34;
+                                )
+                            self.model.set_weights(self.best_weights)
+
+    def on_train_end(self, logs=None):
+        if self.early_stopping and self.stopped_epoch &gt; 0 and self.verbose &gt; 0:
+            print(&#34;Batch %05d: early stopping&#34; % (self.stopped_batch + 1))
+
+    def get_monitor_value(self, logs):
+        monitor_value = logs.get(self.monitor)
+        if monitor_value is None:
+            warnings.warn(
+                &#34;Early stopping conditioned on metric `%s` &#34;
+                &#34;which is not available. Available metrics are: %s&#34;
+                % (self.monitor, &#34;,&#34;.join(list(logs.keys()))),
+                RuntimeWarning,
+            )
+        return monitor_value[-1]
+
+    def reset_stats(self):
+        self.metrics = (
+                [&#34;loss&#34;]
+                + [&#34;pred_&#34; + target + &#34;_loss&#34; for target in self.targets]
+                + [&#34;pred_&#34; + target + &#34;_accuracy&#34; for target in self.targets]
+        )
+        self.metrics = [&#34;val_&#34; + metric for metric in self.metrics] + self.metrics
+        metrics_values = [[]] * len(self.metrics)
+        self.history = dict(zip(self.metrics, metrics_values))
+
+        if self.early_stopping:
+            # Allow instances to be re-used
+            self.wait = 0
+            self.stopped_epoch = 0
+            if self.baseline is not None:
+                self.best = self.baseline
+            else:
+                self.best = np.Inf if self.monitor_op == np.less else -np.Inf</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>tensorflow.python.keras.callbacks.Callback</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="utils.dnn_helper.BatchHistoryEarlyStopping.get_monitor_value"><code class="name flex">
+<span>def <span class="ident">get_monitor_value</span></span>(<span>self, logs)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_monitor_value(self, logs):
+    monitor_value = logs.get(self.monitor)
+    if monitor_value is None:
+        warnings.warn(
+            &#34;Early stopping conditioned on metric `%s` &#34;
+            &#34;which is not available. Available metrics are: %s&#34;
+            % (self.monitor, &#34;,&#34;.join(list(logs.keys()))),
+            RuntimeWarning,
+        )
+    return monitor_value[-1]</code></pre>
+</details>
+</dd>
+<dt id="utils.dnn_helper.BatchHistoryEarlyStopping.on_batch_end"><code class="name flex">
+<span>def <span class="ident">on_batch_end</span></span>(<span>self, batch, logs={})</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def on_batch_end(self, batch, logs={}):
+    if batch != 0 and batch % self.batch_freq == 0:
+        # Save validation metrics
+        valid_metrics = self.model.evaluate_generator(self.valid_generator)
+        for i, value in enumerate(valid_metrics):
+            self.history[self.metrics[i]] = self.history[self.metrics[i]] + [value]
+
+        # Save training metrics
+        i = len(self.metrics) // 2
+        while i &lt; len(self.metrics):
+            self.history[self.metrics[i]] = self.history[self.metrics[i]] + [
+                logs[self.metrics[i]]
+            ]
+            i = i + 1
+
+        if self.early_stopping:
+            current = self.get_monitor_value(self.history)
+            if current is None:
+                return
+
+            if self.monitor_op(current - self.min_delta, self.best):
+                self.best = current
+                self.wait = 0
+                if self.restore_best_weights:
+                    self.best_weights = self.model.get_weights()
+            else:
+                self.wait += 1
+                if self.wait &gt;= self.patience:
+                    self.stopped_batch = batch
+                    self.model.stop_training = True
+                    if self.restore_best_weights:
+                        if self.verbose &gt; 0:
+                            print(
+                                &#34;Restoring model weights from the end of &#34;
+                                &#34;the best epoch&#34;
+                            )
+                        self.model.set_weights(self.best_weights)</code></pre>
+</details>
+</dd>
+<dt id="utils.dnn_helper.BatchHistoryEarlyStopping.on_train_begin"><code class="name flex">
+<span>def <span class="ident">on_train_begin</span></span>(<span>self, logs={})</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def on_train_begin(self, logs={}):
+    if self.reset_on_train:
+        self.reset_stats()</code></pre>
+</details>
+</dd>
+<dt id="utils.dnn_helper.BatchHistoryEarlyStopping.on_train_end"><code class="name flex">
+<span>def <span class="ident">on_train_end</span></span>(<span>self, logs=None)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def on_train_end(self, logs=None):
+    if self.early_stopping and self.stopped_epoch &gt; 0 and self.verbose &gt; 0:
+        print(&#34;Batch %05d: early stopping&#34; % (self.stopped_batch + 1))</code></pre>
+</details>
+</dd>
+<dt id="utils.dnn_helper.BatchHistoryEarlyStopping.reset_stats"><code class="name flex">
+<span>def <span class="ident">reset_stats</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def reset_stats(self):
+    self.metrics = (
+            [&#34;loss&#34;]
+            + [&#34;pred_&#34; + target + &#34;_loss&#34; for target in self.targets]
+            + [&#34;pred_&#34; + target + &#34;_accuracy&#34; for target in self.targets]
+    )
+    self.metrics = [&#34;val_&#34; + metric for metric in self.metrics] + self.metrics
+    metrics_values = [[]] * len(self.metrics)
+    self.history = dict(zip(self.metrics, metrics_values))
+
+    if self.early_stopping:
+        # Allow instances to be re-used
+        self.wait = 0
+        self.stopped_epoch = 0
+        if self.baseline is not None:
+            self.best = self.baseline
+        else:
+            self.best = np.Inf if self.monitor_op == np.less else -np.Inf</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="utils.dnn_helper.Model_generator"><code class="flex name class">
+<span>class <span class="ident">Model_generator</span></span>
+<span>(</span><span>input_shape, n_outputs, n_units, model_type='dnn_baseline', activation='softmax', hidden_layers=2, hidden_layer_activation='relu', residual_blocks=10, lstm_blocks=1, dropout_rate=0, recurrent_dropout=0, lstm_l1=0, lstm_l2=0, droput_input_cols=None, remain_input_cols=None)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Class used for generating models according to the parameters specified</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Model_generator:
+    &#34;&#34;&#34; Class used for generating models according to the parameters specified &#34;&#34;&#34;
+    def __init__(self, input_shape, n_outputs, n_units, model_type=&#39;dnn_baseline&#39;, activation=&#39;softmax&#39;, hidden_layers=2, hidden_layer_activation=&#39;relu&#39;, residual_blocks=10, lstm_blocks=1, dropout_rate=0, recurrent_dropout=0, lstm_l1=0, lstm_l2=0, droput_input_cols=None, remain_input_cols=None):
+        self.input_shape = input_shape
+        self.n_outputs = n_outputs
+        self.n_units = n_units
+        self.model_type = model_type
+        self.model_type_list = [&#39;dnn_baseline&#39;, &#39;dnn&#39;, &#39;dnn_residual&#39;, &#39;lstm_baseline&#39;, &#39;lstm&#39;, &#39;attention_lstm&#39;, &#39;attention_lstm_residual&#39;, &#39;attention_lstm_dropout_input&#39;]
+        self.activation = activation
+        self.hidden_layers = hidden_layers
+        self.hidden_layer_activation = hidden_layer_activation
+        self.residual_blocks = residual_blocks
+        self.lstm_blocks = lstm_blocks
+        self.dropout_rate = dropout_rate
+        self.recurrent_dropout = recurrent_dropout
+        self.lstm_l1 = lstm_l1
+        self.lstm_l2 = lstm_l2
+        self.droput_input_cols = droput_input_cols
+        self.remain_input_cols = remain_input_cols
+
+    def get_model(self, model_type=None):
+        if model_type is None:
+            model_type = self.model_type
+        if model_type not in self.model_type_list:
+            raise ValueError(f&#39;Model type {model_type} not in list. Choose one of the following model types: {self.model_type_list}&#39;)
+            
+        if model_type == &#39;dnn_baseline&#39;:
+            return self.dnn_baseline()
+        elif model_type == &#39;dnn&#39;:
+            return self.dnn()
+        elif model_type == &#39;dnn_residual&#39;:
+            return self.dnn_residual()
+        elif model_type == &#39;lstm_baseline&#39;:
+            return self.lstm_baseline()
+        elif model_type == &#39;lstm&#39;:
+            return self.lstm()
+        elif model_type == &#39;attention_lstm&#39;:
+            return self.attention_lstm()
+        elif model_type == &#39;attention_lstm_residual&#39;:
+            return self.attention_lstm_residual()
+        elif model_type == &#39;attention_lstm_dropout_input&#39;:
+            return self.attention_lstm_dropout_input()
+        else:
+            print(&#34;Implementation error, model_type {model_type} is missing&#34;)
+
+    def dnn_baseline(self):
+        input_x = Input(shape = self.input_shape, name=&#39;input&#39;)
+        X = input_x
+        X = Dense(self.n_outputs)(X)
+        X = Activation(self.activation, name = &#39;output&#39;)(X)
+
+        return Model(inputs=input_x, outputs=X, name=&#39;dnn_baseline&#39;)
+    
+    def dnn(self):
+        input_x = Input(shape = self.input_shape, name=&#39;input&#39;)
+        X = input_x
+        for i in range(self.hidden_layers):
+            if self.dropout_rate &gt; 0:
+                X = Dropout(self.dropout_rate, name=&#39;dropout_&#39;+str(i))(X)
+            X = Dense(n_units//(2**i), name=&#39;dense_&#39;+str(i), activation=self.hidden_layer_activation)(X)
+            
+        if self.dropout_rate &gt; 0:
+            X = Dropout(self.dropout_rate, name=&#39;dropout_output&#39;)(X)
+        X = Dense(self.n_outputs, name=&#39;dense_output&#39;)(X)    
+        X = Activation(self.activation, name = &#39;output&#39;)(X)
+
+        return Model(inputs=input_x, outputs=X, name=&#39;dnn&#39;)
+    
+    def dnn_residual(self):
+        input_x = Input(shape = self.input_shape, name=&#39;input&#39;)
+        X = input_x
+        for i in range(self.residual_blocks):
+            if self.dropout_rate &gt; 0:
+                X = Dropout(self.dropout_rate, name=&#39;dropout_res_&#39;+str(i)+&#39;_1&#39;)(X)
+            X_res = Dense(n_units, name=&#39;dense_res_&#39;+str(i)+&#39;_1&#39;, activation=&#39;relu&#39;)(X)
+            
+            if self.dropout_rate &gt; 0:
+                X_res = Dropout(self.dropout_rate, name=&#39;dropout_res_&#39;+str(i)+&#39;_2&#39;)(X_res)
+            X_res = Dense(self.input_shape[-1], name=&#39;dense_res_&#39;+str(i)+&#39;_2&#39;, activation=&#39;relu&#39;)(X_res)
+            
+            X = Add(name=&#39;add_res_&#39;+str(i))([X, X_res])
+            
+        if self.dropout_rate &gt; 0:
+            X = Dropout(self.dropout_rate, name=&#39;dropout_output&#39;)(X)
+        X = Dense(self.n_outputs, name=&#39;dense_output&#39;)(X)    
+        X = Activation(self.activation, name = &#39;output&#39;)(X)
+
+        return Model(inputs=input_x, outputs=X, name=&#39;dnn_residual&#39;)
+    
+    def lstm_baseline(self):
+        input_x = Input(shape = self.input_shape, name=&#39;input&#39;)
+        X = input_x
+        X = BatchNormalization()(X)
+        
+        X = LSTM(self.n_units, return_sequences = False, 
+                 recurrent_dropout=self.recurrent_dropout, 
+                 kernel_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+                 activity_regularizer=l1_l2(self.lstm_l1, self.lstm_l2))(X)
+        if self.dropout_rate &gt; 0:
+            X = Dropout(self.dropout_rate)(X)
+        X = BatchNormalization()(X)
+        X = Dense(self.n_outputs)(X)
+        X = Activation(self.activation, name = &#39;output&#39;)(X)
+
+        return Model(inputs=input_x, outputs=X, name=&#39;lstm_baseline&#39;)
+    
+    def lstm(self):
+        input_x = Input(shape = self.input_shape, name=&#39;input&#39;)
+        X = input_x
+        X = BatchNormalization()(X)
+        for i in range(self.lstm_blocks):
+            X = LSTM(self.n_units, return_sequences = True, 
+                 recurrent_dropout=self.recurrent_dropout, 
+                 kernel_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+                 activity_regularizer=l1_l2(self.lstm_l1, self.lstm_l2))(X)
+            if self.dropout_rate &gt; 0:
+                X = Dropout(self.dropout_rate)(X)
+            X = BatchNormalization()(X)
+                
+        X = LSTM(self.n_units, return_sequences = False, 
+                 recurrent_dropout=self.recurrent_dropout, 
+                 kernel_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+                 activity_regularizer=l1_l2(self.lstm_l1, self.lstm_l2))(X)
+        if self.dropout_rate &gt; 0:
+            X = Dropout(self.dropout_rate)(X)
+        X = BatchNormalization()(X)
+        X = Dense(self.n_outputs)(X)
+        X = Activation(self.activation, name = &#39;output&#39;)(X)
+
+        return Model(inputs=input_x, outputs=X, name=&#39;lstm&#39;)
+    
+    def attention_lstm(self):
+        input_x = Input(shape = self.input_shape, name = &#39;input&#39;)
+        X = input_x
+        
+        for i in range(self.lstm_blocks):
+            query = Dense(10, name=&#39;query_&#39; + str(i))(X)
+            key = Dense(10, name=&#39;key_&#39; + str(i))(X)
+            attention_weights = AdditiveAttention(use_scale = False, name=&#39;attention_&#39;+str(i))([query, X, key])
+            attention_weights = Dense(1, activation=&#39;softmax&#39;, name=&#39;attention_weights_&#39;+str(i))(attention_weights)
+            context = Multiply(name=&#39;context_&#39;+str(i))([attention_weights,X])
+            X = LSTM(self.n_units, return_sequences = True, 
+                     recurrent_dropout=self.recurrent_dropout, 
+                     kernel_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+                     activity_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+                     name = &#39;lstm_&#39; + str(i))(context)
+            if self.dropout_rate &gt; 0:
+                X = Dropout(self.dropout_rate, name=&#39;dropout_&#39;+str(i))(X)
+                
+        X = LSTM(self.n_units, return_sequences = False, 
+                 recurrent_dropout=self.recurrent_dropout, 
+                 kernel_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+                 activity_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+                 name = &#39;lstm_last&#39;)(X)
+        if self.dropout_rate &gt; 0:
+            X = Dropout(self.dropout_rate, name=&#39;dropout_last&#39;)(X)
+        X = Dense(self.n_outputs, activation=self.activation, name = &#39;output&#39;)(X)
+
+        return Model(inputs=input_x, outputs=X, name=&#39;attention_lstm&#39;)
+    
+    def attention_lstm_residual(self):
+        input_x = Input(shape = self.input_shape, name = &#39;input&#39;)
+        X = input_x
+        
+        for i in range(self.lstm_blocks):
+            query = Dense(10, name=&#39;query_&#39; + str(i))(X)
+            key = Dense(10, name=&#39;key_&#39; + str(i))(X)
+            attention_weights = AdditiveAttention(use_scale = False, name=&#39;attention_&#39;+str(i))([query, X, key])
+            attention_weights = Dense(1, activation=&#39;softmax&#39;, name=&#39;attention_weights_&#39;+str(i))(attention_weights)
+            context = Multiply(name=&#39;context_&#39;+str(i))([attention_weights,X])
+            X = LSTM(self.n_units, return_sequences = True, 
+                     recurrent_dropout=self.recurrent_dropout, 
+                     kernel_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+                     activity_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+                     name = &#39;lstm_&#39; + str(i))(context)
+            if self.dropout_rate &gt; 0:
+                X = Dropout(self.dropout_rate, name=&#39;dropout_&#39;+str(i))(X)
+                
+        X = LSTM(self.n_units, return_sequences = False, 
+                 recurrent_dropout=self.recurrent_dropout, 
+                 kernel_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+                 activity_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+                 name = &#39;lstm_last&#39;)(X)
+        if self.dropout_rate &gt; 0:
+            X = Dropout(self.dropout_rate, name=&#39;dropout_last&#39;)(X)
+        
+        crop_input = Cropping1D(cropping=(0, self.input_shape[0] - 1), name=&#39;crop_input&#39;)(input_x)
+        if self.dropout_rate &gt; 0:
+            crop_input = Dropout(self.dropout_rate, name=&#39;dropout_crop_input&#39;)(crop_input)
+        flatten_crop = Flatten(name=&#39;flatten_crop_input&#39;)(crop_input)
+        query_input = Dense(10, name=&#39;query_input&#39;)(flatten_crop)
+        key_input = Dense(10, name=&#39;key_input&#39;)(flatten_crop)
+        attention_weights_input = AdditiveAttention(use_scale = False, name=&#39;attention_input&#39;)([query_input, flatten_crop, key_input])
+        attention_weights_input = Dense(1, activation=&#39;softmax&#39;, name=&#39;attention_weights_input&#39;)(attention_weights_input)
+        context_input = Multiply(name=&#39;context_input&#39;)([attention_weights_input, flatten_crop])
+        concat = Concatenate(name=&#39;concat_output&#39;)([X, context_input])
+        X = Dense(self.n_outputs, activation=self.activation, name = &#39;output&#39;)(concat)
+
+        return Model(inputs=input_x, outputs=X, name=&#39;attention_lstm&#39;)
+    
+    def attention_lstm_dropout_input(self):
+        dropout_input = Input(shape = (seq_len, droput_input_cols), name = &#39;dropout_input&#39;)
+        remain_input = Input(shape = (seq_len, remain_input_cols), name = &#39;remain_input&#39;)
+
+        dropout_x = Dropout(self.dropout_rate)(dropout_input)
+
+        X = Concatenate(axis=-1)([remain_input, dropout_x])
+        
+        for i in range(self.lstm_blocks):
+            query = Dense(10)(X)
+            key = Dense(10)(X)
+            context = AdditiveAttention()([query, X, key])
+            #context = one_step_attention(a)
+            X = LSTM(self.n_units, return_sequences = True, recurrent_dropout=self.recurrent_dropout)(context)
+            if self.dropout_rate &gt; 0:
+                X = Dropout(self.dropout_rate)(X)
+                
+        X = LSTM(self.n_units, return_sequences = False, recurrent_dropout=self.recurrent_dropout)(X)
+        if self.dropout_rate &gt; 0:
+            X = Dropout(self.dropout_rate)(X)
+        X = Dense(self.n_outputs)(X)
+        X = Activation(self.activation, name = &#39;output&#39;)(X)
+
+        return Model(inputs=[dropout_input, remain_input], outputs=X)</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="utils.dnn_helper.Model_generator.attention_lstm"><code class="name flex">
+<span>def <span class="ident">attention_lstm</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def attention_lstm(self):
+    input_x = Input(shape = self.input_shape, name = &#39;input&#39;)
+    X = input_x
+    
+    for i in range(self.lstm_blocks):
+        query = Dense(10, name=&#39;query_&#39; + str(i))(X)
+        key = Dense(10, name=&#39;key_&#39; + str(i))(X)
+        attention_weights = AdditiveAttention(use_scale = False, name=&#39;attention_&#39;+str(i))([query, X, key])
+        attention_weights = Dense(1, activation=&#39;softmax&#39;, name=&#39;attention_weights_&#39;+str(i))(attention_weights)
+        context = Multiply(name=&#39;context_&#39;+str(i))([attention_weights,X])
+        X = LSTM(self.n_units, return_sequences = True, 
+                 recurrent_dropout=self.recurrent_dropout, 
+                 kernel_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+                 activity_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+                 name = &#39;lstm_&#39; + str(i))(context)
+        if self.dropout_rate &gt; 0:
+            X = Dropout(self.dropout_rate, name=&#39;dropout_&#39;+str(i))(X)
+            
+    X = LSTM(self.n_units, return_sequences = False, 
+             recurrent_dropout=self.recurrent_dropout, 
+             kernel_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+             activity_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+             name = &#39;lstm_last&#39;)(X)
+    if self.dropout_rate &gt; 0:
+        X = Dropout(self.dropout_rate, name=&#39;dropout_last&#39;)(X)
+    X = Dense(self.n_outputs, activation=self.activation, name = &#39;output&#39;)(X)
+
+    return Model(inputs=input_x, outputs=X, name=&#39;attention_lstm&#39;)</code></pre>
+</details>
+</dd>
+<dt id="utils.dnn_helper.Model_generator.attention_lstm_dropout_input"><code class="name flex">
+<span>def <span class="ident">attention_lstm_dropout_input</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def attention_lstm_dropout_input(self):
+    dropout_input = Input(shape = (seq_len, droput_input_cols), name = &#39;dropout_input&#39;)
+    remain_input = Input(shape = (seq_len, remain_input_cols), name = &#39;remain_input&#39;)
+
+    dropout_x = Dropout(self.dropout_rate)(dropout_input)
+
+    X = Concatenate(axis=-1)([remain_input, dropout_x])
+    
+    for i in range(self.lstm_blocks):
+        query = Dense(10)(X)
+        key = Dense(10)(X)
+        context = AdditiveAttention()([query, X, key])
+        #context = one_step_attention(a)
+        X = LSTM(self.n_units, return_sequences = True, recurrent_dropout=self.recurrent_dropout)(context)
+        if self.dropout_rate &gt; 0:
+            X = Dropout(self.dropout_rate)(X)
+            
+    X = LSTM(self.n_units, return_sequences = False, recurrent_dropout=self.recurrent_dropout)(X)
+    if self.dropout_rate &gt; 0:
+        X = Dropout(self.dropout_rate)(X)
+    X = Dense(self.n_outputs)(X)
+    X = Activation(self.activation, name = &#39;output&#39;)(X)
+
+    return Model(inputs=[dropout_input, remain_input], outputs=X)</code></pre>
+</details>
+</dd>
+<dt id="utils.dnn_helper.Model_generator.attention_lstm_residual"><code class="name flex">
+<span>def <span class="ident">attention_lstm_residual</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def attention_lstm_residual(self):
+    input_x = Input(shape = self.input_shape, name = &#39;input&#39;)
+    X = input_x
+    
+    for i in range(self.lstm_blocks):
+        query = Dense(10, name=&#39;query_&#39; + str(i))(X)
+        key = Dense(10, name=&#39;key_&#39; + str(i))(X)
+        attention_weights = AdditiveAttention(use_scale = False, name=&#39;attention_&#39;+str(i))([query, X, key])
+        attention_weights = Dense(1, activation=&#39;softmax&#39;, name=&#39;attention_weights_&#39;+str(i))(attention_weights)
+        context = Multiply(name=&#39;context_&#39;+str(i))([attention_weights,X])
+        X = LSTM(self.n_units, return_sequences = True, 
+                 recurrent_dropout=self.recurrent_dropout, 
+                 kernel_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+                 activity_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+                 name = &#39;lstm_&#39; + str(i))(context)
+        if self.dropout_rate &gt; 0:
+            X = Dropout(self.dropout_rate, name=&#39;dropout_&#39;+str(i))(X)
+            
+    X = LSTM(self.n_units, return_sequences = False, 
+             recurrent_dropout=self.recurrent_dropout, 
+             kernel_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+             activity_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+             name = &#39;lstm_last&#39;)(X)
+    if self.dropout_rate &gt; 0:
+        X = Dropout(self.dropout_rate, name=&#39;dropout_last&#39;)(X)
+    
+    crop_input = Cropping1D(cropping=(0, self.input_shape[0] - 1), name=&#39;crop_input&#39;)(input_x)
+    if self.dropout_rate &gt; 0:
+        crop_input = Dropout(self.dropout_rate, name=&#39;dropout_crop_input&#39;)(crop_input)
+    flatten_crop = Flatten(name=&#39;flatten_crop_input&#39;)(crop_input)
+    query_input = Dense(10, name=&#39;query_input&#39;)(flatten_crop)
+    key_input = Dense(10, name=&#39;key_input&#39;)(flatten_crop)
+    attention_weights_input = AdditiveAttention(use_scale = False, name=&#39;attention_input&#39;)([query_input, flatten_crop, key_input])
+    attention_weights_input = Dense(1, activation=&#39;softmax&#39;, name=&#39;attention_weights_input&#39;)(attention_weights_input)
+    context_input = Multiply(name=&#39;context_input&#39;)([attention_weights_input, flatten_crop])
+    concat = Concatenate(name=&#39;concat_output&#39;)([X, context_input])
+    X = Dense(self.n_outputs, activation=self.activation, name = &#39;output&#39;)(concat)
+
+    return Model(inputs=input_x, outputs=X, name=&#39;attention_lstm&#39;)</code></pre>
+</details>
+</dd>
+<dt id="utils.dnn_helper.Model_generator.dnn"><code class="name flex">
+<span>def <span class="ident">dnn</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def dnn(self):
+    input_x = Input(shape = self.input_shape, name=&#39;input&#39;)
+    X = input_x
+    for i in range(self.hidden_layers):
+        if self.dropout_rate &gt; 0:
+            X = Dropout(self.dropout_rate, name=&#39;dropout_&#39;+str(i))(X)
+        X = Dense(n_units//(2**i), name=&#39;dense_&#39;+str(i), activation=self.hidden_layer_activation)(X)
+        
+    if self.dropout_rate &gt; 0:
+        X = Dropout(self.dropout_rate, name=&#39;dropout_output&#39;)(X)
+    X = Dense(self.n_outputs, name=&#39;dense_output&#39;)(X)    
+    X = Activation(self.activation, name = &#39;output&#39;)(X)
+
+    return Model(inputs=input_x, outputs=X, name=&#39;dnn&#39;)</code></pre>
+</details>
+</dd>
+<dt id="utils.dnn_helper.Model_generator.dnn_baseline"><code class="name flex">
+<span>def <span class="ident">dnn_baseline</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def dnn_baseline(self):
+    input_x = Input(shape = self.input_shape, name=&#39;input&#39;)
+    X = input_x
+    X = Dense(self.n_outputs)(X)
+    X = Activation(self.activation, name = &#39;output&#39;)(X)
+
+    return Model(inputs=input_x, outputs=X, name=&#39;dnn_baseline&#39;)</code></pre>
+</details>
+</dd>
+<dt id="utils.dnn_helper.Model_generator.dnn_residual"><code class="name flex">
+<span>def <span class="ident">dnn_residual</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def dnn_residual(self):
+    input_x = Input(shape = self.input_shape, name=&#39;input&#39;)
+    X = input_x
+    for i in range(self.residual_blocks):
+        if self.dropout_rate &gt; 0:
+            X = Dropout(self.dropout_rate, name=&#39;dropout_res_&#39;+str(i)+&#39;_1&#39;)(X)
+        X_res = Dense(n_units, name=&#39;dense_res_&#39;+str(i)+&#39;_1&#39;, activation=&#39;relu&#39;)(X)
+        
+        if self.dropout_rate &gt; 0:
+            X_res = Dropout(self.dropout_rate, name=&#39;dropout_res_&#39;+str(i)+&#39;_2&#39;)(X_res)
+        X_res = Dense(self.input_shape[-1], name=&#39;dense_res_&#39;+str(i)+&#39;_2&#39;, activation=&#39;relu&#39;)(X_res)
+        
+        X = Add(name=&#39;add_res_&#39;+str(i))([X, X_res])
+        
+    if self.dropout_rate &gt; 0:
+        X = Dropout(self.dropout_rate, name=&#39;dropout_output&#39;)(X)
+    X = Dense(self.n_outputs, name=&#39;dense_output&#39;)(X)    
+    X = Activation(self.activation, name = &#39;output&#39;)(X)
+
+    return Model(inputs=input_x, outputs=X, name=&#39;dnn_residual&#39;)</code></pre>
+</details>
+</dd>
+<dt id="utils.dnn_helper.Model_generator.get_model"><code class="name flex">
+<span>def <span class="ident">get_model</span></span>(<span>self, model_type=None)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_model(self, model_type=None):
+    if model_type is None:
+        model_type = self.model_type
+    if model_type not in self.model_type_list:
+        raise ValueError(f&#39;Model type {model_type} not in list. Choose one of the following model types: {self.model_type_list}&#39;)
+        
+    if model_type == &#39;dnn_baseline&#39;:
+        return self.dnn_baseline()
+    elif model_type == &#39;dnn&#39;:
+        return self.dnn()
+    elif model_type == &#39;dnn_residual&#39;:
+        return self.dnn_residual()
+    elif model_type == &#39;lstm_baseline&#39;:
+        return self.lstm_baseline()
+    elif model_type == &#39;lstm&#39;:
+        return self.lstm()
+    elif model_type == &#39;attention_lstm&#39;:
+        return self.attention_lstm()
+    elif model_type == &#39;attention_lstm_residual&#39;:
+        return self.attention_lstm_residual()
+    elif model_type == &#39;attention_lstm_dropout_input&#39;:
+        return self.attention_lstm_dropout_input()
+    else:
+        print(&#34;Implementation error, model_type {model_type} is missing&#34;)</code></pre>
+</details>
+</dd>
+<dt id="utils.dnn_helper.Model_generator.lstm"><code class="name flex">
+<span>def <span class="ident">lstm</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def lstm(self):
+    input_x = Input(shape = self.input_shape, name=&#39;input&#39;)
+    X = input_x
+    X = BatchNormalization()(X)
+    for i in range(self.lstm_blocks):
+        X = LSTM(self.n_units, return_sequences = True, 
+             recurrent_dropout=self.recurrent_dropout, 
+             kernel_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+             activity_regularizer=l1_l2(self.lstm_l1, self.lstm_l2))(X)
+        if self.dropout_rate &gt; 0:
+            X = Dropout(self.dropout_rate)(X)
+        X = BatchNormalization()(X)
+            
+    X = LSTM(self.n_units, return_sequences = False, 
+             recurrent_dropout=self.recurrent_dropout, 
+             kernel_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+             activity_regularizer=l1_l2(self.lstm_l1, self.lstm_l2))(X)
+    if self.dropout_rate &gt; 0:
+        X = Dropout(self.dropout_rate)(X)
+    X = BatchNormalization()(X)
+    X = Dense(self.n_outputs)(X)
+    X = Activation(self.activation, name = &#39;output&#39;)(X)
+
+    return Model(inputs=input_x, outputs=X, name=&#39;lstm&#39;)</code></pre>
+</details>
+</dd>
+<dt id="utils.dnn_helper.Model_generator.lstm_baseline"><code class="name flex">
+<span>def <span class="ident">lstm_baseline</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def lstm_baseline(self):
+    input_x = Input(shape = self.input_shape, name=&#39;input&#39;)
+    X = input_x
+    X = BatchNormalization()(X)
+    
+    X = LSTM(self.n_units, return_sequences = False, 
+             recurrent_dropout=self.recurrent_dropout, 
+             kernel_regularizer=l1_l2(self.lstm_l1, self.lstm_l2),
+             activity_regularizer=l1_l2(self.lstm_l1, self.lstm_l2))(X)
+    if self.dropout_rate &gt; 0:
+        X = Dropout(self.dropout_rate)(X)
+    X = BatchNormalization()(X)
+    X = Dense(self.n_outputs)(X)
+    X = Activation(self.activation, name = &#39;output&#39;)(X)
+
+    return Model(inputs=input_x, outputs=X, name=&#39;lstm_baseline&#39;)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="utils" href="index.html">utils</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="utils.dnn_helper.KFolds_flow_from_dataframe" href="#utils.dnn_helper.KFolds_flow_from_dataframe">KFolds_flow_from_dataframe</a></code></li>
+<li><code><a title="utils.dnn_helper.bce_dice_loss" href="#utils.dnn_helper.bce_dice_loss">bce_dice_loss</a></code></li>
+<li><code><a title="utils.dnn_helper.config_model_trainable" href="#utils.dnn_helper.config_model_trainable">config_model_trainable</a></code></li>
+<li><code><a title="utils.dnn_helper.df_to_dataset" href="#utils.dnn_helper.df_to_dataset">df_to_dataset</a></code></li>
+<li><code><a title="utils.dnn_helper.dice_coef" href="#utils.dnn_helper.dice_coef">dice_coef</a></code></li>
+<li><code><a title="utils.dnn_helper.dice_loss" href="#utils.dnn_helper.dice_loss">dice_loss</a></code></li>
+<li><code><a title="utils.dnn_helper.dnn_plot_roc_auc" href="#utils.dnn_helper.dnn_plot_roc_auc">dnn_plot_roc_auc</a></code></li>
+<li><code><a title="utils.dnn_helper.fold_training" href="#utils.dnn_helper.fold_training">fold_training</a></code></li>
+<li><code><a title="utils.dnn_helper.load_train" href="#utils.dnn_helper.load_train">load_train</a></code></li>
+<li><code><a title="utils.dnn_helper.make_pred" href="#utils.dnn_helper.make_pred">make_pred</a></code></li>
+<li><code><a title="utils.dnn_helper.save_train" href="#utils.dnn_helper.save_train">save_train</a></code></li>
+<li><code><a title="utils.dnn_helper.visualize" href="#utils.dnn_helper.visualize">visualize</a></code></li>
+<li><code><a title="utils.dnn_helper.visualize_acc_loss" href="#utils.dnn_helper.visualize_acc_loss">visualize_acc_loss</a></code></li>
+<li><code><a title="utils.dnn_helper.visualize_training" href="#utils.dnn_helper.visualize_training">visualize_training</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="utils.dnn_helper.BatchHistoryEarlyStopping" href="#utils.dnn_helper.BatchHistoryEarlyStopping">BatchHistoryEarlyStopping</a></code></h4>
+<ul class="">
+<li><code><a title="utils.dnn_helper.BatchHistoryEarlyStopping.get_monitor_value" href="#utils.dnn_helper.BatchHistoryEarlyStopping.get_monitor_value">get_monitor_value</a></code></li>
+<li><code><a title="utils.dnn_helper.BatchHistoryEarlyStopping.on_batch_end" href="#utils.dnn_helper.BatchHistoryEarlyStopping.on_batch_end">on_batch_end</a></code></li>
+<li><code><a title="utils.dnn_helper.BatchHistoryEarlyStopping.on_train_begin" href="#utils.dnn_helper.BatchHistoryEarlyStopping.on_train_begin">on_train_begin</a></code></li>
+<li><code><a title="utils.dnn_helper.BatchHistoryEarlyStopping.on_train_end" href="#utils.dnn_helper.BatchHistoryEarlyStopping.on_train_end">on_train_end</a></code></li>
+<li><code><a title="utils.dnn_helper.BatchHistoryEarlyStopping.reset_stats" href="#utils.dnn_helper.BatchHistoryEarlyStopping.reset_stats">reset_stats</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="utils.dnn_helper.Model_generator" href="#utils.dnn_helper.Model_generator">Model_generator</a></code></h4>
+<ul class="">
+<li><code><a title="utils.dnn_helper.Model_generator.attention_lstm" href="#utils.dnn_helper.Model_generator.attention_lstm">attention_lstm</a></code></li>
+<li><code><a title="utils.dnn_helper.Model_generator.attention_lstm_dropout_input" href="#utils.dnn_helper.Model_generator.attention_lstm_dropout_input">attention_lstm_dropout_input</a></code></li>
+<li><code><a title="utils.dnn_helper.Model_generator.attention_lstm_residual" href="#utils.dnn_helper.Model_generator.attention_lstm_residual">attention_lstm_residual</a></code></li>
+<li><code><a title="utils.dnn_helper.Model_generator.dnn" href="#utils.dnn_helper.Model_generator.dnn">dnn</a></code></li>
+<li><code><a title="utils.dnn_helper.Model_generator.dnn_baseline" href="#utils.dnn_helper.Model_generator.dnn_baseline">dnn_baseline</a></code></li>
+<li><code><a title="utils.dnn_helper.Model_generator.dnn_residual" href="#utils.dnn_helper.Model_generator.dnn_residual">dnn_residual</a></code></li>
+<li><code><a title="utils.dnn_helper.Model_generator.get_model" href="#utils.dnn_helper.Model_generator.get_model">get_model</a></code></li>
+<li><code><a title="utils.dnn_helper.Model_generator.lstm" href="#utils.dnn_helper.Model_generator.lstm">lstm</a></code></li>
+<li><code><a title="utils.dnn_helper.Model_generator.lstm_baseline" href="#utils.dnn_helper.Model_generator.lstm_baseline">lstm_baseline</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.7.2</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

@@ -1,0 +1,1168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.7.2" />
+<title>utils.feature_selection_utils API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{font-weight:bold}#index h4 + ul{margin-bottom:.6em}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>utils.feature_selection_utils</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">import pandas as pd
+import numpy as np
+from tqdm import tqdm_notebook
+from scipy import stats
+from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
+import seaborn as sns
+import os
+import catboost as cb
+
+from plot_utils import plot_scatter, get_subplot_rows_cols
+
+def covariate_shift(train, test, categorical_columns, n_samples, iterations = 200, weights_coef = 1, AUC_threshold = 0.8, importance_threshold = 0.9, max_loops = 20, test_size = 0.1, trys_all_influencer=5, calc_sample_weights=True, task_type=&#34;CPU&#34;, data_dir=&#39;&#39;, load_cov=False, save_cov=False, plot=True):
+    &#34;&#34;&#34; Select features without Covariate Shift between training and test set using iteratively CatBoostClassifier to identify relation between train and test &#34;&#34;&#34;
+    if not os.path.exists(data_dir + &#39;cov_shift_features.pkl&#39;) or not load_cov:
+        train_sample = train.sample(n_samples)
+        train_sample.loc[:,&#39;origin&#39;] = 0
+
+        test_sample = test.sample(n_samples)
+        test_sample.loc[:,&#39;origin&#39;] = 1
+
+        combined_train, combined_test = train_test_split(
+            pd.concat([train_sample.reset_index(drop=True), test_sample.reset_index(drop=True)]), 
+            test_size = test_size, 
+            shuffle = True)
+
+        try:
+
+            influence_columns = []
+            count_all_influencer = 0
+            i = 0
+            AUC_score = 1
+            while i &lt; max_loops and AUC_score &gt; AUC_threshold:
+
+                x_columns = combined_train.columns.drop([&#39;origin&#39;,] + influence_columns)
+
+                # Get the indexes for the categorical columns which CatBoost requires to out-perform other algorithms
+                cat_features_index = [list(x_columns).index(col) for col in categorical_columns if col in list(x_columns)]
+
+                # Do the feature selection once and only try again if no feature is selected
+                cov_shift_feature_selection = []
+                while len(cov_shift_feature_selection) == 0 and count_all_influencer &lt; trys_all_influencer:
+                    if count_all_influencer &gt; 0:
+                        print(&#34;Try again because model has set any feature as influencer&#34;)
+                    
+                    cov_shift_model = cb.CatBoostClassifier(iterations = iterations,
+                                                            eval_metric = &#34;AUC&#34;,
+                                                            cat_features = cat_features_index,
+                                                            task_type = task_type,
+                                                            verbose = False
+                                                   )
+                    cov_shift_feature_selection, df_cov_shift_feature_selection = shadow_feature_selection(
+                        cov_shift_model, 
+                        combined_train[&#39;origin&#39;], combined_train[x_columns], 
+                        need_cat_features_index=True, categorical_columns=categorical_columns, 
+                        collinear_threshold = 1,
+                        n_iterations_mean = 1, times_no_change_features = 1
+                    )
+                    
+                    count_all_influencer += 1
+                
+                if count_all_influencer == trys_all_influencer:
+                    cov_shift_feature_selection = list(x_columns)
+                
+                # Get the indexes for the categorical columns which CatBoost requires to out-perform other algorithms
+                cat_features_index = [cov_shift_feature_selection.index(col) for col in categorical_columns if col in cov_shift_feature_selection]
+
+                params = {&#39;iterations&#39; : 2*iterations, &#39;learning_rate&#39; : 0.05, &#39;depth&#39; : 6}
+
+                cov_shift_model = cb.CatBoostClassifier(iterations = iterations,
+                                                   eval_metric = &#34;AUC&#34;,
+                                                   cat_features = cat_features_index,
+                                                   scale_pos_weight = combined_train[&#39;origin&#39;].value_counts()[0] / combined_train[&#39;origin&#39;].value_counts()[1],
+                                                   task_type = task_type,
+                                                   verbose = False
+                                               )
+
+                cov_shift_model.set_params(**params)
+                cov_shift_model.fit(combined_train.drop(&#39;origin&#39;, axis = 1)[cov_shift_feature_selection],
+                                   combined_train[&#39;origin&#39;], 
+                                   eval_set = (combined_test.drop(&#39;origin&#39;, axis = 1)[cov_shift_feature_selection], combined_test[&#39;origin&#39;]),
+                                   use_best_model = True,
+                                   #sample_weight = sample_weight,
+                                   #early_stopping_rounds = True,
+                                   plot = False,
+                                   verbose = False)
+
+                AUC_score = cov_shift_model.get_best_score()[&#39;validation&#39;][&#39;AUC&#39;]
+                print(f&#34;Model score AUC of {AUC_score} on test&#34;)
+
+                # Remove the features which cumulative importance is relevant to predict origin of data (train or test)
+                if count_all_influencer != trys_all_influencer:
+                    df_cov_shift_importance = pd.DataFrame(cov_shift_model.feature_importances_, columns = [&#39;importance&#39;], index = cov_shift_feature_selection)
+                    df_cov_shift_importance[&#39;cumulative_importance&#39;] = df_cov_shift_importance[&#39;importance&#39;].cumsum() / df_cov_shift_importance[&#39;importance&#39;].sum()
+
+                    new_influence_columns = list(df_cov_shift_importance[df_cov_shift_importance[&#39;cumulative_importance&#39;] &lt; importance_threshold].index)
+                    influence_columns = influence_columns + new_influence_columns
+
+                    print(f&#34;New {len(new_influence_columns)} columns will be removed from model: &#34;, new_influence_columns)
+                    print()
+                    
+                count_all_influencer = 0
+                
+                i = i + 1
+        finally:
+
+            print()
+            print(f&#34;Due to difference of influence of features to distinguish between data and submission, {len(influence_columns)} columns are removed:&#34;)
+            print(influence_columns)
+            
+            if calc_sample_weights:
+                print(&#34;Calculating weights for each training sample&#34;)
+                probs = cov_shift_model.predict_proba(train[cov_shift_model.feature_names_])[:, 1] #calculating the probability
+
+                #print(&#34;Plot Train AUC&#34;)
+                #plot_roc_auc(pd.Serie(1,index = train.index), probs)
+
+                sample_weight = -np.log(probs) 
+                sample_weight /= max(sample_weight) # Normalizing the weights
+
+                sample_weight = 1 + weights_coef * sample_weight
+
+                if plot:
+                    plt.xlabel(&#39;Computed sample weight&#39;)
+                    plt.ylabel(&#39;# Samples&#39;)
+                    sns.distplot(sample_weight, kde=False)
+            
+            if save_cov:
+                with open(data_dir + &#39;cov_shift_features.pkl&#39;, &#39;wb&#39;) as file:
+                    print(&#34;Saving data in &#34;, data_dir + &#39;cov_shift_features.pkl&#39;)
+                    pickle.dump(influence_columns, file)
+    else:
+        print(&#34;Loading influence columns from &#34;,data_dir)
+
+        with open(data_dir + &#39;cov_shift_features.pkl&#39;, &#39;rb&#39;) as file:
+            influence_columns = pickle.load(file)
+
+        cov_shift_model = None
+        sample_weight = [1,] * len(train)
+            
+    return influence_columns, cov_shift_model, sample_weight
+
+def stadistic_difference_distributions(data, submission, time_column, test_percentage=0.2, p_value_threshold=None,
+                                       verbose=False):
+    &#34;&#34;&#34; Calculate relation between initial and end part of the dataset for each column using Kolmogorov-Smirnov statistic on 2 samples &#34;&#34;&#34;
+    train, test = train_test_split(data.sort_values(time_column), test_size=test_percentage, shuffle=False)
+
+    time_analysis_df = pd.DataFrame(False, columns=[&#39;train_test&#39;, &#39;train_submission&#39;, &#39;test_submission&#39;],
+                                    index=submission.columns.values)
+
+    for col in tqdm_notebook(submission.columns.values):
+        try:
+            KS_stat_test, p_value_test = stats.ks_2samp(train[col], test[col])
+            KS_stat_submission, p_value_submission = stats.ks_2samp(train[col], submission[col])
+            KS_stat_test_submission, p_value_test_submission = stats.ks_2samp(test[col], submission[col])
+
+            time_analysis_df.loc[col] = [p_value_test, p_value_submission, p_value_test_submission]
+
+            if verbose:
+                if p_value_test &lt;= p_value_threshold or p_value_submission &lt;= p_value_threshold or p_value_test_submission &lt;= p_value_threshold:
+                    print_s = f&#39;Column {col} has different distribution&#39;
+                    if p_value_test &lt;= p_value_threshold:
+                        print_s = print_s + &#39; // train &lt;--&gt; test&#39;
+                    if p_value_submission &lt;= p_value_threshold:
+                        print_s = print_s + &#39; // train &lt;--&gt; submission&#39;
+                    if p_value_test_submission &lt;= p_value_threshold:
+                        print_s = print_s + &#39; // test &lt;--&gt; submission&#39;
+                    print(print_s)
+        except TypeError:
+            time_analysis_df.loc[col] = [np.nan, np.nan, np.nan]
+
+    if p_value_threshold == None:
+        cond1 = time_analysis_df[&#39;train_test&#39;] == 0
+        cond2 = time_analysis_df[&#39;train_submission&#39;] == 0
+        cond3 = time_analysis_df[&#39;test_submission&#39;] == 0
+    else:
+        cond1 = time_analysis_df[&#39;train_test&#39;] &lt;= p_value_threshold
+        cond2 = time_analysis_df[&#39;train_submission&#39;] &lt;= p_value_threshold
+        cond3 = time_analysis_df[&#39;test_submission&#39;] &lt;= p_value_threshold
+
+    cols_to_remove = list(time_analysis_df[cond1 | cond2 | cond3].index)
+
+    return time_analysis_df, cols_to_remove
+
+def outliers_analysis(full_data, features_names=None, x_column=None, subplot_rows=None, subplot_cols=None, starting_index=0,
+                      index_offset=0, z_score_threshold=3.5, use_mean=False, plot=True, num_bins=50):
+    &#34;&#34;&#34; Calculate and visualize outliers analysis from Modified Z-score with MAD &#34;&#34;&#34;
+    # Compatibility with numpy arrays
+    if type(full_data) == np.ndarray:
+        assert len(full_data.shape) &lt;= 2
+        if len(full_data.shape) == 1:
+            columns = [&#39;feature&#39;]
+        else:
+            columns = [&#39;feature_&#39;+str(i) for i in range(full_data.shape[-1])]
+        full_data = pd.DataFrame(full_data, columns=columns)
+    
+    # Features not provided, use all the columns
+    if features_names is None:
+        features_names = list(full_data.columns)
+    
+    if plot:
+        # Set a good relation rows/cols for the plot if not specified
+        if subplot_rows is None or subplot_cols is None:
+            subplot_rows, subplot_cols = get_subplot_rows_cols(len(features_names), [3,4,5])
+                    
+        # Resize for better visualization of subplots
+        plt.rcParams[&#39;figure.figsize&#39;] = [subplot_cols * 5, subplot_rows * 4]
+        fig, axes = plt.subplots(subplot_rows, subplot_cols, sharex=False, sharey=False)
+
+    outliers_pd = full_data.copy()
+
+    outliers_summary = {}
+
+    i = starting_index
+    while i &lt; len(features_names):
+        feature_name = features_names[i]
+
+        data = outliers_pd.loc[outliers_pd[feature_name].notnull(), feature_name]
+
+        # Modified Z-score with MAD (Median Absolute Deviation)
+        if use_mean:
+            outliers_pd.loc[outliers_pd[feature_name].notnull(), feature_name + &#39;_zscore&#39;] = 0.6745 * (data - data.mean()).abs() / (
+                data - data.mean()).abs().mean()
+        else:
+            outliers_pd.loc[outliers_pd[feature_name].notnull(), feature_name + &#39;_zscore&#39;] = 0.6745 * (data - data.median()).abs() / (
+                data - data.median()).abs().median()
+        outliers_pd[feature_name + &#39;_zscore_outliers&#39;] = outliers_pd[feature_name + &#39;_zscore&#39;] &gt; z_score_threshold
+
+        if plot:
+            # Take into account the case of only one plot
+            if subplot_rows * subplot_cols == 1:
+                ax = axes
+            elif subplot_rows == 1:
+                ax = axes[(i + index_offset) % subplot_cols]
+            else:
+                ax = axes[(i + index_offset) // subplot_cols, (i + index_offset) % subplot_cols]
+            
+            # If X_column provided plot scatter, otherwise histogram
+            if x_column is None:
+                bins = np.linspace(data.min(), data.max(), num_bins)
+                ax.hist(data[~outliers_pd[feature_name + &#39;_zscore_outliers&#39;]], bins=bins, density=False)
+                ax.hist(data[outliers_pd[feature_name + &#39;_zscore_outliers&#39;]], bins=bins, density=False)
+                ax.set_title(feature_name)
+            else:
+                plot_scatter(outliers_pd[outliers_pd[feature_name].notnull()], x_column=x_column, y_column=feature_name,
+                         axes=ax, highlight_column=feature_name + &#39;_zscore_outliers&#39;)
+
+        outliers_percentage = 100 * outliers_pd[feature_name + &#39;_zscore_outliers&#39;].sum() / outliers_pd[
+            feature_name + &#39;_zscore_outliers&#39;].count()
+        outliers_summary[feature_name] = outliers_percentage
+
+        print(&#34;Feature: &#34;, feature_name, &#34; - Percentage of outliers using modified Z-score approach is: &#34;,
+              np.round(outliers_percentage, 2), &#34;%&#34;)
+
+        i = i + 1
+
+    if plot:
+        fig.tight_layout()
+
+        # Resize to original settings
+        plt.rcParams[&#39;figure.figsize&#39;] = [10, 6]
+
+    outliers_summary = pd.DataFrame.from_dict(outliers_summary, orient=&#39;index&#39;, columns=[&#39;Percentage&#39;])
+        
+    return outliers_summary, outliers_pd
+
+def feature_selection(classifier_initial, y_train, x_train, n_top_features=50, baseline_features=[],
+                      min_importance=None):
+    &#34;&#34;&#34; Select features which have the top N feature importance and/or above baseline &#34;&#34;&#34;
+    classifier_model = classifier_initial.fit(x_train, y_train)
+
+    feature_importance = sorted(zip(map(lambda x: round(x, 4), classifier_model.feature_importances_), x_train),
+                                reverse=True)
+    dict_feature_importance = dict(zip(x_train, map(lambda x: round(x, 4), estimator.feature_importances_)))
+
+    if baseline_features:
+        min_importance = max([importance for importance, feature in feature_importance if feature in baseline_features])
+
+    model_columns = []
+    i = 0
+    while i &lt; n_top_features and i &lt; len(feature_importance):
+        if feature_importance[i][0] &gt; min_importance:
+            model_columns.append(feature_importance[i][1])
+        else:
+            break
+        i = i + 1
+
+    return model_columns
+
+
+def cumulative_feature_selection(df_feature_importance, cum_importance_threshold):
+    &#34;&#34;&#34; Select features which are below of the cumulative feature importance threshold &#34;&#34;&#34;
+    df_feature_importance = pd.DataFrame(df_feature_importance, columns=[&#39;importance&#39;])
+    df_feature_importance[&#39;cumulative_importance&#39;] = df_feature_importance[&#39;importance&#39;].cumsum() / \
+                                                     df_feature_importance[&#39;importance&#39;].sum()
+
+    print(&#34;Removed &#34;, sum(df_feature_importance[&#39;cumulative_importance&#39;] &gt;= cum_importance_threshold),
+          &#34; features due to low importance:&#34;)
+    print(
+        df_feature_importance[df_feature_importance[&#39;cumulative_importance&#39;] &gt;= cum_importance_threshold].index.values)
+
+    df_feature_importance = df_feature_importance[
+        df_feature_importance[&#39;cumulative_importance&#39;] &lt; cum_importance_threshold]
+
+    return df_feature_importance
+
+
+def collinear_feature_selection(x_train, df_feature_importance, collinear_threshold=0.98, plot=True):
+    &#34;&#34;&#34; Select features which have less collinearity below the threshold &#34;&#34;&#34;
+    correlation = x_train[df_feature_importance.index].corr()
+
+    if plot:
+        correlation.round(3).style.background_gradient(cmap=&#39;coolwarm&#39;)
+
+    cond1 = pd.DataFrame(np.triu(np.ones(correlation.shape[0]) - np.eye(correlation.shape[0])),
+                         columns=correlation.columns, index=correlation.index) == 1
+    corr_final = (correlation &gt; collinear_threshold) &amp; cond1
+    corr_final = corr_final.loc[:, corr_final.any()]
+
+    features_remove = []
+    columns = corr_final.columns.values
+    rows = corr_final.index.values
+
+    for i in tqdm_notebook(range(corr_final.shape[1]), desc=&#39;1st Loop&#39;):
+
+        # If a feature is already on the remove list, then it is not needed to check
+        if columns[i] in features_remove:
+            continue
+
+        j_max = np.where(rows == columns[i])
+
+        for j in tqdm_notebook(range(corr_final.shape[0]), desc=&#39;2nd Loop&#39;, leave=False):
+
+            if j == j_max:
+                break
+
+            # Feature columns[i] and feature rows[j] are collinear
+            if corr_final.iloc[j, i]:
+
+                # If a feature is already on the remove list, then it is not needed to check
+                if rows[j] in features_remove:
+                    continue
+
+                # Remove the one which has less importance
+                importance_i = df_feature_importance.loc[columns[i], &#39;importance&#39;]
+                importance_j = df_feature_importance.loc[rows[j], &#39;importance&#39;]
+                if importance_i &lt; importance_j:
+                    features_remove.append(columns[i])
+                else:
+                    features_remove.append(columns[j])
+
+    print(&#34;Removed &#34;, len(features_remove), &#34; features due to collinearity: &#34;)
+    print(features_remove)
+    df_feature_importance = df_feature_importance.drop(features_remove)
+
+    return df_feature_importance
+
+
+def shadow_feature_selection(classifier_initial, y_train, x_train, eval_set=None, n_top_features=None, collinear_threshold=0.98, cum_importance_threshold=0.99, times_no_change_features=2, max_loops=50, n_iterations_mean=3, need_cat_features_index=False, categorical_columns=[], verbose=True, debug=False, plot_correlation=False):
+    &#34;&#34;&#34; Select features which have greater feature importance than random and than shuffle shadowed feature of itself &#34;&#34;&#34;
+    # Create 3 random features which will serve as baseline to reject features
+    baseline_features = [&#39;random_binary&#39;, &#39;random_uniform&#39;, &#39;random_integers&#39;]
+    x_train = x_train.drop(baseline_features, axis=1, errors=&#39;ignore&#39;)
+    x_train[&#39;random_binary&#39;] = np.random.choice([0, 1], x_train.shape[0])
+    x_train[&#39;random_uniform&#39;] = np.random.uniform(0, 1, x_train.shape[0])
+    x_train[&#39;random_integers&#39;] = np.random.randint(0, x_train.shape[0] / 2, x_train.shape[0])
+
+    # For each feature it creates a shadow_feature which will have same values but shuffled
+    x_train_shadow, dict_shadow_names = _create_shadow(x_train, baseline_features)
+
+    count_no_changes = 0
+    x_all_columns = baseline_features + list(dict_shadow_names.keys()) + list(dict_shadow_names.values())
+
+    # &#34;Infinite&#34; loop till one of the stopping criterias stop removing features
+    for i in tqdm_notebook(range(max_loops), desc=&#39;Main Loop&#39;):
+        if dict_shadow_names == {}:
+            print(&#34;Stopping because no feature found to be relevant&#34;)
+            return [], pd.DataFrame([])
+        
+        print(&#34;Loop number: &#34;, i, &#34; with still &#34;, len(dict_shadow_names.keys()), &#34; features&#34;)
+
+        # Take a copy of current columns to check stopping criteria of changing columns
+        x_all_columns_prev = x_all_columns.copy()
+        x_all_columns_prev.sort()
+        if debug:
+            print(&#34;x_all_columns_prev: &#34;, x_all_columns_prev)
+
+        # Get the feature importance for each column (real, shadow and baseline)
+        df_feature_importance = get_feature_importance_mean(classifier_initial, y_train, x_train_shadow[x_all_columns],
+                                                            n_iterations_mean=n_iterations_mean,
+                                                            need_cat_features_index=need_cat_features_index,
+                                                            categorical_columns=categorical_columns,
+                                                            dict_shadow_names=dict_shadow_names,
+                                                            eval_set=eval_set)
+
+        # Take as minimum value of feature importance as the greatest value of the baselines features
+        if baseline_features != []:
+            min_importance = df_feature_importance[baseline_features].max()
+        else:
+            min_importance = 0
+
+        # Drop all features that have lower importance than their shadow or lower than the baseline features
+        dict_shadow_names_copy = dict_shadow_names.copy()
+        for real_col, shadow_col in dict_shadow_names.items():
+            if df_feature_importance[shadow_col] &gt;= df_feature_importance[real_col] or df_feature_importance[
+                real_col] &lt; min_importance:
+                del dict_shadow_names_copy[real_col]
+
+                if debug:
+                    print(&#34;Removing feature: &#34;, real_col)
+
+        if debug:
+            print(&#34;dict_shadow_names: &#34;, dict_shadow_names)
+            print(&#34;--------------------------------------------------------&#34;)
+            print(&#34;dict_shadow_names_copy: &#34;, dict_shadow_names_copy)
+            print()
+            print(&#34;--------------------------------------------------------&#34;)
+            print()
+        dict_shadow_names = dict_shadow_names_copy.copy()
+
+        if debug:
+            print(&#34;dict_shadow_names: &#34;, dict_shadow_names)
+            print(&#34;--------------------------------------------------------&#34;)
+            print(&#34;dict_shadow_names_copy: &#34;, dict_shadow_names_copy)
+
+        x_all_columns = baseline_features + list(dict_shadow_names.keys()) + list(dict_shadow_names.values())
+
+        x_all_columns.sort()
+        if debug:
+            print()
+            print(&#34;--------------------------------------------------------&#34;)
+            print()
+            print(&#34;x_all_columns_prev: &#34;, x_all_columns_prev)
+            print(&#34;--------------------------------------------------------&#34;)
+            print(&#34;x_all_columns: &#34;, x_all_columns)
+
+        # Check if has been any change, if not then break the loop
+        if x_all_columns == x_all_columns_prev:
+            count_no_changes += 1
+            if times_no_change_features == count_no_changes:
+                print(&#34;Stopping feature selection due to no change&#34;)
+                break
+        else:
+            count_no_changes = 0
+            print(&#34;This loop has removed &#34;, int((len(x_all_columns_prev) - len(x_all_columns)) / 2), &#34; features&#34;)
+
+        # If we have reduced to the maximum number of features, then break the loop
+        if n_top_features != None and n_top_features &gt;= len(dict_shadow_names.keys()):
+            print(&#34;Stopping feature selection due to reached maximum of features&#34;)
+            break
+
+    df_feature_importance = df_feature_importance[list(dict_shadow_names.keys())].sort_values(ascending=False)
+
+    df_feature_importance = cumulative_feature_selection(df_feature_importance, cum_importance_threshold)
+
+    df_feature_importance = collinear_feature_selection(x_train[df_feature_importance.index.values],
+                                                        df_feature_importance, collinear_threshold=collinear_threshold,
+                                                        plot=plot_correlation)
+
+    if n_top_features != None:
+        if n_top_features &gt;= len(dict_shadow_names.keys()):
+            df_feature_importance = df_feature_importance.iloc[0: len(dict_shadow_names.keys())]
+        else:
+            df_feature_importance = df_feature_importance.iloc[0: n_top_features]
+
+    return list(df_feature_importance.index), df_feature_importance
+
+
+def _create_shadow(x, baseline_features):
+    &#34;&#34;&#34;
+    Take all X variables, creating copies and randomly shuffling them
+    :param x: the dataframe to create shadow features on
+    :return: dataframe 2x width and the names of the shadows for removing later
+    &#34;&#34;&#34;
+    print(&#34;Creating all shadow features&#34;)
+    x_shadow = x.copy()
+    x_shadow = x_shadow.drop(baseline_features, axis=1)
+    for c in tqdm_notebook(x_shadow.columns, desc=&#39;Shadow Cols&#39;):
+        np.random.shuffle(x_shadow[c].values)  # shuffle the values of each feature to all the features
+    # rename the shadow
+    shadow_names = [&#34;shadow_feature_&#34; + str(i + 1) for i in range(x_shadow.shape[1])]
+    dict_shadow_names = dict(zip(x_shadow.columns.copy(), shadow_names))
+    x_shadow.columns = shadow_names
+    # Combine to make one new dataframe
+    x_new = pd.concat([x, x_shadow], axis=1)
+    return x_new, dict_shadow_names
+
+
+def get_feature_importance_mean(classifier_initial, y_train, x_train, n_iterations_mean=3,
+                                need_cat_features_index=False, categorical_columns=[], dict_shadow_names={}, eval_set=None):
+    &#34;&#34;&#34; Calculate feature importance mean between different training of the classifier &#34;&#34;&#34;
+    cat_features_index = None
+    if need_cat_features_index:
+        if dict_shadow_names=={}:
+            raise ValueError(&#34;dict_shadow_names cannot be empty if categorical features index are needed&#34;)
+        
+        x_columns = list(x_train.columns)
+        cat_features_index = []
+        for col in categorical_columns:
+            if col in x_columns:
+                cat_features_index.extend((x_columns.index(col), x_columns.index(dict_shadow_names[col])))
+
+    n_targets = y_train.shape[-1] if len(y_train.shape) &gt; 1 else 1
+    for t in tqdm_notebook(range(n_targets), desc=&#39;Target Loop&#39;, leave=False):
+        for i in tqdm_notebook(range(n_iterations_mean), desc=&#39;Mean Loop&#39;, leave=False):
+            classifier = classifier_initial.copy()
+            classifier.set_params(cat_features=cat_features_index, random_state=np.random.randint(100))
+            metric_period = int(classifier.get_param(&#39;iterations&#39;)) // 10 
+            if n_targets &gt; 1:
+                classifier = classifier.fit(x_train, y_train.iloc[:,t], eval_set=eval_set, metric_period=metric_period)
+            else:
+                classifier = classifier.fit(x_train, y_train, eval_set=eval_set, metric_period=metric_period)
+
+            feature_importance = sorted(zip(map(lambda x: round(x, 4), classifier.feature_importances_), x_train),
+                                        reverse=True)
+
+            if t==0 and i == 0:
+                df_feature_importance = pd.DataFrame(dict(zip(x_train, classifier.feature_importances_)), index=[i])
+            else:
+                df_feature_importance_iter = pd.DataFrame(dict(zip(x_train, classifier.feature_importances_)),
+                                                          index=[i])
+
+                df_feature_importance = pd.concat([df_feature_importance, df_feature_importance_iter])
+
+    return df_feature_importance.mean()</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="utils.feature_selection_utils.collinear_feature_selection"><code class="name flex">
+<span>def <span class="ident">collinear_feature_selection</span></span>(<span>x_train, df_feature_importance, collinear_threshold=0.98, plot=True)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Select features which have less collinearity below the threshold</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def collinear_feature_selection(x_train, df_feature_importance, collinear_threshold=0.98, plot=True):
+    &#34;&#34;&#34; Select features which have less collinearity below the threshold &#34;&#34;&#34;
+    correlation = x_train[df_feature_importance.index].corr()
+
+    if plot:
+        correlation.round(3).style.background_gradient(cmap=&#39;coolwarm&#39;)
+
+    cond1 = pd.DataFrame(np.triu(np.ones(correlation.shape[0]) - np.eye(correlation.shape[0])),
+                         columns=correlation.columns, index=correlation.index) == 1
+    corr_final = (correlation &gt; collinear_threshold) &amp; cond1
+    corr_final = corr_final.loc[:, corr_final.any()]
+
+    features_remove = []
+    columns = corr_final.columns.values
+    rows = corr_final.index.values
+
+    for i in tqdm_notebook(range(corr_final.shape[1]), desc=&#39;1st Loop&#39;):
+
+        # If a feature is already on the remove list, then it is not needed to check
+        if columns[i] in features_remove:
+            continue
+
+        j_max = np.where(rows == columns[i])
+
+        for j in tqdm_notebook(range(corr_final.shape[0]), desc=&#39;2nd Loop&#39;, leave=False):
+
+            if j == j_max:
+                break
+
+            # Feature columns[i] and feature rows[j] are collinear
+            if corr_final.iloc[j, i]:
+
+                # If a feature is already on the remove list, then it is not needed to check
+                if rows[j] in features_remove:
+                    continue
+
+                # Remove the one which has less importance
+                importance_i = df_feature_importance.loc[columns[i], &#39;importance&#39;]
+                importance_j = df_feature_importance.loc[rows[j], &#39;importance&#39;]
+                if importance_i &lt; importance_j:
+                    features_remove.append(columns[i])
+                else:
+                    features_remove.append(columns[j])
+
+    print(&#34;Removed &#34;, len(features_remove), &#34; features due to collinearity: &#34;)
+    print(features_remove)
+    df_feature_importance = df_feature_importance.drop(features_remove)
+
+    return df_feature_importance</code></pre>
+</details>
+</dd>
+<dt id="utils.feature_selection_utils.covariate_shift"><code class="name flex">
+<span>def <span class="ident">covariate_shift</span></span>(<span>train, test, categorical_columns, n_samples, iterations=200, weights_coef=1, AUC_threshold=0.8, importance_threshold=0.9, max_loops=20, test_size=0.1, trys_all_influencer=5, calc_sample_weights=True, task_type='CPU', data_dir='', load_cov=False, save_cov=False, plot=True)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Select features without Covariate Shift between training and test set using iteratively CatBoostClassifier to identify relation between train and test</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def covariate_shift(train, test, categorical_columns, n_samples, iterations = 200, weights_coef = 1, AUC_threshold = 0.8, importance_threshold = 0.9, max_loops = 20, test_size = 0.1, trys_all_influencer=5, calc_sample_weights=True, task_type=&#34;CPU&#34;, data_dir=&#39;&#39;, load_cov=False, save_cov=False, plot=True):
+    &#34;&#34;&#34; Select features without Covariate Shift between training and test set using iteratively CatBoostClassifier to identify relation between train and test &#34;&#34;&#34;
+    if not os.path.exists(data_dir + &#39;cov_shift_features.pkl&#39;) or not load_cov:
+        train_sample = train.sample(n_samples)
+        train_sample.loc[:,&#39;origin&#39;] = 0
+
+        test_sample = test.sample(n_samples)
+        test_sample.loc[:,&#39;origin&#39;] = 1
+
+        combined_train, combined_test = train_test_split(
+            pd.concat([train_sample.reset_index(drop=True), test_sample.reset_index(drop=True)]), 
+            test_size = test_size, 
+            shuffle = True)
+
+        try:
+
+            influence_columns = []
+            count_all_influencer = 0
+            i = 0
+            AUC_score = 1
+            while i &lt; max_loops and AUC_score &gt; AUC_threshold:
+
+                x_columns = combined_train.columns.drop([&#39;origin&#39;,] + influence_columns)
+
+                # Get the indexes for the categorical columns which CatBoost requires to out-perform other algorithms
+                cat_features_index = [list(x_columns).index(col) for col in categorical_columns if col in list(x_columns)]
+
+                # Do the feature selection once and only try again if no feature is selected
+                cov_shift_feature_selection = []
+                while len(cov_shift_feature_selection) == 0 and count_all_influencer &lt; trys_all_influencer:
+                    if count_all_influencer &gt; 0:
+                        print(&#34;Try again because model has set any feature as influencer&#34;)
+                    
+                    cov_shift_model = cb.CatBoostClassifier(iterations = iterations,
+                                                            eval_metric = &#34;AUC&#34;,
+                                                            cat_features = cat_features_index,
+                                                            task_type = task_type,
+                                                            verbose = False
+                                                   )
+                    cov_shift_feature_selection, df_cov_shift_feature_selection = shadow_feature_selection(
+                        cov_shift_model, 
+                        combined_train[&#39;origin&#39;], combined_train[x_columns], 
+                        need_cat_features_index=True, categorical_columns=categorical_columns, 
+                        collinear_threshold = 1,
+                        n_iterations_mean = 1, times_no_change_features = 1
+                    )
+                    
+                    count_all_influencer += 1
+                
+                if count_all_influencer == trys_all_influencer:
+                    cov_shift_feature_selection = list(x_columns)
+                
+                # Get the indexes for the categorical columns which CatBoost requires to out-perform other algorithms
+                cat_features_index = [cov_shift_feature_selection.index(col) for col in categorical_columns if col in cov_shift_feature_selection]
+
+                params = {&#39;iterations&#39; : 2*iterations, &#39;learning_rate&#39; : 0.05, &#39;depth&#39; : 6}
+
+                cov_shift_model = cb.CatBoostClassifier(iterations = iterations,
+                                                   eval_metric = &#34;AUC&#34;,
+                                                   cat_features = cat_features_index,
+                                                   scale_pos_weight = combined_train[&#39;origin&#39;].value_counts()[0] / combined_train[&#39;origin&#39;].value_counts()[1],
+                                                   task_type = task_type,
+                                                   verbose = False
+                                               )
+
+                cov_shift_model.set_params(**params)
+                cov_shift_model.fit(combined_train.drop(&#39;origin&#39;, axis = 1)[cov_shift_feature_selection],
+                                   combined_train[&#39;origin&#39;], 
+                                   eval_set = (combined_test.drop(&#39;origin&#39;, axis = 1)[cov_shift_feature_selection], combined_test[&#39;origin&#39;]),
+                                   use_best_model = True,
+                                   #sample_weight = sample_weight,
+                                   #early_stopping_rounds = True,
+                                   plot = False,
+                                   verbose = False)
+
+                AUC_score = cov_shift_model.get_best_score()[&#39;validation&#39;][&#39;AUC&#39;]
+                print(f&#34;Model score AUC of {AUC_score} on test&#34;)
+
+                # Remove the features which cumulative importance is relevant to predict origin of data (train or test)
+                if count_all_influencer != trys_all_influencer:
+                    df_cov_shift_importance = pd.DataFrame(cov_shift_model.feature_importances_, columns = [&#39;importance&#39;], index = cov_shift_feature_selection)
+                    df_cov_shift_importance[&#39;cumulative_importance&#39;] = df_cov_shift_importance[&#39;importance&#39;].cumsum() / df_cov_shift_importance[&#39;importance&#39;].sum()
+
+                    new_influence_columns = list(df_cov_shift_importance[df_cov_shift_importance[&#39;cumulative_importance&#39;] &lt; importance_threshold].index)
+                    influence_columns = influence_columns + new_influence_columns
+
+                    print(f&#34;New {len(new_influence_columns)} columns will be removed from model: &#34;, new_influence_columns)
+                    print()
+                    
+                count_all_influencer = 0
+                
+                i = i + 1
+        finally:
+
+            print()
+            print(f&#34;Due to difference of influence of features to distinguish between data and submission, {len(influence_columns)} columns are removed:&#34;)
+            print(influence_columns)
+            
+            if calc_sample_weights:
+                print(&#34;Calculating weights for each training sample&#34;)
+                probs = cov_shift_model.predict_proba(train[cov_shift_model.feature_names_])[:, 1] #calculating the probability
+
+                #print(&#34;Plot Train AUC&#34;)
+                #plot_roc_auc(pd.Serie(1,index = train.index), probs)
+
+                sample_weight = -np.log(probs) 
+                sample_weight /= max(sample_weight) # Normalizing the weights
+
+                sample_weight = 1 + weights_coef * sample_weight
+
+                if plot:
+                    plt.xlabel(&#39;Computed sample weight&#39;)
+                    plt.ylabel(&#39;# Samples&#39;)
+                    sns.distplot(sample_weight, kde=False)
+            
+            if save_cov:
+                with open(data_dir + &#39;cov_shift_features.pkl&#39;, &#39;wb&#39;) as file:
+                    print(&#34;Saving data in &#34;, data_dir + &#39;cov_shift_features.pkl&#39;)
+                    pickle.dump(influence_columns, file)
+    else:
+        print(&#34;Loading influence columns from &#34;,data_dir)
+
+        with open(data_dir + &#39;cov_shift_features.pkl&#39;, &#39;rb&#39;) as file:
+            influence_columns = pickle.load(file)
+
+        cov_shift_model = None
+        sample_weight = [1,] * len(train)
+            
+    return influence_columns, cov_shift_model, sample_weight</code></pre>
+</details>
+</dd>
+<dt id="utils.feature_selection_utils.cumulative_feature_selection"><code class="name flex">
+<span>def <span class="ident">cumulative_feature_selection</span></span>(<span>df_feature_importance, cum_importance_threshold)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Select features which are below of the cumulative feature importance threshold</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def cumulative_feature_selection(df_feature_importance, cum_importance_threshold):
+    &#34;&#34;&#34; Select features which are below of the cumulative feature importance threshold &#34;&#34;&#34;
+    df_feature_importance = pd.DataFrame(df_feature_importance, columns=[&#39;importance&#39;])
+    df_feature_importance[&#39;cumulative_importance&#39;] = df_feature_importance[&#39;importance&#39;].cumsum() / \
+                                                     df_feature_importance[&#39;importance&#39;].sum()
+
+    print(&#34;Removed &#34;, sum(df_feature_importance[&#39;cumulative_importance&#39;] &gt;= cum_importance_threshold),
+          &#34; features due to low importance:&#34;)
+    print(
+        df_feature_importance[df_feature_importance[&#39;cumulative_importance&#39;] &gt;= cum_importance_threshold].index.values)
+
+    df_feature_importance = df_feature_importance[
+        df_feature_importance[&#39;cumulative_importance&#39;] &lt; cum_importance_threshold]
+
+    return df_feature_importance</code></pre>
+</details>
+</dd>
+<dt id="utils.feature_selection_utils.feature_selection"><code class="name flex">
+<span>def <span class="ident">feature_selection</span></span>(<span>classifier_initial, y_train, x_train, n_top_features=50, baseline_features=[], min_importance=None)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Select features which have the top N feature importance and/or above baseline</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def feature_selection(classifier_initial, y_train, x_train, n_top_features=50, baseline_features=[],
+                      min_importance=None):
+    &#34;&#34;&#34; Select features which have the top N feature importance and/or above baseline &#34;&#34;&#34;
+    classifier_model = classifier_initial.fit(x_train, y_train)
+
+    feature_importance = sorted(zip(map(lambda x: round(x, 4), classifier_model.feature_importances_), x_train),
+                                reverse=True)
+    dict_feature_importance = dict(zip(x_train, map(lambda x: round(x, 4), estimator.feature_importances_)))
+
+    if baseline_features:
+        min_importance = max([importance for importance, feature in feature_importance if feature in baseline_features])
+
+    model_columns = []
+    i = 0
+    while i &lt; n_top_features and i &lt; len(feature_importance):
+        if feature_importance[i][0] &gt; min_importance:
+            model_columns.append(feature_importance[i][1])
+        else:
+            break
+        i = i + 1
+
+    return model_columns</code></pre>
+</details>
+</dd>
+<dt id="utils.feature_selection_utils.get_feature_importance_mean"><code class="name flex">
+<span>def <span class="ident">get_feature_importance_mean</span></span>(<span>classifier_initial, y_train, x_train, n_iterations_mean=3, need_cat_features_index=False, categorical_columns=[], dict_shadow_names={}, eval_set=None)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Calculate feature importance mean between different training of the classifier</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_feature_importance_mean(classifier_initial, y_train, x_train, n_iterations_mean=3,
+                                need_cat_features_index=False, categorical_columns=[], dict_shadow_names={}, eval_set=None):
+    &#34;&#34;&#34; Calculate feature importance mean between different training of the classifier &#34;&#34;&#34;
+    cat_features_index = None
+    if need_cat_features_index:
+        if dict_shadow_names=={}:
+            raise ValueError(&#34;dict_shadow_names cannot be empty if categorical features index are needed&#34;)
+        
+        x_columns = list(x_train.columns)
+        cat_features_index = []
+        for col in categorical_columns:
+            if col in x_columns:
+                cat_features_index.extend((x_columns.index(col), x_columns.index(dict_shadow_names[col])))
+
+    n_targets = y_train.shape[-1] if len(y_train.shape) &gt; 1 else 1
+    for t in tqdm_notebook(range(n_targets), desc=&#39;Target Loop&#39;, leave=False):
+        for i in tqdm_notebook(range(n_iterations_mean), desc=&#39;Mean Loop&#39;, leave=False):
+            classifier = classifier_initial.copy()
+            classifier.set_params(cat_features=cat_features_index, random_state=np.random.randint(100))
+            metric_period = int(classifier.get_param(&#39;iterations&#39;)) // 10 
+            if n_targets &gt; 1:
+                classifier = classifier.fit(x_train, y_train.iloc[:,t], eval_set=eval_set, metric_period=metric_period)
+            else:
+                classifier = classifier.fit(x_train, y_train, eval_set=eval_set, metric_period=metric_period)
+
+            feature_importance = sorted(zip(map(lambda x: round(x, 4), classifier.feature_importances_), x_train),
+                                        reverse=True)
+
+            if t==0 and i == 0:
+                df_feature_importance = pd.DataFrame(dict(zip(x_train, classifier.feature_importances_)), index=[i])
+            else:
+                df_feature_importance_iter = pd.DataFrame(dict(zip(x_train, classifier.feature_importances_)),
+                                                          index=[i])
+
+                df_feature_importance = pd.concat([df_feature_importance, df_feature_importance_iter])
+
+    return df_feature_importance.mean()</code></pre>
+</details>
+</dd>
+<dt id="utils.feature_selection_utils.outliers_analysis"><code class="name flex">
+<span>def <span class="ident">outliers_analysis</span></span>(<span>full_data, features_names=None, x_column=None, subplot_rows=None, subplot_cols=None, starting_index=0, index_offset=0, z_score_threshold=3.5, use_mean=False, plot=True, num_bins=50)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Calculate and visualize outliers analysis from Modified Z-score with MAD</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def outliers_analysis(full_data, features_names=None, x_column=None, subplot_rows=None, subplot_cols=None, starting_index=0,
+                      index_offset=0, z_score_threshold=3.5, use_mean=False, plot=True, num_bins=50):
+    &#34;&#34;&#34; Calculate and visualize outliers analysis from Modified Z-score with MAD &#34;&#34;&#34;
+    # Compatibility with numpy arrays
+    if type(full_data) == np.ndarray:
+        assert len(full_data.shape) &lt;= 2
+        if len(full_data.shape) == 1:
+            columns = [&#39;feature&#39;]
+        else:
+            columns = [&#39;feature_&#39;+str(i) for i in range(full_data.shape[-1])]
+        full_data = pd.DataFrame(full_data, columns=columns)
+    
+    # Features not provided, use all the columns
+    if features_names is None:
+        features_names = list(full_data.columns)
+    
+    if plot:
+        # Set a good relation rows/cols for the plot if not specified
+        if subplot_rows is None or subplot_cols is None:
+            subplot_rows, subplot_cols = get_subplot_rows_cols(len(features_names), [3,4,5])
+                    
+        # Resize for better visualization of subplots
+        plt.rcParams[&#39;figure.figsize&#39;] = [subplot_cols * 5, subplot_rows * 4]
+        fig, axes = plt.subplots(subplot_rows, subplot_cols, sharex=False, sharey=False)
+
+    outliers_pd = full_data.copy()
+
+    outliers_summary = {}
+
+    i = starting_index
+    while i &lt; len(features_names):
+        feature_name = features_names[i]
+
+        data = outliers_pd.loc[outliers_pd[feature_name].notnull(), feature_name]
+
+        # Modified Z-score with MAD (Median Absolute Deviation)
+        if use_mean:
+            outliers_pd.loc[outliers_pd[feature_name].notnull(), feature_name + &#39;_zscore&#39;] = 0.6745 * (data - data.mean()).abs() / (
+                data - data.mean()).abs().mean()
+        else:
+            outliers_pd.loc[outliers_pd[feature_name].notnull(), feature_name + &#39;_zscore&#39;] = 0.6745 * (data - data.median()).abs() / (
+                data - data.median()).abs().median()
+        outliers_pd[feature_name + &#39;_zscore_outliers&#39;] = outliers_pd[feature_name + &#39;_zscore&#39;] &gt; z_score_threshold
+
+        if plot:
+            # Take into account the case of only one plot
+            if subplot_rows * subplot_cols == 1:
+                ax = axes
+            elif subplot_rows == 1:
+                ax = axes[(i + index_offset) % subplot_cols]
+            else:
+                ax = axes[(i + index_offset) // subplot_cols, (i + index_offset) % subplot_cols]
+            
+            # If X_column provided plot scatter, otherwise histogram
+            if x_column is None:
+                bins = np.linspace(data.min(), data.max(), num_bins)
+                ax.hist(data[~outliers_pd[feature_name + &#39;_zscore_outliers&#39;]], bins=bins, density=False)
+                ax.hist(data[outliers_pd[feature_name + &#39;_zscore_outliers&#39;]], bins=bins, density=False)
+                ax.set_title(feature_name)
+            else:
+                plot_scatter(outliers_pd[outliers_pd[feature_name].notnull()], x_column=x_column, y_column=feature_name,
+                         axes=ax, highlight_column=feature_name + &#39;_zscore_outliers&#39;)
+
+        outliers_percentage = 100 * outliers_pd[feature_name + &#39;_zscore_outliers&#39;].sum() / outliers_pd[
+            feature_name + &#39;_zscore_outliers&#39;].count()
+        outliers_summary[feature_name] = outliers_percentage
+
+        print(&#34;Feature: &#34;, feature_name, &#34; - Percentage of outliers using modified Z-score approach is: &#34;,
+              np.round(outliers_percentage, 2), &#34;%&#34;)
+
+        i = i + 1
+
+    if plot:
+        fig.tight_layout()
+
+        # Resize to original settings
+        plt.rcParams[&#39;figure.figsize&#39;] = [10, 6]
+
+    outliers_summary = pd.DataFrame.from_dict(outliers_summary, orient=&#39;index&#39;, columns=[&#39;Percentage&#39;])
+        
+    return outliers_summary, outliers_pd</code></pre>
+</details>
+</dd>
+<dt id="utils.feature_selection_utils.shadow_feature_selection"><code class="name flex">
+<span>def <span class="ident">shadow_feature_selection</span></span>(<span>classifier_initial, y_train, x_train, eval_set=None, n_top_features=None, collinear_threshold=0.98, cum_importance_threshold=0.99, times_no_change_features=2, max_loops=50, n_iterations_mean=3, need_cat_features_index=False, categorical_columns=[], verbose=True, debug=False, plot_correlation=False)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Select features which have greater feature importance than random and than shuffle shadowed feature of itself</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def shadow_feature_selection(classifier_initial, y_train, x_train, eval_set=None, n_top_features=None, collinear_threshold=0.98, cum_importance_threshold=0.99, times_no_change_features=2, max_loops=50, n_iterations_mean=3, need_cat_features_index=False, categorical_columns=[], verbose=True, debug=False, plot_correlation=False):
+    &#34;&#34;&#34; Select features which have greater feature importance than random and than shuffle shadowed feature of itself &#34;&#34;&#34;
+    # Create 3 random features which will serve as baseline to reject features
+    baseline_features = [&#39;random_binary&#39;, &#39;random_uniform&#39;, &#39;random_integers&#39;]
+    x_train = x_train.drop(baseline_features, axis=1, errors=&#39;ignore&#39;)
+    x_train[&#39;random_binary&#39;] = np.random.choice([0, 1], x_train.shape[0])
+    x_train[&#39;random_uniform&#39;] = np.random.uniform(0, 1, x_train.shape[0])
+    x_train[&#39;random_integers&#39;] = np.random.randint(0, x_train.shape[0] / 2, x_train.shape[0])
+
+    # For each feature it creates a shadow_feature which will have same values but shuffled
+    x_train_shadow, dict_shadow_names = _create_shadow(x_train, baseline_features)
+
+    count_no_changes = 0
+    x_all_columns = baseline_features + list(dict_shadow_names.keys()) + list(dict_shadow_names.values())
+
+    # &#34;Infinite&#34; loop till one of the stopping criterias stop removing features
+    for i in tqdm_notebook(range(max_loops), desc=&#39;Main Loop&#39;):
+        if dict_shadow_names == {}:
+            print(&#34;Stopping because no feature found to be relevant&#34;)
+            return [], pd.DataFrame([])
+        
+        print(&#34;Loop number: &#34;, i, &#34; with still &#34;, len(dict_shadow_names.keys()), &#34; features&#34;)
+
+        # Take a copy of current columns to check stopping criteria of changing columns
+        x_all_columns_prev = x_all_columns.copy()
+        x_all_columns_prev.sort()
+        if debug:
+            print(&#34;x_all_columns_prev: &#34;, x_all_columns_prev)
+
+        # Get the feature importance for each column (real, shadow and baseline)
+        df_feature_importance = get_feature_importance_mean(classifier_initial, y_train, x_train_shadow[x_all_columns],
+                                                            n_iterations_mean=n_iterations_mean,
+                                                            need_cat_features_index=need_cat_features_index,
+                                                            categorical_columns=categorical_columns,
+                                                            dict_shadow_names=dict_shadow_names,
+                                                            eval_set=eval_set)
+
+        # Take as minimum value of feature importance as the greatest value of the baselines features
+        if baseline_features != []:
+            min_importance = df_feature_importance[baseline_features].max()
+        else:
+            min_importance = 0
+
+        # Drop all features that have lower importance than their shadow or lower than the baseline features
+        dict_shadow_names_copy = dict_shadow_names.copy()
+        for real_col, shadow_col in dict_shadow_names.items():
+            if df_feature_importance[shadow_col] &gt;= df_feature_importance[real_col] or df_feature_importance[
+                real_col] &lt; min_importance:
+                del dict_shadow_names_copy[real_col]
+
+                if debug:
+                    print(&#34;Removing feature: &#34;, real_col)
+
+        if debug:
+            print(&#34;dict_shadow_names: &#34;, dict_shadow_names)
+            print(&#34;--------------------------------------------------------&#34;)
+            print(&#34;dict_shadow_names_copy: &#34;, dict_shadow_names_copy)
+            print()
+            print(&#34;--------------------------------------------------------&#34;)
+            print()
+        dict_shadow_names = dict_shadow_names_copy.copy()
+
+        if debug:
+            print(&#34;dict_shadow_names: &#34;, dict_shadow_names)
+            print(&#34;--------------------------------------------------------&#34;)
+            print(&#34;dict_shadow_names_copy: &#34;, dict_shadow_names_copy)
+
+        x_all_columns = baseline_features + list(dict_shadow_names.keys()) + list(dict_shadow_names.values())
+
+        x_all_columns.sort()
+        if debug:
+            print()
+            print(&#34;--------------------------------------------------------&#34;)
+            print()
+            print(&#34;x_all_columns_prev: &#34;, x_all_columns_prev)
+            print(&#34;--------------------------------------------------------&#34;)
+            print(&#34;x_all_columns: &#34;, x_all_columns)
+
+        # Check if has been any change, if not then break the loop
+        if x_all_columns == x_all_columns_prev:
+            count_no_changes += 1
+            if times_no_change_features == count_no_changes:
+                print(&#34;Stopping feature selection due to no change&#34;)
+                break
+        else:
+            count_no_changes = 0
+            print(&#34;This loop has removed &#34;, int((len(x_all_columns_prev) - len(x_all_columns)) / 2), &#34; features&#34;)
+
+        # If we have reduced to the maximum number of features, then break the loop
+        if n_top_features != None and n_top_features &gt;= len(dict_shadow_names.keys()):
+            print(&#34;Stopping feature selection due to reached maximum of features&#34;)
+            break
+
+    df_feature_importance = df_feature_importance[list(dict_shadow_names.keys())].sort_values(ascending=False)
+
+    df_feature_importance = cumulative_feature_selection(df_feature_importance, cum_importance_threshold)
+
+    df_feature_importance = collinear_feature_selection(x_train[df_feature_importance.index.values],
+                                                        df_feature_importance, collinear_threshold=collinear_threshold,
+                                                        plot=plot_correlation)
+
+    if n_top_features != None:
+        if n_top_features &gt;= len(dict_shadow_names.keys()):
+            df_feature_importance = df_feature_importance.iloc[0: len(dict_shadow_names.keys())]
+        else:
+            df_feature_importance = df_feature_importance.iloc[0: n_top_features]
+
+    return list(df_feature_importance.index), df_feature_importance</code></pre>
+</details>
+</dd>
+<dt id="utils.feature_selection_utils.stadistic_difference_distributions"><code class="name flex">
+<span>def <span class="ident">stadistic_difference_distributions</span></span>(<span>data, submission, time_column, test_percentage=0.2, p_value_threshold=None, verbose=False)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Calculate relation between initial and end part of the dataset for each column using Kolmogorov-Smirnov statistic on 2 samples</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def stadistic_difference_distributions(data, submission, time_column, test_percentage=0.2, p_value_threshold=None,
+                                       verbose=False):
+    &#34;&#34;&#34; Calculate relation between initial and end part of the dataset for each column using Kolmogorov-Smirnov statistic on 2 samples &#34;&#34;&#34;
+    train, test = train_test_split(data.sort_values(time_column), test_size=test_percentage, shuffle=False)
+
+    time_analysis_df = pd.DataFrame(False, columns=[&#39;train_test&#39;, &#39;train_submission&#39;, &#39;test_submission&#39;],
+                                    index=submission.columns.values)
+
+    for col in tqdm_notebook(submission.columns.values):
+        try:
+            KS_stat_test, p_value_test = stats.ks_2samp(train[col], test[col])
+            KS_stat_submission, p_value_submission = stats.ks_2samp(train[col], submission[col])
+            KS_stat_test_submission, p_value_test_submission = stats.ks_2samp(test[col], submission[col])
+
+            time_analysis_df.loc[col] = [p_value_test, p_value_submission, p_value_test_submission]
+
+            if verbose:
+                if p_value_test &lt;= p_value_threshold or p_value_submission &lt;= p_value_threshold or p_value_test_submission &lt;= p_value_threshold:
+                    print_s = f&#39;Column {col} has different distribution&#39;
+                    if p_value_test &lt;= p_value_threshold:
+                        print_s = print_s + &#39; // train &lt;--&gt; test&#39;
+                    if p_value_submission &lt;= p_value_threshold:
+                        print_s = print_s + &#39; // train &lt;--&gt; submission&#39;
+                    if p_value_test_submission &lt;= p_value_threshold:
+                        print_s = print_s + &#39; // test &lt;--&gt; submission&#39;
+                    print(print_s)
+        except TypeError:
+            time_analysis_df.loc[col] = [np.nan, np.nan, np.nan]
+
+    if p_value_threshold == None:
+        cond1 = time_analysis_df[&#39;train_test&#39;] == 0
+        cond2 = time_analysis_df[&#39;train_submission&#39;] == 0
+        cond3 = time_analysis_df[&#39;test_submission&#39;] == 0
+    else:
+        cond1 = time_analysis_df[&#39;train_test&#39;] &lt;= p_value_threshold
+        cond2 = time_analysis_df[&#39;train_submission&#39;] &lt;= p_value_threshold
+        cond3 = time_analysis_df[&#39;test_submission&#39;] &lt;= p_value_threshold
+
+    cols_to_remove = list(time_analysis_df[cond1 | cond2 | cond3].index)
+
+    return time_analysis_df, cols_to_remove</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="utils" href="index.html">utils</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="utils.feature_selection_utils.collinear_feature_selection" href="#utils.feature_selection_utils.collinear_feature_selection">collinear_feature_selection</a></code></li>
+<li><code><a title="utils.feature_selection_utils.covariate_shift" href="#utils.feature_selection_utils.covariate_shift">covariate_shift</a></code></li>
+<li><code><a title="utils.feature_selection_utils.cumulative_feature_selection" href="#utils.feature_selection_utils.cumulative_feature_selection">cumulative_feature_selection</a></code></li>
+<li><code><a title="utils.feature_selection_utils.feature_selection" href="#utils.feature_selection_utils.feature_selection">feature_selection</a></code></li>
+<li><code><a title="utils.feature_selection_utils.get_feature_importance_mean" href="#utils.feature_selection_utils.get_feature_importance_mean">get_feature_importance_mean</a></code></li>
+<li><code><a title="utils.feature_selection_utils.outliers_analysis" href="#utils.feature_selection_utils.outliers_analysis">outliers_analysis</a></code></li>
+<li><code><a title="utils.feature_selection_utils.shadow_feature_selection" href="#utils.feature_selection_utils.shadow_feature_selection">shadow_feature_selection</a></code></li>
+<li><code><a title="utils.feature_selection_utils.stadistic_difference_distributions" href="#utils.feature_selection_utils.stadistic_difference_distributions">stadistic_difference_distributions</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.7.2</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

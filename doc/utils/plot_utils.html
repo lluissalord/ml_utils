@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.7.2" />
+<title>utils.plot_utils API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{font-weight:bold}#index h4 + ul{margin-bottom:.6em}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>utils.plot_utils</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+import pandas as pd
+import numpy as np
+from sklearn import metrics
+from tqdm import tqdm_notebook
+import seaborn as sns
+from scipy.stats import norm
+
+def get_subplot_rows_cols(num_plots, n_cols = [3,4,5]):
+    &#34;&#34;&#34; Calculate number row and cols for a pretty grid &#34;&#34;&#34;
+    max_cols = max(n_cols)
+    if num_plots // max_cols == 0:
+        subplot_rows = 1
+        subplot_cols = num_plots
+    else:
+        found = False
+        better_res = max(n_cols)
+        better_n = None
+        for n in sorted(n_cols, reverse=True):
+            res = num_plots % n
+            if res == 0:
+                subplot_rows = num_plots // n
+                subplot_cols = n
+                found = True
+                break
+            elif better_res &gt; res:
+                better_res = res
+                better_n = n
+
+        if not found:
+            subplot_rows = num_plots // better_n + 1
+            subplot_cols = better_n
+    return subplot_rows, subplot_cols
+
+def plot_histograms(df, column_names, df_types, max_value_counts, subplot_rows=None, subplot_cols=None,
+                    starting_index=0, index_offset=0, fit=norm):
+    &#34;&#34;&#34; Plot histogram plot grid for all the feature provided &#34;&#34;&#34;
+    # Set a good relation rows/cols for the plot if not specified
+    if subplot_rows is None or subplot_cols is None:
+        subplot_rows, subplot_cols = get_subplot_rows_cols(len(column_names), [3,4,5])
+    
+    # Resize for better visualization of subplots
+    plt.rcParams[&#39;figure.figsize&#39;] = [subplot_cols * 5, subplot_rows * 4]
+
+    i = starting_index
+    while i &lt; len(column_names):
+        column_name = column_names[i]
+        plt.subplot(subplot_rows, subplot_cols, i + index_offset + 1)
+
+        # Plot using value_counts for integer columns with less than &#39;max_value_counts&#39; different values,
+        # Otherwise, use histogram directly
+        if column_name in df_types[df_types != &#39;float64&#39;].index.tolist() and df[column_name].value_counts().shape[
+            0] &lt; max_value_counts:
+            df[column_name].value_counts(dropna=False).sort_index().plot(kind=&#39;bar&#39;, rot=0).set_title(column_name);
+        else:
+            sns.distplot(df[column_name][df[column_name].notnull()], fit=fit, kde=False)
+        
+        i = i + 1
+
+    # Resize to original settings
+    plt.rcParams[&#39;figure.figsize&#39;] = [10, 6]
+
+def plot_roc_auc(y_true, y_pred):
+    &#34;&#34;&#34; Plot ROC AUC &#34;&#34;&#34;
+    fpr, tpr, threshold = metrics.roc_curve(y_true, y_pred)
+    roc_auc = metrics.auc(fpr, tpr)
+
+    # method I: plt
+    plt.title(&#39;Receiver Operating Characteristic&#39;)
+    plt.plot(fpr, tpr, &#39;b&#39;, label=&#39;AUC = %0.4f&#39; % roc_auc)
+    plt.legend(loc=&#39;lower right&#39;)
+    plt.plot([0, 1], [0, 1], &#39;r--&#39;)
+    plt.xlim([0, 1])
+    plt.ylim([0, 1])
+    plt.ylabel(&#39;True Positive Rate&#39;)
+    plt.xlabel(&#39;False Positive Rate&#39;)
+    plt.show()
+
+
+# Settings for axis to plot X data as dates correctly
+def plot_date(x, y, axes=None, title=None, color=&#39;b&#39;):
+    &#34;&#34;&#34; Plot data correctly using X date data &#34;&#34;&#34;
+    if axes is None:
+        fig = plt.figure()
+        axes = fig.add_subplot(111)
+        
+    if type(color) is str:
+        axes.plot_date(x, y, color=color)
+    elif type(color) is list:
+        unique_colors = np.unique(color)
+        
+        color = np.array(color)
+        for unique_color in unique_colors:
+            list_unique_color = np.array([unique_color]*len(color))
+            cond = np.where(color == list_unique_color, True, False)
+            try:
+                axes.plot_date(x.loc[cond], y.loc[cond], color=unique_color)
+            except AttributeError:
+                axes.plot_date(x[cond], y[cond], color=unique_color)
+    else:
+        raise ValueError(&#34;color parameter must be string or list of strings&#34;)
+        
+    if title != None:
+        axes.set_title(title)
+    
+    try:
+        datediff = x.iloc[-1] - x.iloc[0]
+    except AttributeError:
+        datediff = x[-1] - x[0]
+    
+    if datediff.days &gt;= 365:
+        major_loc = mdates.YearLocator()   # every year
+        major_format = mdates.DateFormatter(&#39;%Y&#39;)
+
+        minor_loc = mdates.MonthLocator()  # every month
+        axes.xaxis.set_minor_locator(minor_loc)
+
+    elif datediff.days &gt;= 32:
+        major_loc = mdates.MonthLocator()   # every month
+        major_format = mdates.DateFormatter(&#39;%m&#39;)
+
+    elif datediff.days &gt;= 7:
+        major_loc = mdates.DayLocator(interval=5)   # every day
+        major_format = mdates.DateFormatter(&#39;%d&#39;)
+
+        minor_loc = mdates.DayLocator()
+        axes.xaxis.set_minor_locator(minor_loc)
+
+    elif datediff.days &gt;= 1:
+        major_loc = mdates.DayLocator()   # every day
+        major_format = mdates.DateFormatter(&#39;%a&#39;)
+
+    else:
+        major_loc = mdates.HourLocator(interval=3)   # every day
+        major_format = mdates.DateFormatter(&#39;%H&#39;)
+
+        minor_loc = mdates.HourLocator()
+        axes.xaxis.set_minor_locator(minor_loc)
+
+    # format the ticks
+    axes.xaxis.set_major_locator(major_loc)
+    axes.xaxis.set_major_formatter(major_format)
+
+
+def plot_scatter(data, x_column, y_column, title=None, axes=None, highlight_column=None, highlight_color=&#39;r&#39;,
+                 normal_color=&#39;b&#39;):
+    &#34;&#34;&#34; Plot scatter plots where we can highlight points as the outliers &#34;&#34;&#34;
+
+    if highlight_column != None:
+        data.loc[data[highlight_column] == True, highlight_column] = highlight_color
+        data.loc[data[highlight_column] == False, highlight_column] = normal_color
+        color_pd = data[highlight_column]
+        # color_pd = data[highlight_column] * highlight_color + (1 - data[highlight_column]) * normal_color
+        color_list = color_pd[color_pd.notnull()].values.tolist()
+    else:
+        color_list = len(data[y_column]) * [normal_color, ]
+
+    if title == None:
+        title = y_column 
+       
+    if (x_column == &#39;index&#39; and np.issubdtype(data.index, np.datetime64)) or np.issubdtype(data[x_column], np.datetime64):
+        if x_column == &#39;index&#39;:
+            plot_date(data.index, data[y_column], axes=axes, title=title, color=color_list)
+        else:
+            plot_date(data[x_column], data[y_column], axes=axes, title=title, color=color_list)
+    elif axes == None:
+        data.plot.scatter(x=x_column, y=y_column, color=color_list)
+    else:
+        axes.scatter(x=data[x_column], y=data[y_column], color=color_list)
+        axes.set_title(title)
+        axes.set_xlabel(x_column)
+        axes.set_ylabel(y_column)
+
+
+def plot_list_scatters(data, list_dict, subplot_cols=None, subplot_rows=None, starting_index=0, index_offset=0, fig=None,
+                       axes=None):
+    &#34;&#34;&#34; Plot several scatter plots contained in data depending on setting provided in list_dict &#34;&#34;&#34;
+    # Set a good relation rows/cols for the plot if not specified
+    if subplot_rows is None or subplot_cols is None:
+        subplot_rows, subplot_cols = get_subplot_rows_cols(len(list_dict), [3,4,5])
+    
+    # Resize for better visualization of subplots
+    plt.rcParams[&#39;figure.figsize&#39;] = [subplot_cols * 5, subplot_rows * 4]
+
+    if fig is None or axes is None:
+        fig, axes = plt.subplots(subplot_rows, subplot_cols, sharex=False, sharey=False)
+
+    i = starting_index
+    while i &lt; len(list_dict):
+        # Take into account the case of only one plot
+        if subplot_rows * subplot_cols == 1:
+            ax = axes
+        elif subplot_rows == 1:
+            ax = axes[(i + index_offset) % subplot_cols]
+        else:
+            ax = axes[(i + index_offset) // subplot_cols, (i + index_offset) % subplot_cols]
+
+        info = list_dict[i]
+        x_column = info[&#39;x_column&#39;]
+        y_column = info[&#39;y_column&#39;]
+        title = info.get(&#39;title&#39;)
+        highlight_column = info.get(&#39;highlight_column&#39;)
+        highlight_color = info.get(&#39;highlight_color&#39;, &#39;r&#39;)
+        normal_color = info.get(&#39;normal_color&#39;, &#39;b&#39;)
+
+        plot_scatter(data, x_column, y_column, title, ax, highlight_column, highlight_color, normal_color)
+
+        i = i + 1
+
+    fig.tight_layout()
+
+    # Resize to original settings
+    plt.rcParams[&#39;figure.figsize&#39;] = [10, 6]</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="utils.plot_utils.get_subplot_rows_cols"><code class="name flex">
+<span>def <span class="ident">get_subplot_rows_cols</span></span>(<span>num_plots, n_cols=[3, 4, 5])</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Calculate number row and cols for a pretty grid</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_subplot_rows_cols(num_plots, n_cols = [3,4,5]):
+    &#34;&#34;&#34; Calculate number row and cols for a pretty grid &#34;&#34;&#34;
+    max_cols = max(n_cols)
+    if num_plots // max_cols == 0:
+        subplot_rows = 1
+        subplot_cols = num_plots
+    else:
+        found = False
+        better_res = max(n_cols)
+        better_n = None
+        for n in sorted(n_cols, reverse=True):
+            res = num_plots % n
+            if res == 0:
+                subplot_rows = num_plots // n
+                subplot_cols = n
+                found = True
+                break
+            elif better_res &gt; res:
+                better_res = res
+                better_n = n
+
+        if not found:
+            subplot_rows = num_plots // better_n + 1
+            subplot_cols = better_n
+    return subplot_rows, subplot_cols</code></pre>
+</details>
+</dd>
+<dt id="utils.plot_utils.plot_date"><code class="name flex">
+<span>def <span class="ident">plot_date</span></span>(<span>x, y, axes=None, title=None, color='b')</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Plot data correctly using X date data</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot_date(x, y, axes=None, title=None, color=&#39;b&#39;):
+    &#34;&#34;&#34; Plot data correctly using X date data &#34;&#34;&#34;
+    if axes is None:
+        fig = plt.figure()
+        axes = fig.add_subplot(111)
+        
+    if type(color) is str:
+        axes.plot_date(x, y, color=color)
+    elif type(color) is list:
+        unique_colors = np.unique(color)
+        
+        color = np.array(color)
+        for unique_color in unique_colors:
+            list_unique_color = np.array([unique_color]*len(color))
+            cond = np.where(color == list_unique_color, True, False)
+            try:
+                axes.plot_date(x.loc[cond], y.loc[cond], color=unique_color)
+            except AttributeError:
+                axes.plot_date(x[cond], y[cond], color=unique_color)
+    else:
+        raise ValueError(&#34;color parameter must be string or list of strings&#34;)
+        
+    if title != None:
+        axes.set_title(title)
+    
+    try:
+        datediff = x.iloc[-1] - x.iloc[0]
+    except AttributeError:
+        datediff = x[-1] - x[0]
+    
+    if datediff.days &gt;= 365:
+        major_loc = mdates.YearLocator()   # every year
+        major_format = mdates.DateFormatter(&#39;%Y&#39;)
+
+        minor_loc = mdates.MonthLocator()  # every month
+        axes.xaxis.set_minor_locator(minor_loc)
+
+    elif datediff.days &gt;= 32:
+        major_loc = mdates.MonthLocator()   # every month
+        major_format = mdates.DateFormatter(&#39;%m&#39;)
+
+    elif datediff.days &gt;= 7:
+        major_loc = mdates.DayLocator(interval=5)   # every day
+        major_format = mdates.DateFormatter(&#39;%d&#39;)
+
+        minor_loc = mdates.DayLocator()
+        axes.xaxis.set_minor_locator(minor_loc)
+
+    elif datediff.days &gt;= 1:
+        major_loc = mdates.DayLocator()   # every day
+        major_format = mdates.DateFormatter(&#39;%a&#39;)
+
+    else:
+        major_loc = mdates.HourLocator(interval=3)   # every day
+        major_format = mdates.DateFormatter(&#39;%H&#39;)
+
+        minor_loc = mdates.HourLocator()
+        axes.xaxis.set_minor_locator(minor_loc)
+
+    # format the ticks
+    axes.xaxis.set_major_locator(major_loc)
+    axes.xaxis.set_major_formatter(major_format)</code></pre>
+</details>
+</dd>
+<dt id="utils.plot_utils.plot_histograms"><code class="name flex">
+<span>def <span class="ident">plot_histograms</span></span>(<span>df, column_names, df_types, max_value_counts, subplot_rows=None, subplot_cols=None, starting_index=0, index_offset=0, fit=&lt;scipy.stats._continuous_distns.norm_gen object&gt;)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Plot histogram plot grid for all the feature provided</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot_histograms(df, column_names, df_types, max_value_counts, subplot_rows=None, subplot_cols=None,
+                    starting_index=0, index_offset=0, fit=norm):
+    &#34;&#34;&#34; Plot histogram plot grid for all the feature provided &#34;&#34;&#34;
+    # Set a good relation rows/cols for the plot if not specified
+    if subplot_rows is None or subplot_cols is None:
+        subplot_rows, subplot_cols = get_subplot_rows_cols(len(column_names), [3,4,5])
+    
+    # Resize for better visualization of subplots
+    plt.rcParams[&#39;figure.figsize&#39;] = [subplot_cols * 5, subplot_rows * 4]
+
+    i = starting_index
+    while i &lt; len(column_names):
+        column_name = column_names[i]
+        plt.subplot(subplot_rows, subplot_cols, i + index_offset + 1)
+
+        # Plot using value_counts for integer columns with less than &#39;max_value_counts&#39; different values,
+        # Otherwise, use histogram directly
+        if column_name in df_types[df_types != &#39;float64&#39;].index.tolist() and df[column_name].value_counts().shape[
+            0] &lt; max_value_counts:
+            df[column_name].value_counts(dropna=False).sort_index().plot(kind=&#39;bar&#39;, rot=0).set_title(column_name);
+        else:
+            sns.distplot(df[column_name][df[column_name].notnull()], fit=fit, kde=False)
+        
+        i = i + 1
+
+    # Resize to original settings
+    plt.rcParams[&#39;figure.figsize&#39;] = [10, 6]</code></pre>
+</details>
+</dd>
+<dt id="utils.plot_utils.plot_list_scatters"><code class="name flex">
+<span>def <span class="ident">plot_list_scatters</span></span>(<span>data, list_dict, subplot_cols=None, subplot_rows=None, starting_index=0, index_offset=0, fig=None, axes=None)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Plot several scatter plots contained in data depending on setting provided in list_dict</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot_list_scatters(data, list_dict, subplot_cols=None, subplot_rows=None, starting_index=0, index_offset=0, fig=None,
+                       axes=None):
+    &#34;&#34;&#34; Plot several scatter plots contained in data depending on setting provided in list_dict &#34;&#34;&#34;
+    # Set a good relation rows/cols for the plot if not specified
+    if subplot_rows is None or subplot_cols is None:
+        subplot_rows, subplot_cols = get_subplot_rows_cols(len(list_dict), [3,4,5])
+    
+    # Resize for better visualization of subplots
+    plt.rcParams[&#39;figure.figsize&#39;] = [subplot_cols * 5, subplot_rows * 4]
+
+    if fig is None or axes is None:
+        fig, axes = plt.subplots(subplot_rows, subplot_cols, sharex=False, sharey=False)
+
+    i = starting_index
+    while i &lt; len(list_dict):
+        # Take into account the case of only one plot
+        if subplot_rows * subplot_cols == 1:
+            ax = axes
+        elif subplot_rows == 1:
+            ax = axes[(i + index_offset) % subplot_cols]
+        else:
+            ax = axes[(i + index_offset) // subplot_cols, (i + index_offset) % subplot_cols]
+
+        info = list_dict[i]
+        x_column = info[&#39;x_column&#39;]
+        y_column = info[&#39;y_column&#39;]
+        title = info.get(&#39;title&#39;)
+        highlight_column = info.get(&#39;highlight_column&#39;)
+        highlight_color = info.get(&#39;highlight_color&#39;, &#39;r&#39;)
+        normal_color = info.get(&#39;normal_color&#39;, &#39;b&#39;)
+
+        plot_scatter(data, x_column, y_column, title, ax, highlight_column, highlight_color, normal_color)
+
+        i = i + 1
+
+    fig.tight_layout()
+
+    # Resize to original settings
+    plt.rcParams[&#39;figure.figsize&#39;] = [10, 6]</code></pre>
+</details>
+</dd>
+<dt id="utils.plot_utils.plot_roc_auc"><code class="name flex">
+<span>def <span class="ident">plot_roc_auc</span></span>(<span>y_true, y_pred)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Plot ROC AUC</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot_roc_auc(y_true, y_pred):
+    &#34;&#34;&#34; Plot ROC AUC &#34;&#34;&#34;
+    fpr, tpr, threshold = metrics.roc_curve(y_true, y_pred)
+    roc_auc = metrics.auc(fpr, tpr)
+
+    # method I: plt
+    plt.title(&#39;Receiver Operating Characteristic&#39;)
+    plt.plot(fpr, tpr, &#39;b&#39;, label=&#39;AUC = %0.4f&#39; % roc_auc)
+    plt.legend(loc=&#39;lower right&#39;)
+    plt.plot([0, 1], [0, 1], &#39;r--&#39;)
+    plt.xlim([0, 1])
+    plt.ylim([0, 1])
+    plt.ylabel(&#39;True Positive Rate&#39;)
+    plt.xlabel(&#39;False Positive Rate&#39;)
+    plt.show()</code></pre>
+</details>
+</dd>
+<dt id="utils.plot_utils.plot_scatter"><code class="name flex">
+<span>def <span class="ident">plot_scatter</span></span>(<span>data, x_column, y_column, title=None, axes=None, highlight_column=None, highlight_color='r', normal_color='b')</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Plot scatter plots where we can highlight points as the outliers</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot_scatter(data, x_column, y_column, title=None, axes=None, highlight_column=None, highlight_color=&#39;r&#39;,
+                 normal_color=&#39;b&#39;):
+    &#34;&#34;&#34; Plot scatter plots where we can highlight points as the outliers &#34;&#34;&#34;
+
+    if highlight_column != None:
+        data.loc[data[highlight_column] == True, highlight_column] = highlight_color
+        data.loc[data[highlight_column] == False, highlight_column] = normal_color
+        color_pd = data[highlight_column]
+        # color_pd = data[highlight_column] * highlight_color + (1 - data[highlight_column]) * normal_color
+        color_list = color_pd[color_pd.notnull()].values.tolist()
+    else:
+        color_list = len(data[y_column]) * [normal_color, ]
+
+    if title == None:
+        title = y_column 
+       
+    if (x_column == &#39;index&#39; and np.issubdtype(data.index, np.datetime64)) or np.issubdtype(data[x_column], np.datetime64):
+        if x_column == &#39;index&#39;:
+            plot_date(data.index, data[y_column], axes=axes, title=title, color=color_list)
+        else:
+            plot_date(data[x_column], data[y_column], axes=axes, title=title, color=color_list)
+    elif axes == None:
+        data.plot.scatter(x=x_column, y=y_column, color=color_list)
+    else:
+        axes.scatter(x=data[x_column], y=data[y_column], color=color_list)
+        axes.set_title(title)
+        axes.set_xlabel(x_column)
+        axes.set_ylabel(y_column)</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="utils" href="index.html">utils</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="utils.plot_utils.get_subplot_rows_cols" href="#utils.plot_utils.get_subplot_rows_cols">get_subplot_rows_cols</a></code></li>
+<li><code><a title="utils.plot_utils.plot_date" href="#utils.plot_utils.plot_date">plot_date</a></code></li>
+<li><code><a title="utils.plot_utils.plot_histograms" href="#utils.plot_utils.plot_histograms">plot_histograms</a></code></li>
+<li><code><a title="utils.plot_utils.plot_list_scatters" href="#utils.plot_utils.plot_list_scatters">plot_list_scatters</a></code></li>
+<li><code><a title="utils.plot_utils.plot_roc_auc" href="#utils.plot_utils.plot_roc_auc">plot_roc_auc</a></code></li>
+<li><code><a title="utils.plot_utils.plot_scatter" href="#utils.plot_utils.plot_scatter">plot_scatter</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.7.2</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>
