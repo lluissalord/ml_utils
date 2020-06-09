@@ -7,11 +7,7 @@ import warnings
 
 from sklearn.model_selection import train_test_split
 
-import tensorflow as tf
-from keras.callbacks import Callback
-from keras.losses import binary_crossentropy
-from keras.models import model_from_json
-from keras import backend as K
+from tensorflow.keras.callbacks import Callback
 
 from plot_utils import plot_roc_auc
 
@@ -137,12 +133,15 @@ def config_model_trainable(model, config, last_block=0, base_model=None):
 
 def df_to_dataset(dataframe, target='target', shuffle=True, batch_size=32):
     """ Utility method to create a tf.data dataset from a Pandas Dataframe """
+
+    from tensorflow.data import Dataset
+
     dataframe = dataframe.copy()
     if target is not None:
         labels = dataframe.pop(target)
-        ds = tf.data.Dataset.from_tensor_slices((dict(dataframe), labels))
+        ds = Dataset.from_tensor_slices((dict(dataframe), labels))
     else:
-        ds = tf.data.Dataset.from_tensor_slices((dict(dataframe)))
+        ds = Dataset.from_tensor_slices((dict(dataframe)))
     if shuffle:
         ds = ds.shuffle(buffer_size=len(dataframe))
     ds = ds.batch(batch_size)
@@ -157,6 +156,9 @@ def dnn_plot_roc_auc(X, y_test, model, feature_selection, batch_size):
 
 def dice_coef(y_true, y_pred, smooth=1):
     """ Calculate DICE coeficient given y_true and y_pred """
+
+    from tensorflow.keras import backend as K
+
     y_true_f = K.flatten(y_true)
     y_pred_f = K.flatten(y_pred)
     intersection = K.sum(y_true_f * y_pred_f)
@@ -165,6 +167,9 @@ def dice_coef(y_true, y_pred, smooth=1):
 
 def dice_loss(y_true, y_pred):
     """ Calculate DICE loss given y_true and y_pred """
+
+    from tensorflow.keras import backend as K
+
     smooth = 1.0
     y_true_f = K.flatten(y_true)
     y_pred_f = K.flatten(y_pred)
@@ -177,10 +182,14 @@ def dice_loss(y_true, y_pred):
 
 def bce_dice_loss(y_true, y_pred, clip_loss = None):
     """ Calculate binary cross entropy loss given y_true and y_pred """
+
+    from tensorflow.keras.losses import binary_crossentropy
+    from tensorflow import clip_by_value
+
     if clip_loss is None:
         return binary_crossentropy(y_true, y_pred) + dice_loss(y_true, y_pred)
     else:
-        return tf.clip_by_value(binary_crossentropy(y_true, y_pred) + dice_loss(y_true, y_pred), -clip_loss, clip_loss)
+        return clip_by_value(binary_crossentropy(y_true, y_pred) + dice_loss(y_true, y_pred), -clip_loss, clip_loss)
 
 def make_pred(model, gen, steps = None):
     """ Predict model output from provided generator """
@@ -245,6 +254,8 @@ def save_train(model, history=None, models_dir="", json_path="", weights_path=""
 def load_train(models_dir="", model_generator=None, json_path="", weights_path="", load_weights=True, history_path="", feature_selection_path=""):
     """ Load training model (JSON and weights separetly), history (if provided) and feature selection (if provided) """
     
+    from tensorflow.keras.models import model_from_json
+
     if models_dir != "" and models_dir[-1] != "/" and models_dir[-1] != r"\ ".strip():
         models_dir = models_dir + "/"
     
