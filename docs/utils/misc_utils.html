@@ -27,7 +27,7 @@
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/43182b08fc7469ef1c0f58640581129de814795a/misc_utils.py#L0-L362" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/misc_utils.py#L0-L362" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">import sys
 import os
@@ -409,7 +409,7 @@ def reduce_mem_usage(df, columns=None, verbose=True, debug=False):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/43182b08fc7469ef1c0f58640581129de814795a/misc_utils.py#L216-L261" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/misc_utils.py#L216-L261" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def KFolds_stratified(dataframe, k=10, target=&#34;class&#34;, shuffle=True, seed=None):
     &#34;&#34;&#34; Generate kFolds pairs of training and validation sets &#34;&#34;&#34;
@@ -467,7 +467,7 @@ def reduce_mem_usage(df, columns=None, verbose=True, debug=False):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/43182b08fc7469ef1c0f58640581129de814795a/misc_utils.py#L199-L214" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/misc_utils.py#L199-L214" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def convert_Int_to_int(df, columns=None, verbose=True):
     &#34;&#34;&#34; Convert Pandas Int dtype to corresponding numpy int dtype &#34;&#34;&#34;
@@ -495,7 +495,7 @@ def reduce_mem_usage(df, columns=None, verbose=True, debug=False):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/43182b08fc7469ef1c0f58640581129de814795a/misc_utils.py#L76-L162" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/misc_utils.py#L76-L162" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def downsampling_data(df, targets, goal_percentages=None, positive_oversampling=True):
     &#34;&#34;&#34; Downsample data to achieve or at least approximate to the goal percentage &#34;&#34;&#34;
@@ -594,7 +594,7 @@ def reduce_mem_usage(df, columns=None, verbose=True, debug=False):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/43182b08fc7469ef1c0f58640581129de814795a/misc_utils.py#L11-L17" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/misc_utils.py#L11-L17" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def extract_zips(zip_path, extract_dir):
     &#34;&#34;&#34; Extract zip file &#34;&#34;&#34;
@@ -613,7 +613,7 @@ def reduce_mem_usage(df, columns=None, verbose=True, debug=False):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/43182b08fc7469ef1c0f58640581129de814795a/misc_utils.py#L27-L31" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/misc_utils.py#L27-L31" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def get_var_list():
     &#34;&#34;&#34; Print current variable size in memory &#34;&#34;&#34;
@@ -630,7 +630,7 @@ def reduce_mem_usage(df, columns=None, verbose=True, debug=False):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/43182b08fc7469ef1c0f58640581129de814795a/misc_utils.py#L164-L197" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/misc_utils.py#L164-L197" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def oversampling_data(
     df, target, goal_percentage=1 / 3, positive_oversampling=True, max_ratio=10
@@ -676,7 +676,7 @@ def reduce_mem_usage(df, columns=None, verbose=True, debug=False):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/43182b08fc7469ef1c0f58640581129de814795a/misc_utils.py#L33-L74" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/misc_utils.py#L33-L74" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def rebalance_data(df, n_ensemble, target, negative_downsampling=True, use_partial_data=False, ratio_partial_data=3):
     &#34;&#34;&#34; Downsampling (negative or positive) data according to ratio and distribute it across number of ensemble &#34;&#34;&#34;
@@ -730,7 +730,7 @@ def reduce_mem_usage(df, columns=None, verbose=True, debug=False):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/43182b08fc7469ef1c0f58640581129de814795a/misc_utils.py#L263-L363" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/misc_utils.py#L263-L363" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def reduce_mem_usage(df, columns=None, verbose=True, debug=False):
     &#34;&#34;&#34; Reduce memory usage of provided DataFrame using best dtype for each column &#34;&#34;&#34;
@@ -843,7 +843,7 @@ def reduce_mem_usage(df, columns=None, verbose=True, debug=False):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/43182b08fc7469ef1c0f58640581129de814795a/misc_utils.py#L19-L25" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/misc_utils.py#L19-L25" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def sizeof_fmt(num, suffix=&#39;B&#39;):
     &#34;&#34;&#34; Transform number to readable unit &#34;&#34;&#34;
