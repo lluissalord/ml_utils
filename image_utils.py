@@ -1,4 +1,3 @@
-import cv2
 import os
 import numpy as np
 
@@ -19,6 +18,9 @@ TRANSFORM_0_1_to_1_1 = 6
 
 def crop_image_from_gray(img, tol=7):
     """ Crop image which have values above tol in gray scale """
+
+    import cv2
+
     if img.ndim == 2:
         mask = img > tol
         return img[np.ix_(mask.any(1), mask.any(0))]
@@ -73,6 +75,9 @@ def preprocess_image(image, sigmaX=2):
     3. Resize image to desired size
     4. Add Gaussian noise to increase Robustness
     """
+
+    import cv2
+
     if image.ndim == 2:
         img_size = image.shape
     elif image.ndim == 3:
