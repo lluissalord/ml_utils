@@ -1,17 +1,19 @@
 import pandas as pd
 import numpy as np
+import pickle
 from tqdm import tqdm_notebook
-from scipy import stats
-from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
-import seaborn as sns
 import os
-import catboost as cb
 
 from plot_utils import plot_scatter, get_subplot_rows_cols
 
 def covariate_shift(train, test, categorical_columns, n_samples, iterations = 200, weights_coef = 1, AUC_threshold = 0.8, importance_threshold = 0.9, max_loops = 20, test_size = 0.1, trys_all_influencer=5, calc_sample_weights=True, task_type="CPU", data_dir='', load_cov=False, save_cov=False, plot=True):
     """ Select features without Covariate Shift between training and test set using iteratively CatBoostClassifier to identify relation between train and test """
+    
+    import seaborn as sns
+    import catboost as cb
+    from sklearn.model_selection import train_test_split
+    
     if not os.path.exists(data_dir + 'cov_shift_features.pkl') or not load_cov:
         train_sample = train.sample(n_samples)
         train_sample.loc[:,'origin'] = 0
@@ -143,6 +145,10 @@ def covariate_shift(train, test, categorical_columns, n_samples, iterations = 20
 def stadistic_difference_distributions(data, submission, time_column, test_percentage=0.2, p_value_threshold=None,
                                        verbose=False):
     """ Calculate relation between initial and end part of the dataset for each column using Kolmogorov-Smirnov statistic on 2 samples """
+    
+    from scipy import stats
+    from sklearn.model_selection import train_test_split
+    
     train, test = train_test_split(data.sort_values(time_column), test_size=test_percentage, shuffle=False)
 
     time_analysis_df = pd.DataFrame(False, columns=['train_test', 'train_submission', 'test_submission'],
