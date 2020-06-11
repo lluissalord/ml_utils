@@ -4,10 +4,6 @@ import shutil
 import pandas as pd
 import numpy as np
 
-from tqdm import tqdm_notebook
-
-from sklearn.model_selection import train_test_split
-
 def extract_zips(zip_path, extract_dir):
     """ Extract zip file """
     if not os.path.exists(extract_dir):
@@ -32,6 +28,9 @@ def get_var_list():
 
 def rebalance_data(df, n_ensemble, target, negative_downsampling=True, use_partial_data=False, ratio_partial_data=3):
     """ Downsampling (negative or positive) data according to ratio and distribute it across number of ensemble """
+
+    from tqdm import tqdm_notebook
+
     pos_rows = df[df[target] == 1].shape[0]
     neg_rows = df[df[target] == 0].shape[0]
 
@@ -198,6 +197,9 @@ def oversampling_data(
 
 def convert_Int_to_int(df, columns=None, verbose=True):
     """ Convert Pandas Int dtype to corresponding numpy int dtype """
+
+    from tqdm import tqdm_notebook
+
     if columns == None:
         columns = list(df.columns)
     df_int_cols = list(df[columns].dtypes[df.dtypes.astype(str).str.lower().str.startswith('int')].index)
@@ -215,6 +217,9 @@ def convert_Int_to_int(df, columns=None, verbose=True):
 
 def KFolds_stratified(dataframe, k=10, target="class", shuffle=True, seed=None):
     """ Generate kFolds pairs of training and validation sets """
+
+    from sklearn.model_selection import train_test_split
+
     train_folds = []
     valid_folds = []
     Kfolds = []
@@ -262,6 +267,9 @@ def KFolds_stratified(dataframe, k=10, target="class", shuffle=True, seed=None):
 
 def reduce_mem_usage(df, columns=None, verbose=True, debug=False):
     """ Reduce memory usage of provided DataFrame using best dtype for each column """
+
+    from tqdm import tqdm_notebook
+
     if columns == None:
         columns = df.columns
     elif len(columns) == 0:
