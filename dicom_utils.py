@@ -1,13 +1,7 @@
 import numpy as np
 import pandas as pd
-import cv2
-import pydicom
-from matplotlib import pyplot as plt
-from scipy import interpolate
 import warnings
 import os
-
-from tqdm import tqdm_notebook
 
 # From https://radiopaedia.org/articles/windowing-ct
 dicom_windows = {
@@ -26,6 +20,10 @@ dicom_windows = {
 
 def crop_brain(image, n_top_areas = 5, max_scale_diff = 3, plot = False, dimensions = None, area = None):
     """ Crop image in order to only include square image of the "best" image of the brain """
+
+    import cv2
+    from matplotlib import pyplot as plt
+
     image = normalize_img(image, use_min_max = True)
     if dimensions is None:
         if (image.max() - image.min()) == 0 or np.isnan(image.max()) or np.isnan(image.min()):
@@ -107,6 +105,9 @@ def pad_square(x):
 
 def get_first_of_dicom_field_as_int(x):
     """ Get first DICOM field as in int """
+
+    import pydicom
+
     if type(x) == pydicom.multival.MultiValue:
         return int(x[0])
     else:
@@ -167,6 +168,9 @@ def get_freqhist_bins(dcm_img, n_bins = 100):
 
 def get_dcm_img(path, window_type = 'brain', verbose = True):
     """ Read and scale of DICOM images according to its metadata """
+
+    import pydicom
+
     dcm = pydicom.dcmread(path)
     window_center, window_width, intercept, slope = get_windowing(dcm)
     group = get_subgroups(dcm)   
@@ -205,6 +209,9 @@ def get_pixel_array(dcm, path=None):
 
 def interpolate_img(dcm_img, bins = None, n_bins = 100):
     """ Interpolate DCM image to equally distribute intensity on the image """
+
+    from scipy import interpolate
+
     # Equal distribution of intensity
     if bins is None: 
         bins = get_freqhist_bins(dcm_img, n_bins)
@@ -232,6 +239,9 @@ def normalize_img(dcm_img, mean = None, std = None, use_min_max = False):
 
 def preprocess_dicom(path, x, y, bins = None, n_bins = 100, mean = None, std = None, use_min_max = False, remove_empty = False, windows_type = 'brain', verbose = True): 
     """ Process (open, interpolate, normalize and resize) the DICOM file on the specified path """
+    
+    import cv2
+    
     area = 0
     dimensions = None
     if not type(windows_type) is list:
@@ -281,6 +291,10 @@ def preprocess_dicom(path, x, y, bins = None, n_bins = 100, mean = None, std = N
 # This is done due to memory limitations of have all training metadata in a DataFrame
 def sample_groups(load_dir, samples_per_group = 5, max_trys = 1000):
     """ Extract equally distributed number of samples of DICOM files paths """
+
+    import pydicom
+    from tqdm import tqdm_notebook
+
     filenames = os.listdir(load_dir)
     filenames_groups = {1 : [], 2 : [], 3 : []}
     for group in tqdm_notebook([1,2,3], desc = 'Group sample'):
@@ -300,6 +314,9 @@ def sample_groups(load_dir, samples_per_group = 5, max_trys = 1000):
 # Secondly mean of mean pixels values and mean of std pixel values using the previous bin mean
 def sample_bins_mean_std(load_dir, samples_per_group = 5, max_trys = 1000, n_bins = 100):
     """ Extract the bins intensity mean, image mean and image standard deviation of each group """
+
+    from tqdm import tqdm_notebook
+
     bins_mean = {}
     mean = {}
     std = {}
