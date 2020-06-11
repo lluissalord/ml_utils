@@ -1,13 +1,8 @@
 import pickle
-from matplotlib import pyplot as plt
 import numpy as np
 import os
 import shutil
 import warnings
-
-from sklearn.model_selection import train_test_split
-
-from tensorflow.keras.callbacks import Callback
 
 from plot_utils import plot_roc_auc
 
@@ -17,6 +12,9 @@ def KFolds_flow_from_dataframe(dataframe, generators, kfolds=10, directory=None,
                                class_mode='categorical', batch_size=32, shuffle=True, seed=None, save_to_dir=None,
                                save_prefix='', save_format='png', interpolation='nearest', validate_filenames=True):
     """ Generate stratified kFolds generators for training and validation sets """
+
+    from sklearn.model_selection import train_test_split
+
     train_gens = []
     valid_gens = []
     Kfolds_gens = []
@@ -307,6 +305,7 @@ def load_train(models_dir="", model_generator=None, json_path="", weights_path="
     return model, history, feature_selection
 
 # TODO: Review if EarlyStopping include flexibility to be use with batchs or if it could be done using EarlyStopping as parent object
+from tensorflow.keras.callbacks import Callback
 class BatchHistoryEarlyStopping(Callback):
     """ EarlyStopping class based on batch evaluation """
     def __init__(
@@ -444,6 +443,9 @@ class BatchHistoryEarlyStopping(Callback):
 
 def visualize(history, key, y_label, x_label="epoch", title=None):
     """ Plot history data with one plot per metric """
+
+    from matplotlib import pyplot as plt
+
     plt.plot(history[key])
     plt.plot(history["val_" + key])
     if title is None:
