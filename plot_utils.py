@@ -2,10 +2,6 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import pandas as pd
 import numpy as np
-from sklearn import metrics
-from tqdm import tqdm_notebook
-import seaborn as sns
-from scipy.stats import norm
 
 def get_subplot_rows_cols(num_plots, n_cols = [3,4,5]):
     """ Calculate number row and cols for a pretty grid """
@@ -34,8 +30,15 @@ def get_subplot_rows_cols(num_plots, n_cols = [3,4,5]):
     return subplot_rows, subplot_cols
 
 def plot_histograms(df, column_names, df_types, max_value_counts, subplot_rows=None, subplot_cols=None,
-                    starting_index=0, index_offset=0, fit=norm):
+                    starting_index=0, index_offset=0, fit=None):
     """ Plot histogram plot grid for all the feature provided """
+
+    from scipy.stats import norm
+    import seaborn as sns
+
+    if fit is None:
+        fit = norm
+
     # Set a good relation rows/cols for the plot if not specified
     if subplot_rows is None or subplot_cols is None:
         subplot_rows, subplot_cols = get_subplot_rows_cols(len(column_names), [3,4,5])
@@ -63,6 +66,9 @@ def plot_histograms(df, column_names, df_types, max_value_counts, subplot_rows=N
 
 def plot_roc_auc(y_true, y_pred):
     """ Plot ROC AUC """
+
+    from sklearn import metrics
+
     fpr, tpr, threshold = metrics.roc_curve(y_true, y_pred)
     roc_auc = metrics.auc(fpr, tpr)
 
