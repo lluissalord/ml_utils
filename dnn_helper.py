@@ -6,6 +6,28 @@ import warnings
 
 from plot_utils import plot_roc_auc
 
+from tensorflow.keras.callbacks import Callback
+from tensorflow.keras.layers import (
+    Input,
+    Dense,
+    Activation,
+    Dropout,
+    BatchNormalization,
+    LSTM,
+    AdditiveAttention,
+    Add,
+    Multiply,
+    Flatten,
+    Cropping1D,
+    Concatenate,
+)
+from tensorflow.keras.regularizers import l1_l2
+from tensorflow.keras.models import Model, model_from_json
+from tensorflow.data import Dataset
+from tensorflow.keras import backend as K
+from tensorflow.keras.losses import binary_crossentropy
+from tensorflow import clip_by_value
+
 
 def KFolds_flow_from_dataframe(dataframe, generators, kfolds=10, directory=None, x_col='filename', y_col='class',
                                weight_col=None, target_size=(256, 256), color_mode='rgb', classes=None,
@@ -131,9 +153,6 @@ def config_model_trainable(model, config, last_block=0, base_model=None):
 
 def df_to_dataset(dataframe, target='target', shuffle=True, batch_size=32):
     """ Utility method to create a tf.data dataset from a Pandas Dataframe """
-
-    from tensorflow.data import Dataset
-
     dataframe = dataframe.copy()
     if target is not None:
         labels = dataframe.pop(target)
@@ -154,9 +173,6 @@ def dnn_plot_roc_auc(X, y_test, model, feature_selection, batch_size):
 
 def dice_coef(y_true, y_pred, smooth=1):
     """ Calculate DICE coeficient given y_true and y_pred """
-
-    from tensorflow.keras import backend as K
-
     y_true_f = K.flatten(y_true)
     y_pred_f = K.flatten(y_pred)
     intersection = K.sum(y_true_f * y_pred_f)
@@ -165,9 +181,6 @@ def dice_coef(y_true, y_pred, smooth=1):
 
 def dice_loss(y_true, y_pred):
     """ Calculate DICE loss given y_true and y_pred """
-
-    from tensorflow.keras import backend as K
-
     smooth = 1.0
     y_true_f = K.flatten(y_true)
     y_pred_f = K.flatten(y_pred)
@@ -180,10 +193,6 @@ def dice_loss(y_true, y_pred):
 
 def bce_dice_loss(y_true, y_pred, clip_loss = None):
     """ Calculate binary cross entropy loss given y_true and y_pred """
-
-    from tensorflow.keras.losses import binary_crossentropy
-    from tensorflow import clip_by_value
-
     if clip_loss is None:
         return binary_crossentropy(y_true, y_pred) + dice_loss(y_true, y_pred)
     else:
@@ -251,8 +260,6 @@ def save_train(model, history=None, models_dir="", json_path="", weights_path=""
 
 def load_train(models_dir="", model_generator=None, json_path="", weights_path="", load_weights=True, history_path="", feature_selection_path=""):
     """ Load training model (JSON and weights separetly), history (if provided) and feature selection (if provided) """
-    
-    from tensorflow.keras.models import model_from_json
 
     if models_dir != "" and models_dir[-1] != "/" and models_dir[-1] != r"\ ".strip():
         models_dir = models_dir + "/"
@@ -305,7 +312,6 @@ def load_train(models_dir="", model_generator=None, json_path="", weights_path="
     return model, history, feature_selection
 
 # TODO: Review if EarlyStopping include flexibility to be use with batchs or if it could be done using EarlyStopping as parent object
-from tensorflow.keras.callbacks import Callback
 class BatchHistoryEarlyStopping(Callback):
     """ EarlyStopping class based on batch evaluation """
     def __init__(
@@ -543,7 +549,7 @@ class Model_generator:
         for i in range(self.hidden_layers):
             if self.dropout_rate > 0:
                 X = Dropout(self.dropout_rate, name='dropout_'+str(i))(X)
-            X = Dense(n_units//(2**i), name='dense_'+str(i), activation=self.hidden_layer_activation)(X)
+            X = Dense(self.n_units//(2**i), name='dense_'+str(i), activation=self.hidden_layer_activation)(X)
             
         if self.dropout_rate > 0:
             X = Dropout(self.dropout_rate, name='dropout_output')(X)
@@ -558,7 +564,7 @@ class Model_generator:
         for i in range(self.residual_blocks):
             if self.dropout_rate > 0:
                 X = Dropout(self.dropout_rate, name='dropout_res_'+str(i)+'_1')(X)
-            X_res = Dense(n_units, name='dense_res_'+str(i)+'_1', activation='relu')(X)
+            X_res = Dense(self.n_units, name='dense_res_'+str(i)+'_1', activation='relu')(X)
             
             if self.dropout_rate > 0:
                 X_res = Dropout(self.dropout_rate, name='dropout_res_'+str(i)+'_2')(X_res)
@@ -685,8 +691,8 @@ class Model_generator:
         return Model(inputs=input_x, outputs=X, name='attention_lstm')
     
     def attention_lstm_dropout_input(self):
-        dropout_input = Input(shape = (seq_len, droput_input_cols), name = 'dropout_input')
-        remain_input = Input(shape = (seq_len, remain_input_cols), name = 'remain_input')
+        dropout_input = Input(shape = (self.seq_len, self.droput_input_cols), name = 'dropout_input')
+        remain_input = Input(shape = (self.seq_len, self.remain_input_cols), name = 'remain_input')
 
         dropout_x = Dropout(self.dropout_rate)(dropout_input)
 
