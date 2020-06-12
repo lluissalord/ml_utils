@@ -3,7 +3,7 @@ import pandas as pd
 from tqdm import tqdm_notebook
 import matplotlib.pyplot as plt
 
-from .plot_utils import plot_scatter
+from ml_utils.plot_utils import plot_scatter
 
 
 def laggingData(X, data, lag, suffix='Prev_', data_cols=None, exclude_cols=['datetime'], output_data=False):

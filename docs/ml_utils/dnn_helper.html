@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.7.2" />
-<title>utils.dnn_helper API documentation</title>
+<title>ml_utils.dnn_helper API documentation</title>
 <meta name="description" content="" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
@@ -14,33 +14,50 @@
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
 <script async src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS_CHTML'></script>
 <style>.homelink{display:block;font-size:2em;font-weight:bold;color:#555;padding-bottom:.5em;border-bottom:1px solid silver}.homelink:hover{color:inherit}.homelink img{max-width:20%;max-height:5em;margin:auto;margin-bottom:.3em}</style>
-<link rel="canonical" href="https://pdoc3.github.io/pdoc/doc/utils/dnn_helper.html">
+<link rel="canonical" href="https://pdoc3.github.io/pdoc/doc/ml_utils/dnn_helper.html">
 <link rel="icon" href="https://pdoc3.github.io/pdoc/logo.png">
 </head>
 <body>
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>utils.dnn_helper</code></h1>
+<h1 class="title">Module <code>ml_utils.dnn_helper</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dnn_helper.py#L0-L707" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L0-L716" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">import pickle
-from matplotlib import pyplot as plt
 import numpy as np
 import os
 import shutil
 import warnings
 
-from sklearn.model_selection import train_test_split
+from ml_utils.plot_utils import plot_roc_auc
 
 from tensorflow.keras.callbacks import Callback
-
-from plot_utils import plot_roc_auc
+from tensorflow.keras.layers import (
+    Input,
+    Dense,
+    Activation,
+    Dropout,
+    BatchNormalization,
+    LSTM,
+    AdditiveAttention,
+    Add,
+    Multiply,
+    Flatten,
+    Cropping1D,
+    Concatenate,
+)
+from tensorflow.keras.regularizers import l1_l2
+from tensorflow.keras.models import Model, model_from_json
+from tensorflow import data
+from tensorflow.keras import backend as K
+from tensorflow.keras.losses import binary_crossentropy
+from tensorflow import clip_by_value
 
 
 def KFolds_flow_from_dataframe(dataframe, generators, kfolds=10, directory=None, x_col=&#39;filename&#39;, y_col=&#39;class&#39;,
@@ -48,6 +65,9 @@ def KFolds_flow_from_dataframe(dataframe, generators, kfolds=10, directory=None,
                                class_mode=&#39;categorical&#39;, batch_size=32, shuffle=True, seed=None, save_to_dir=None,
                                save_prefix=&#39;&#39;, save_format=&#39;png&#39;, interpolation=&#39;nearest&#39;, validate_filenames=True):
     &#34;&#34;&#34; Generate stratified kFolds generators for training and validation sets &#34;&#34;&#34;
+
+    from sklearn.model_selection import train_test_split
+
     train_gens = []
     valid_gens = []
     Kfolds_gens = []
@@ -164,15 +184,12 @@ def config_model_trainable(model, config, last_block=0, base_model=None):
 
 def df_to_dataset(dataframe, target=&#39;target&#39;, shuffle=True, batch_size=32):
     &#34;&#34;&#34; Utility method to create a tf.data dataset from a Pandas Dataframe &#34;&#34;&#34;
-
-    from tensorflow.data import Dataset
-
     dataframe = dataframe.copy()
     if target is not None:
         labels = dataframe.pop(target)
-        ds = Dataset.from_tensor_slices((dict(dataframe), labels))
+        ds = data.Dataset.from_tensor_slices((dict(dataframe), labels))
     else:
-        ds = Dataset.from_tensor_slices((dict(dataframe)))
+        ds = data.Dataset.from_tensor_slices((dict(dataframe)))
     if shuffle:
         ds = ds.shuffle(buffer_size=len(dataframe))
     ds = ds.batch(batch_size)
@@ -187,9 +204,6 @@ def dnn_plot_roc_auc(X, y_test, model, feature_selection, batch_size):
 
 def dice_coef(y_true, y_pred, smooth=1):
     &#34;&#34;&#34; Calculate DICE coeficient given y_true and y_pred &#34;&#34;&#34;
-
-    from tensorflow.keras import backend as K
-
     y_true_f = K.flatten(y_true)
     y_pred_f = K.flatten(y_pred)
     intersection = K.sum(y_true_f * y_pred_f)
@@ -198,9 +212,6 @@ def dice_coef(y_true, y_pred, smooth=1):
 
 def dice_loss(y_true, y_pred):
     &#34;&#34;&#34; Calculate DICE loss given y_true and y_pred &#34;&#34;&#34;
-
-    from tensorflow.keras import backend as K
-
     smooth = 1.0
     y_true_f = K.flatten(y_true)
     y_pred_f = K.flatten(y_pred)
@@ -213,10 +224,6 @@ def dice_loss(y_true, y_pred):
 
 def bce_dice_loss(y_true, y_pred, clip_loss = None):
     &#34;&#34;&#34; Calculate binary cross entropy loss given y_true and y_pred &#34;&#34;&#34;
-
-    from tensorflow.keras.losses import binary_crossentropy
-    from tensorflow import clip_by_value
-
     if clip_loss is None:
         return binary_crossentropy(y_true, y_pred) + dice_loss(y_true, y_pred)
     else:
@@ -284,8 +291,6 @@ def save_train(model, history=None, models_dir=&#34;&#34;, json_path=&#34;&#34;,
 
 def load_train(models_dir=&#34;&#34;, model_generator=None, json_path=&#34;&#34;, weights_path=&#34;&#34;, load_weights=True, history_path=&#34;&#34;, feature_selection_path=&#34;&#34;):
     &#34;&#34;&#34; Load training model (JSON and weights separetly), history (if provided) and feature selection (if provided) &#34;&#34;&#34;
-    
-    from tensorflow.keras.models import model_from_json
 
     if models_dir != &#34;&#34; and models_dir[-1] != &#34;/&#34; and models_dir[-1] != r&#34;\ &#34;.strip():
         models_dir = models_dir + &#34;/&#34;
@@ -475,6 +480,9 @@ class BatchHistoryEarlyStopping(Callback):
 
 def visualize(history, key, y_label, x_label=&#34;epoch&#34;, title=None):
     &#34;&#34;&#34; Plot history data with one plot per metric &#34;&#34;&#34;
+
+    from matplotlib import pyplot as plt
+
     plt.plot(history[key])
     plt.plot(history[&#34;val_&#34; + key])
     if title is None:
@@ -513,6 +521,7 @@ def visualize_training(history):
                 output_name = key[:-5]
                 visualize_acc_loss(history, output_name=output_name)
                 
+# TODO: Adapt Model generator to have only three 2 function (DNN and LSTM) but higly flexible depending on parameters
 class Model_generator:
     &#34;&#34;&#34; Class used for generating models according to the parameters specified &#34;&#34;&#34;
     def __init__(self, input_shape, n_outputs, n_units, model_type=&#39;dnn_baseline&#39;, activation=&#39;softmax&#39;, hidden_layers=2, hidden_layer_activation=&#39;relu&#39;, residual_blocks=10, lstm_blocks=1, dropout_rate=0, recurrent_dropout=0, lstm_l1=0, lstm_l2=0, droput_input_cols=None, remain_input_cols=None):
@@ -572,7 +581,7 @@ class Model_generator:
         for i in range(self.hidden_layers):
             if self.dropout_rate &gt; 0:
                 X = Dropout(self.dropout_rate, name=&#39;dropout_&#39;+str(i))(X)
-            X = Dense(n_units//(2**i), name=&#39;dense_&#39;+str(i), activation=self.hidden_layer_activation)(X)
+            X = Dense(self.n_units//(2**i), name=&#39;dense_&#39;+str(i), activation=self.hidden_layer_activation)(X)
             
         if self.dropout_rate &gt; 0:
             X = Dropout(self.dropout_rate, name=&#39;dropout_output&#39;)(X)
@@ -587,7 +596,7 @@ class Model_generator:
         for i in range(self.residual_blocks):
             if self.dropout_rate &gt; 0:
                 X = Dropout(self.dropout_rate, name=&#39;dropout_res_&#39;+str(i)+&#39;_1&#39;)(X)
-            X_res = Dense(n_units, name=&#39;dense_res_&#39;+str(i)+&#39;_1&#39;, activation=&#39;relu&#39;)(X)
+            X_res = Dense(self.n_units, name=&#39;dense_res_&#39;+str(i)+&#39;_1&#39;, activation=&#39;relu&#39;)(X)
             
             if self.dropout_rate &gt; 0:
                 X_res = Dropout(self.dropout_rate, name=&#39;dropout_res_&#39;+str(i)+&#39;_2&#39;)(X_res)
@@ -714,8 +723,8 @@ class Model_generator:
         return Model(inputs=input_x, outputs=X, name=&#39;attention_lstm&#39;)
     
     def attention_lstm_dropout_input(self):
-        dropout_input = Input(shape = (seq_len, droput_input_cols), name = &#39;dropout_input&#39;)
-        remain_input = Input(shape = (seq_len, remain_input_cols), name = &#39;remain_input&#39;)
+        dropout_input = Input(shape = (self.seq_len, self.droput_input_cols), name = &#39;dropout_input&#39;)
+        remain_input = Input(shape = (self.seq_len, self.remain_input_cols), name = &#39;remain_input&#39;)
 
         dropout_x = Dropout(self.dropout_rate)(dropout_input)
 
@@ -746,7 +755,7 @@ class Model_generator:
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="utils.dnn_helper.KFolds_flow_from_dataframe"><code class="name flex">
+<dt id="ml_utils.dnn_helper.KFolds_flow_from_dataframe"><code class="name flex">
 <span>def <span class="ident">KFolds_flow_from_dataframe</span></span>(<span>dataframe, generators, kfolds=10, directory=None, x_col='filename', y_col='class', weight_col=None, target_size=(256, 256), color_mode='rgb', classes=None, class_mode='categorical', batch_size=32, shuffle=True, seed=None, save_to_dir=None, save_prefix='', save_format='png', interpolation='nearest', validate_filenames=True)</span>
 </code></dt>
 <dd>
@@ -754,13 +763,16 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dnn_helper.py#L15-L67" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L32-L87" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def KFolds_flow_from_dataframe(dataframe, generators, kfolds=10, directory=None, x_col=&#39;filename&#39;, y_col=&#39;class&#39;,
                                weight_col=None, target_size=(256, 256), color_mode=&#39;rgb&#39;, classes=None,
                                class_mode=&#39;categorical&#39;, batch_size=32, shuffle=True, seed=None, save_to_dir=None,
                                save_prefix=&#39;&#39;, save_format=&#39;png&#39;, interpolation=&#39;nearest&#39;, validate_filenames=True):
     &#34;&#34;&#34; Generate stratified kFolds generators for training and validation sets &#34;&#34;&#34;
+
+    from sklearn.model_selection import train_test_split
+
     train_gens = []
     valid_gens = []
     Kfolds_gens = []
@@ -811,7 +823,7 @@ class Model_generator:
     return Kfolds_gens</code></pre>
 </details>
 </dd>
-<dt id="utils.dnn_helper.bce_dice_loss"><code class="name flex">
+<dt id="ml_utils.dnn_helper.bce_dice_loss"><code class="name flex">
 <span>def <span class="ident">bce_dice_loss</span></span>(<span>y_true, y_pred, clip_loss=None)</span>
 </code></dt>
 <dd>
@@ -819,21 +831,17 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dnn_helper.py#L183-L192" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L194-L199" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def bce_dice_loss(y_true, y_pred, clip_loss = None):
     &#34;&#34;&#34; Calculate binary cross entropy loss given y_true and y_pred &#34;&#34;&#34;
-
-    from tensorflow.keras.losses import binary_crossentropy
-    from tensorflow import clip_by_value
-
     if clip_loss is None:
         return binary_crossentropy(y_true, y_pred) + dice_loss(y_true, y_pred)
     else:
         return clip_by_value(binary_crossentropy(y_true, y_pred) + dice_loss(y_true, y_pred), -clip_loss, clip_loss)</code></pre>
 </details>
 </dd>
-<dt id="utils.dnn_helper.config_model_trainable"><code class="name flex">
+<dt id="ml_utils.dnn_helper.config_model_trainable"><code class="name flex">
 <span>def <span class="ident">config_model_trainable</span></span>(<span>model, config, last_block=0, base_model=None)</span>
 </code></dt>
 <dd>
@@ -841,7 +849,7 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dnn_helper.py#L98-L131" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L118-L151" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def config_model_trainable(model, config, last_block=0, base_model=None):
     &#34;&#34;&#34; Configure provided model to train the whole model, only top layer or from last_block layer to top (both included) &#34;&#34;&#34;
@@ -879,7 +887,7 @@ class Model_generator:
                     layer.trainable = False</code></pre>
 </details>
 </dd>
-<dt id="utils.dnn_helper.df_to_dataset"><code class="name flex">
+<dt id="ml_utils.dnn_helper.df_to_dataset"><code class="name flex">
 <span>def <span class="ident">df_to_dataset</span></span>(<span>dataframe, target='target', shuffle=True, batch_size=32)</span>
 </code></dt>
 <dd>
@@ -887,26 +895,23 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dnn_helper.py#L134-L148" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L154-L165" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def df_to_dataset(dataframe, target=&#39;target&#39;, shuffle=True, batch_size=32):
     &#34;&#34;&#34; Utility method to create a tf.data dataset from a Pandas Dataframe &#34;&#34;&#34;
-
-    from tensorflow.data import Dataset
-
     dataframe = dataframe.copy()
     if target is not None:
         labels = dataframe.pop(target)
-        ds = Dataset.from_tensor_slices((dict(dataframe), labels))
+        ds = data.Dataset.from_tensor_slices((dict(dataframe), labels))
     else:
-        ds = Dataset.from_tensor_slices((dict(dataframe)))
+        ds = data.Dataset.from_tensor_slices((dict(dataframe)))
     if shuffle:
         ds = ds.shuffle(buffer_size=len(dataframe))
     ds = ds.batch(batch_size)
     return ds</code></pre>
 </details>
 </dd>
-<dt id="utils.dnn_helper.dice_coef"><code class="name flex">
+<dt id="ml_utils.dnn_helper.dice_coef"><code class="name flex">
 <span>def <span class="ident">dice_coef</span></span>(<span>y_true, y_pred, smooth=1)</span>
 </code></dt>
 <dd>
@@ -914,20 +919,17 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dnn_helper.py#L157-L165" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L174-L179" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def dice_coef(y_true, y_pred, smooth=1):
     &#34;&#34;&#34; Calculate DICE coeficient given y_true and y_pred &#34;&#34;&#34;
-
-    from tensorflow.keras import backend as K
-
     y_true_f = K.flatten(y_true)
     y_pred_f = K.flatten(y_pred)
     intersection = K.sum(y_true_f * y_pred_f)
     return (2.0 * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)</code></pre>
 </details>
 </dd>
-<dt id="utils.dnn_helper.dice_loss"><code class="name flex">
+<dt id="ml_utils.dnn_helper.dice_loss"><code class="name flex">
 <span>def <span class="ident">dice_loss</span></span>(<span>y_true, y_pred)</span>
 </code></dt>
 <dd>
@@ -935,13 +937,10 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dnn_helper.py#L168-L180" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L182-L191" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def dice_loss(y_true, y_pred):
     &#34;&#34;&#34; Calculate DICE loss given y_true and y_pred &#34;&#34;&#34;
-
-    from tensorflow.keras import backend as K
-
     smooth = 1.0
     y_true_f = K.flatten(y_true)
     y_pred_f = K.flatten(y_pred)
@@ -952,7 +951,7 @@ class Model_generator:
     return 1.0 - score</code></pre>
 </details>
 </dd>
-<dt id="utils.dnn_helper.dnn_plot_roc_auc"><code class="name flex">
+<dt id="ml_utils.dnn_helper.dnn_plot_roc_auc"><code class="name flex">
 <span>def <span class="ident">dnn_plot_roc_auc</span></span>(<span>X, y_test, model, feature_selection, batch_size)</span>
 </code></dt>
 <dd>
@@ -960,7 +959,7 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dnn_helper.py#L151-L154" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L168-L171" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def dnn_plot_roc_auc(X, y_test, model, feature_selection, batch_size):
     &#34;&#34;&#34; Plot ROC AUC diagram of provided model using X data and real y values &#34;&#34;&#34;
@@ -968,7 +967,7 @@ class Model_generator:
     plot_roc_auc(y_test, model.predict(x_ds))</code></pre>
 </details>
 </dd>
-<dt id="utils.dnn_helper.fold_training"><code class="name flex">
+<dt id="ml_utils.dnn_helper.fold_training"><code class="name flex">
 <span>def <span class="ident">fold_training</span></span>(<span>KFolds_gens, k, model, optimizer='nadam', loss='binary_crossentropy', metrics=['accuracy'], class_weight=None, models_dir='', callbacks_list=None, history_callback=None, plot_history=False)</span>
 </code></dt>
 <dd>
@@ -976,7 +975,7 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dnn_helper.py#L70-L95" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L90-L115" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def fold_training(KFolds_gens, k, model, optimizer=&#39;nadam&#39;, loss=&#39;binary_crossentropy&#39;, metrics=[&#39;accuracy&#39;],
                   class_weight=None, models_dir=&#39;&#39;, callbacks_list=None, history_callback=None, plot_history=False):
@@ -1006,7 +1005,7 @@ class Model_generator:
     return model, history</code></pre>
 </details>
 </dd>
-<dt id="utils.dnn_helper.load_train"><code class="name flex">
+<dt id="ml_utils.dnn_helper.load_train"><code class="name flex">
 <span>def <span class="ident">load_train</span></span>(<span>models_dir='', model_generator=None, json_path='', weights_path='', load_weights=True, history_path='', feature_selection_path='')</span>
 </code></dt>
 <dd>
@@ -1014,12 +1013,10 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dnn_helper.py#L254-L307" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L261-L312" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def load_train(models_dir=&#34;&#34;, model_generator=None, json_path=&#34;&#34;, weights_path=&#34;&#34;, load_weights=True, history_path=&#34;&#34;, feature_selection_path=&#34;&#34;):
     &#34;&#34;&#34; Load training model (JSON and weights separetly), history (if provided) and feature selection (if provided) &#34;&#34;&#34;
-    
-    from tensorflow.keras.models import model_from_json
 
     if models_dir != &#34;&#34; and models_dir[-1] != &#34;/&#34; and models_dir[-1] != r&#34;\ &#34;.strip():
         models_dir = models_dir + &#34;/&#34;
@@ -1072,7 +1069,7 @@ class Model_generator:
     return model, history, feature_selection</code></pre>
 </details>
 </dd>
-<dt id="utils.dnn_helper.make_pred"><code class="name flex">
+<dt id="ml_utils.dnn_helper.make_pred"><code class="name flex">
 <span>def <span class="ident">make_pred</span></span>(<span>model, gen, steps=None)</span>
 </code></dt>
 <dd>
@@ -1080,7 +1077,7 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dnn_helper.py#L194-L207" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L201-L214" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def make_pred(model, gen, steps = None):
     &#34;&#34;&#34; Predict model output from provided generator &#34;&#34;&#34;
@@ -1098,7 +1095,7 @@ class Model_generator:
     return y_pred</code></pre>
 </details>
 </dd>
-<dt id="utils.dnn_helper.save_train"><code class="name flex">
+<dt id="ml_utils.dnn_helper.save_train"><code class="name flex">
 <span>def <span class="ident">save_train</span></span>(<span>model, history=None, models_dir='', json_path='', weights_path='', save_weights=True, history_path='', feature_selection=None, feature_selection_path='')</span>
 </code></dt>
 <dd>
@@ -1106,7 +1103,7 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dnn_helper.py#L209-L251" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L216-L258" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def save_train(model, history=None, models_dir=&#34;&#34;, json_path=&#34;&#34;, weights_path=&#34;&#34;, save_weights=True, history_path=&#34;&#34;, feature_selection=None, feature_selection_path=&#34;&#34;):
     &#34;&#34;&#34; Save training model (JSON and weights separetly), history (if provided) and feature selection (if provided) &#34;&#34;&#34;
@@ -1153,7 +1150,7 @@ class Model_generator:
             pickle.dump(feature_selection, pickle_file)</code></pre>
 </details>
 </dd>
-<dt id="utils.dnn_helper.visualize"><code class="name flex">
+<dt id="ml_utils.dnn_helper.visualize"><code class="name flex">
 <span>def <span class="ident">visualize</span></span>(<span>history, key, y_label, x_label='epoch', title=None)</span>
 </code></dt>
 <dd>
@@ -1161,10 +1158,13 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dnn_helper.py#L445-L455" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L450-L463" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def visualize(history, key, y_label, x_label=&#34;epoch&#34;, title=None):
     &#34;&#34;&#34; Plot history data with one plot per metric &#34;&#34;&#34;
+
+    from matplotlib import pyplot as plt
+
     plt.plot(history[key])
     plt.plot(history[&#34;val_&#34; + key])
     if title is None:
@@ -1176,7 +1176,7 @@ class Model_generator:
     plt.show()</code></pre>
 </details>
 </dd>
-<dt id="utils.dnn_helper.visualize_acc_loss"><code class="name flex">
+<dt id="ml_utils.dnn_helper.visualize_acc_loss"><code class="name flex">
 <span>def <span class="ident">visualize_acc_loss</span></span>(<span>history, output_name='', only_loss=False)</span>
 </code></dt>
 <dd>
@@ -1184,7 +1184,7 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dnn_helper.py#L458-L470" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L466-L478" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def visualize_acc_loss(history, output_name=&#34;&#34;, only_loss=False):
     &#34;&#34;&#34; Plot accuracy loss data from history &#34;&#34;&#34;
@@ -1201,7 +1201,7 @@ class Model_generator:
     visualize(history, output_name + metric, metric)</code></pre>
 </details>
 </dd>
-<dt id="utils.dnn_helper.visualize_training"><code class="name flex">
+<dt id="ml_utils.dnn_helper.visualize_training"><code class="name flex">
 <span>def <span class="ident">visualize_training</span></span>(<span>history)</span>
 </code></dt>
 <dd>
@@ -1209,7 +1209,7 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dnn_helper.py#L473-L483" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L481-L491" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def visualize_training(history):
     &#34;&#34;&#34; Plot all metrics from training history &#34;&#34;&#34;
@@ -1229,7 +1229,7 @@ class Model_generator:
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="utils.dnn_helper.BatchHistoryEarlyStopping"><code class="flex name class">
+<dt id="ml_utils.dnn_helper.BatchHistoryEarlyStopping"><code class="flex name class">
 <span>class <span class="ident">BatchHistoryEarlyStopping</span></span>
 <span>(</span><span>valid_generator, targets, batch_freq=100, reset_on_train=True, early_stopping=False, monitor='val_loss', min_delta=0, patience=0, verbose=0, mode='auto', baseline=None, restore_best_weights=False)</span>
 </code></dt>
@@ -1238,7 +1238,7 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dnn_helper.py#L310-L442" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L315-L447" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">class BatchHistoryEarlyStopping(Callback):
     &#34;&#34;&#34; EarlyStopping class based on batch evaluation &#34;&#34;&#34;
@@ -1380,7 +1380,7 @@ class Model_generator:
 </ul>
 <h3>Methods</h3>
 <dl>
-<dt id="utils.dnn_helper.BatchHistoryEarlyStopping.get_monitor_value"><code class="name flex">
+<dt id="ml_utils.dnn_helper.BatchHistoryEarlyStopping.get_monitor_value"><code class="name flex">
 <span>def <span class="ident">get_monitor_value</span></span>(<span>self, logs)</span>
 </code></dt>
 <dd>
@@ -1388,7 +1388,7 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dnn_helper.py#L414-L423" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L419-L428" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def get_monitor_value(self, logs):
     monitor_value = logs.get(self.monitor)
@@ -1402,15 +1402,15 @@ class Model_generator:
     return monitor_value[-1]</code></pre>
 </details>
 </dd>
-<dt id="utils.dnn_helper.BatchHistoryEarlyStopping.on_batch_end"><code class="name flex">
+<dt id="ml_utils.dnn_helper.BatchHistoryEarlyStopping.on_batch_end"><code class="name flex">
 <span>def <span class="ident">on_batch_end</span></span>(<span>self, batch, logs={})</span>
 </code></dt>
 <dd>
-<section class="desc"></section>
+<section class="desc"><p>A backwards compatibility alias for <code>on_train_batch_end</code>.</p></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dnn_helper.py#L372-L408" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L377-L413" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def on_batch_end(self, batch, logs={}):
     if batch != 0 and batch % self.batch_freq == 0:
@@ -1451,37 +1451,51 @@ class Model_generator:
                         self.model.set_weights(self.best_weights)</code></pre>
 </details>
 </dd>
-<dt id="utils.dnn_helper.BatchHistoryEarlyStopping.on_train_begin"><code class="name flex">
+<dt id="ml_utils.dnn_helper.BatchHistoryEarlyStopping.on_train_begin"><code class="name flex">
 <span>def <span class="ident">on_train_begin</span></span>(<span>self, logs={})</span>
 </code></dt>
 <dd>
-<section class="desc"></section>
+<section class="desc"><p>Called at the beginning of training.</p>
+<p>Subclasses should override for any actions to run.</p>
+<h2 id="arguments">Arguments</h2>
+<dl>
+<dt><strong><code>logs</code></strong></dt>
+<dd>dict. Currently no data is passed to this argument for this method
+but that may change in the future.</dd>
+</dl></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dnn_helper.py#L368-L370" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L373-L375" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def on_train_begin(self, logs={}):
     if self.reset_on_train:
         self.reset_stats()</code></pre>
 </details>
 </dd>
-<dt id="utils.dnn_helper.BatchHistoryEarlyStopping.on_train_end"><code class="name flex">
+<dt id="ml_utils.dnn_helper.BatchHistoryEarlyStopping.on_train_end"><code class="name flex">
 <span>def <span class="ident">on_train_end</span></span>(<span>self, logs=None)</span>
 </code></dt>
 <dd>
-<section class="desc"></section>
+<section class="desc"><p>Called at the end of training.</p>
+<p>Subclasses should override for any actions to run.</p>
+<h2 id="arguments">Arguments</h2>
+<dl>
+<dt><strong><code>logs</code></strong></dt>
+<dd>dict. Currently no data is passed to this argument for this method
+but that may change in the future.</dd>
+</dl></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dnn_helper.py#L410-L412" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L415-L417" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def on_train_end(self, logs=None):
     if self.early_stopping and self.stopped_epoch &gt; 0 and self.verbose &gt; 0:
         print(&#34;Batch %05d: early stopping&#34; % (self.stopped_batch + 1))</code></pre>
 </details>
 </dd>
-<dt id="utils.dnn_helper.BatchHistoryEarlyStopping.reset_stats"><code class="name flex">
+<dt id="ml_utils.dnn_helper.BatchHistoryEarlyStopping.reset_stats"><code class="name flex">
 <span>def <span class="ident">reset_stats</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1489,7 +1503,7 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dnn_helper.py#L425-L442" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L430-L447" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def reset_stats(self):
     self.metrics = (
@@ -1513,7 +1527,7 @@ class Model_generator:
 </dd>
 </dl>
 </dd>
-<dt id="utils.dnn_helper.Model_generator"><code class="flex name class">
+<dt id="ml_utils.dnn_helper.Model_generator"><code class="flex name class">
 <span>class <span class="ident">Model_generator</span></span>
 <span>(</span><span>input_shape, n_outputs, n_units, model_type='dnn_baseline', activation='softmax', hidden_layers=2, hidden_layer_activation='relu', residual_blocks=10, lstm_blocks=1, dropout_rate=0, recurrent_dropout=0, lstm_l1=0, lstm_l2=0, droput_input_cols=None, remain_input_cols=None)</span>
 </code></dt>
@@ -1522,7 +1536,7 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dnn_helper.py#L485-L708" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L494-L717" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">class Model_generator:
     &#34;&#34;&#34; Class used for generating models according to the parameters specified &#34;&#34;&#34;
@@ -1583,7 +1597,7 @@ class Model_generator:
         for i in range(self.hidden_layers):
             if self.dropout_rate &gt; 0:
                 X = Dropout(self.dropout_rate, name=&#39;dropout_&#39;+str(i))(X)
-            X = Dense(n_units//(2**i), name=&#39;dense_&#39;+str(i), activation=self.hidden_layer_activation)(X)
+            X = Dense(self.n_units//(2**i), name=&#39;dense_&#39;+str(i), activation=self.hidden_layer_activation)(X)
             
         if self.dropout_rate &gt; 0:
             X = Dropout(self.dropout_rate, name=&#39;dropout_output&#39;)(X)
@@ -1598,7 +1612,7 @@ class Model_generator:
         for i in range(self.residual_blocks):
             if self.dropout_rate &gt; 0:
                 X = Dropout(self.dropout_rate, name=&#39;dropout_res_&#39;+str(i)+&#39;_1&#39;)(X)
-            X_res = Dense(n_units, name=&#39;dense_res_&#39;+str(i)+&#39;_1&#39;, activation=&#39;relu&#39;)(X)
+            X_res = Dense(self.n_units, name=&#39;dense_res_&#39;+str(i)+&#39;_1&#39;, activation=&#39;relu&#39;)(X)
             
             if self.dropout_rate &gt; 0:
                 X_res = Dropout(self.dropout_rate, name=&#39;dropout_res_&#39;+str(i)+&#39;_2&#39;)(X_res)
@@ -1725,8 +1739,8 @@ class Model_generator:
         return Model(inputs=input_x, outputs=X, name=&#39;attention_lstm&#39;)
     
     def attention_lstm_dropout_input(self):
-        dropout_input = Input(shape = (seq_len, droput_input_cols), name = &#39;dropout_input&#39;)
-        remain_input = Input(shape = (seq_len, remain_input_cols), name = &#39;remain_input&#39;)
+        dropout_input = Input(shape = (self.seq_len, self.droput_input_cols), name = &#39;dropout_input&#39;)
+        remain_input = Input(shape = (self.seq_len, self.remain_input_cols), name = &#39;remain_input&#39;)
 
         dropout_x = Dropout(self.dropout_rate)(dropout_input)
 
@@ -1751,7 +1765,7 @@ class Model_generator:
 </details>
 <h3>Methods</h3>
 <dl>
-<dt id="utils.dnn_helper.Model_generator.attention_lstm"><code class="name flex">
+<dt id="ml_utils.dnn_helper.Model_generator.attention_lstm"><code class="name flex">
 <span>def <span class="ident">attention_lstm</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1759,7 +1773,7 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dnn_helper.py#L616-L643" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L625-L652" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def attention_lstm(self):
     input_x = Input(shape = self.input_shape, name = &#39;input&#39;)
@@ -1791,7 +1805,7 @@ class Model_generator:
     return Model(inputs=input_x, outputs=X, name=&#39;attention_lstm&#39;)</code></pre>
 </details>
 </dd>
-<dt id="utils.dnn_helper.Model_generator.attention_lstm_dropout_input"><code class="name flex">
+<dt id="ml_utils.dnn_helper.Model_generator.attention_lstm_dropout_input"><code class="name flex">
 <span>def <span class="ident">attention_lstm_dropout_input</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1799,11 +1813,11 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dnn_helper.py#L685-L708" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L694-L717" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def attention_lstm_dropout_input(self):
-    dropout_input = Input(shape = (seq_len, droput_input_cols), name = &#39;dropout_input&#39;)
-    remain_input = Input(shape = (seq_len, remain_input_cols), name = &#39;remain_input&#39;)
+    dropout_input = Input(shape = (self.seq_len, self.droput_input_cols), name = &#39;dropout_input&#39;)
+    remain_input = Input(shape = (self.seq_len, self.remain_input_cols), name = &#39;remain_input&#39;)
 
     dropout_x = Dropout(self.dropout_rate)(dropout_input)
 
@@ -1827,7 +1841,7 @@ class Model_generator:
     return Model(inputs=[dropout_input, remain_input], outputs=X)</code></pre>
 </details>
 </dd>
-<dt id="utils.dnn_helper.Model_generator.attention_lstm_residual"><code class="name flex">
+<dt id="ml_utils.dnn_helper.Model_generator.attention_lstm_residual"><code class="name flex">
 <span>def <span class="ident">attention_lstm_residual</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1835,7 +1849,7 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dnn_helper.py#L645-L683" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L654-L692" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def attention_lstm_residual(self):
     input_x = Input(shape = self.input_shape, name = &#39;input&#39;)
@@ -1878,7 +1892,7 @@ class Model_generator:
     return Model(inputs=input_x, outputs=X, name=&#39;attention_lstm&#39;)</code></pre>
 </details>
 </dd>
-<dt id="utils.dnn_helper.Model_generator.dnn"><code class="name flex">
+<dt id="ml_utils.dnn_helper.Model_generator.dnn"><code class="name flex">
 <span>def <span class="ident">dnn</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1886,7 +1900,7 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dnn_helper.py#L538-L551" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L547-L560" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def dnn(self):
     input_x = Input(shape = self.input_shape, name=&#39;input&#39;)
@@ -1894,7 +1908,7 @@ class Model_generator:
     for i in range(self.hidden_layers):
         if self.dropout_rate &gt; 0:
             X = Dropout(self.dropout_rate, name=&#39;dropout_&#39;+str(i))(X)
-        X = Dense(n_units//(2**i), name=&#39;dense_&#39;+str(i), activation=self.hidden_layer_activation)(X)
+        X = Dense(self.n_units//(2**i), name=&#39;dense_&#39;+str(i), activation=self.hidden_layer_activation)(X)
         
     if self.dropout_rate &gt; 0:
         X = Dropout(self.dropout_rate, name=&#39;dropout_output&#39;)(X)
@@ -1904,7 +1918,7 @@ class Model_generator:
     return Model(inputs=input_x, outputs=X, name=&#39;dnn&#39;)</code></pre>
 </details>
 </dd>
-<dt id="utils.dnn_helper.Model_generator.dnn_baseline"><code class="name flex">
+<dt id="ml_utils.dnn_helper.Model_generator.dnn_baseline"><code class="name flex">
 <span>def <span class="ident">dnn_baseline</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1912,7 +1926,7 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dnn_helper.py#L530-L536" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L539-L545" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def dnn_baseline(self):
     input_x = Input(shape = self.input_shape, name=&#39;input&#39;)
@@ -1923,7 +1937,7 @@ class Model_generator:
     return Model(inputs=input_x, outputs=X, name=&#39;dnn_baseline&#39;)</code></pre>
 </details>
 </dd>
-<dt id="utils.dnn_helper.Model_generator.dnn_residual"><code class="name flex">
+<dt id="ml_utils.dnn_helper.Model_generator.dnn_residual"><code class="name flex">
 <span>def <span class="ident">dnn_residual</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1931,7 +1945,7 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dnn_helper.py#L553-L572" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L562-L581" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def dnn_residual(self):
     input_x = Input(shape = self.input_shape, name=&#39;input&#39;)
@@ -1939,7 +1953,7 @@ class Model_generator:
     for i in range(self.residual_blocks):
         if self.dropout_rate &gt; 0:
             X = Dropout(self.dropout_rate, name=&#39;dropout_res_&#39;+str(i)+&#39;_1&#39;)(X)
-        X_res = Dense(n_units, name=&#39;dense_res_&#39;+str(i)+&#39;_1&#39;, activation=&#39;relu&#39;)(X)
+        X_res = Dense(self.n_units, name=&#39;dense_res_&#39;+str(i)+&#39;_1&#39;, activation=&#39;relu&#39;)(X)
         
         if self.dropout_rate &gt; 0:
             X_res = Dropout(self.dropout_rate, name=&#39;dropout_res_&#39;+str(i)+&#39;_2&#39;)(X_res)
@@ -1955,7 +1969,7 @@ class Model_generator:
     return Model(inputs=input_x, outputs=X, name=&#39;dnn_residual&#39;)</code></pre>
 </details>
 </dd>
-<dt id="utils.dnn_helper.Model_generator.get_model"><code class="name flex">
+<dt id="ml_utils.dnn_helper.Model_generator.get_model"><code class="name flex">
 <span>def <span class="ident">get_model</span></span>(<span>self, model_type=None)</span>
 </code></dt>
 <dd>
@@ -1963,7 +1977,7 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dnn_helper.py#L505-L528" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L514-L537" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def get_model(self, model_type=None):
     if model_type is None:
@@ -1991,7 +2005,7 @@ class Model_generator:
         print(&#34;Implementation error, model_type {model_type} is missing&#34;)</code></pre>
 </details>
 </dd>
-<dt id="utils.dnn_helper.Model_generator.lstm"><code class="name flex">
+<dt id="ml_utils.dnn_helper.Model_generator.lstm"><code class="name flex">
 <span>def <span class="ident">lstm</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1999,7 +2013,7 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dnn_helper.py#L591-L614" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L600-L623" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def lstm(self):
     input_x = Input(shape = self.input_shape, name=&#39;input&#39;)
@@ -2027,7 +2041,7 @@ class Model_generator:
     return Model(inputs=input_x, outputs=X, name=&#39;lstm&#39;)</code></pre>
 </details>
 </dd>
-<dt id="utils.dnn_helper.Model_generator.lstm_baseline"><code class="name flex">
+<dt id="ml_utils.dnn_helper.Model_generator.lstm_baseline"><code class="name flex">
 <span>def <span class="ident">lstm_baseline</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -2035,7 +2049,7 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dnn_helper.py#L574-L589" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L583-L598" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def lstm_baseline(self):
     input_x = Input(shape = self.input_shape, name=&#39;input&#39;)
@@ -2068,51 +2082,51 @@ class Model_generator:
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="utils" href="index.html">utils</a></code></li>
+<li><code><a title="ml_utils" href="index.html">ml_utils</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="utils.dnn_helper.KFolds_flow_from_dataframe" href="#utils.dnn_helper.KFolds_flow_from_dataframe">KFolds_flow_from_dataframe</a></code></li>
-<li><code><a title="utils.dnn_helper.bce_dice_loss" href="#utils.dnn_helper.bce_dice_loss">bce_dice_loss</a></code></li>
-<li><code><a title="utils.dnn_helper.config_model_trainable" href="#utils.dnn_helper.config_model_trainable">config_model_trainable</a></code></li>
-<li><code><a title="utils.dnn_helper.df_to_dataset" href="#utils.dnn_helper.df_to_dataset">df_to_dataset</a></code></li>
-<li><code><a title="utils.dnn_helper.dice_coef" href="#utils.dnn_helper.dice_coef">dice_coef</a></code></li>
-<li><code><a title="utils.dnn_helper.dice_loss" href="#utils.dnn_helper.dice_loss">dice_loss</a></code></li>
-<li><code><a title="utils.dnn_helper.dnn_plot_roc_auc" href="#utils.dnn_helper.dnn_plot_roc_auc">dnn_plot_roc_auc</a></code></li>
-<li><code><a title="utils.dnn_helper.fold_training" href="#utils.dnn_helper.fold_training">fold_training</a></code></li>
-<li><code><a title="utils.dnn_helper.load_train" href="#utils.dnn_helper.load_train">load_train</a></code></li>
-<li><code><a title="utils.dnn_helper.make_pred" href="#utils.dnn_helper.make_pred">make_pred</a></code></li>
-<li><code><a title="utils.dnn_helper.save_train" href="#utils.dnn_helper.save_train">save_train</a></code></li>
-<li><code><a title="utils.dnn_helper.visualize" href="#utils.dnn_helper.visualize">visualize</a></code></li>
-<li><code><a title="utils.dnn_helper.visualize_acc_loss" href="#utils.dnn_helper.visualize_acc_loss">visualize_acc_loss</a></code></li>
-<li><code><a title="utils.dnn_helper.visualize_training" href="#utils.dnn_helper.visualize_training">visualize_training</a></code></li>
+<li><code><a title="ml_utils.dnn_helper.KFolds_flow_from_dataframe" href="#ml_utils.dnn_helper.KFolds_flow_from_dataframe">KFolds_flow_from_dataframe</a></code></li>
+<li><code><a title="ml_utils.dnn_helper.bce_dice_loss" href="#ml_utils.dnn_helper.bce_dice_loss">bce_dice_loss</a></code></li>
+<li><code><a title="ml_utils.dnn_helper.config_model_trainable" href="#ml_utils.dnn_helper.config_model_trainable">config_model_trainable</a></code></li>
+<li><code><a title="ml_utils.dnn_helper.df_to_dataset" href="#ml_utils.dnn_helper.df_to_dataset">df_to_dataset</a></code></li>
+<li><code><a title="ml_utils.dnn_helper.dice_coef" href="#ml_utils.dnn_helper.dice_coef">dice_coef</a></code></li>
+<li><code><a title="ml_utils.dnn_helper.dice_loss" href="#ml_utils.dnn_helper.dice_loss">dice_loss</a></code></li>
+<li><code><a title="ml_utils.dnn_helper.dnn_plot_roc_auc" href="#ml_utils.dnn_helper.dnn_plot_roc_auc">dnn_plot_roc_auc</a></code></li>
+<li><code><a title="ml_utils.dnn_helper.fold_training" href="#ml_utils.dnn_helper.fold_training">fold_training</a></code></li>
+<li><code><a title="ml_utils.dnn_helper.load_train" href="#ml_utils.dnn_helper.load_train">load_train</a></code></li>
+<li><code><a title="ml_utils.dnn_helper.make_pred" href="#ml_utils.dnn_helper.make_pred">make_pred</a></code></li>
+<li><code><a title="ml_utils.dnn_helper.save_train" href="#ml_utils.dnn_helper.save_train">save_train</a></code></li>
+<li><code><a title="ml_utils.dnn_helper.visualize" href="#ml_utils.dnn_helper.visualize">visualize</a></code></li>
+<li><code><a title="ml_utils.dnn_helper.visualize_acc_loss" href="#ml_utils.dnn_helper.visualize_acc_loss">visualize_acc_loss</a></code></li>
+<li><code><a title="ml_utils.dnn_helper.visualize_training" href="#ml_utils.dnn_helper.visualize_training">visualize_training</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="utils.dnn_helper.BatchHistoryEarlyStopping" href="#utils.dnn_helper.BatchHistoryEarlyStopping">BatchHistoryEarlyStopping</a></code></h4>
+<h4><code><a title="ml_utils.dnn_helper.BatchHistoryEarlyStopping" href="#ml_utils.dnn_helper.BatchHistoryEarlyStopping">BatchHistoryEarlyStopping</a></code></h4>
 <ul class="">
-<li><code><a title="utils.dnn_helper.BatchHistoryEarlyStopping.get_monitor_value" href="#utils.dnn_helper.BatchHistoryEarlyStopping.get_monitor_value">get_monitor_value</a></code></li>
-<li><code><a title="utils.dnn_helper.BatchHistoryEarlyStopping.on_batch_end" href="#utils.dnn_helper.BatchHistoryEarlyStopping.on_batch_end">on_batch_end</a></code></li>
-<li><code><a title="utils.dnn_helper.BatchHistoryEarlyStopping.on_train_begin" href="#utils.dnn_helper.BatchHistoryEarlyStopping.on_train_begin">on_train_begin</a></code></li>
-<li><code><a title="utils.dnn_helper.BatchHistoryEarlyStopping.on_train_end" href="#utils.dnn_helper.BatchHistoryEarlyStopping.on_train_end">on_train_end</a></code></li>
-<li><code><a title="utils.dnn_helper.BatchHistoryEarlyStopping.reset_stats" href="#utils.dnn_helper.BatchHistoryEarlyStopping.reset_stats">reset_stats</a></code></li>
+<li><code><a title="ml_utils.dnn_helper.BatchHistoryEarlyStopping.get_monitor_value" href="#ml_utils.dnn_helper.BatchHistoryEarlyStopping.get_monitor_value">get_monitor_value</a></code></li>
+<li><code><a title="ml_utils.dnn_helper.BatchHistoryEarlyStopping.on_batch_end" href="#ml_utils.dnn_helper.BatchHistoryEarlyStopping.on_batch_end">on_batch_end</a></code></li>
+<li><code><a title="ml_utils.dnn_helper.BatchHistoryEarlyStopping.on_train_begin" href="#ml_utils.dnn_helper.BatchHistoryEarlyStopping.on_train_begin">on_train_begin</a></code></li>
+<li><code><a title="ml_utils.dnn_helper.BatchHistoryEarlyStopping.on_train_end" href="#ml_utils.dnn_helper.BatchHistoryEarlyStopping.on_train_end">on_train_end</a></code></li>
+<li><code><a title="ml_utils.dnn_helper.BatchHistoryEarlyStopping.reset_stats" href="#ml_utils.dnn_helper.BatchHistoryEarlyStopping.reset_stats">reset_stats</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="utils.dnn_helper.Model_generator" href="#utils.dnn_helper.Model_generator">Model_generator</a></code></h4>
+<h4><code><a title="ml_utils.dnn_helper.Model_generator" href="#ml_utils.dnn_helper.Model_generator">Model_generator</a></code></h4>
 <ul class="">
-<li><code><a title="utils.dnn_helper.Model_generator.attention_lstm" href="#utils.dnn_helper.Model_generator.attention_lstm">attention_lstm</a></code></li>
-<li><code><a title="utils.dnn_helper.Model_generator.attention_lstm_dropout_input" href="#utils.dnn_helper.Model_generator.attention_lstm_dropout_input">attention_lstm_dropout_input</a></code></li>
-<li><code><a title="utils.dnn_helper.Model_generator.attention_lstm_residual" href="#utils.dnn_helper.Model_generator.attention_lstm_residual">attention_lstm_residual</a></code></li>
-<li><code><a title="utils.dnn_helper.Model_generator.dnn" href="#utils.dnn_helper.Model_generator.dnn">dnn</a></code></li>
-<li><code><a title="utils.dnn_helper.Model_generator.dnn_baseline" href="#utils.dnn_helper.Model_generator.dnn_baseline">dnn_baseline</a></code></li>
-<li><code><a title="utils.dnn_helper.Model_generator.dnn_residual" href="#utils.dnn_helper.Model_generator.dnn_residual">dnn_residual</a></code></li>
-<li><code><a title="utils.dnn_helper.Model_generator.get_model" href="#utils.dnn_helper.Model_generator.get_model">get_model</a></code></li>
-<li><code><a title="utils.dnn_helper.Model_generator.lstm" href="#utils.dnn_helper.Model_generator.lstm">lstm</a></code></li>
-<li><code><a title="utils.dnn_helper.Model_generator.lstm_baseline" href="#utils.dnn_helper.Model_generator.lstm_baseline">lstm_baseline</a></code></li>
+<li><code><a title="ml_utils.dnn_helper.Model_generator.attention_lstm" href="#ml_utils.dnn_helper.Model_generator.attention_lstm">attention_lstm</a></code></li>
+<li><code><a title="ml_utils.dnn_helper.Model_generator.attention_lstm_dropout_input" href="#ml_utils.dnn_helper.Model_generator.attention_lstm_dropout_input">attention_lstm_dropout_input</a></code></li>
+<li><code><a title="ml_utils.dnn_helper.Model_generator.attention_lstm_residual" href="#ml_utils.dnn_helper.Model_generator.attention_lstm_residual">attention_lstm_residual</a></code></li>
+<li><code><a title="ml_utils.dnn_helper.Model_generator.dnn" href="#ml_utils.dnn_helper.Model_generator.dnn">dnn</a></code></li>
+<li><code><a title="ml_utils.dnn_helper.Model_generator.dnn_baseline" href="#ml_utils.dnn_helper.Model_generator.dnn_baseline">dnn_baseline</a></code></li>
+<li><code><a title="ml_utils.dnn_helper.Model_generator.dnn_residual" href="#ml_utils.dnn_helper.Model_generator.dnn_residual">dnn_residual</a></code></li>
+<li><code><a title="ml_utils.dnn_helper.Model_generator.get_model" href="#ml_utils.dnn_helper.Model_generator.get_model">get_model</a></code></li>
+<li><code><a title="ml_utils.dnn_helper.Model_generator.lstm" href="#ml_utils.dnn_helper.Model_generator.lstm">lstm</a></code></li>
+<li><code><a title="ml_utils.dnn_helper.Model_generator.lstm_baseline" href="#ml_utils.dnn_helper.Model_generator.lstm_baseline">lstm_baseline</a></code></li>
 </ul>
 </li>
 </ul>

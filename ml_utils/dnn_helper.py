@@ -4,7 +4,7 @@ import os
 import shutil
 import warnings
 
-from plot_utils import plot_roc_auc
+from ml_utils.plot_utils import plot_roc_auc
 
 from tensorflow.keras.callbacks import Callback
 from tensorflow.keras.layers import (
@@ -23,7 +23,7 @@ from tensorflow.keras.layers import (
 )
 from tensorflow.keras.regularizers import l1_l2
 from tensorflow.keras.models import Model, model_from_json
-from tensorflow.data import Dataset
+from tensorflow import data
 from tensorflow.keras import backend as K
 from tensorflow.keras.losses import binary_crossentropy
 from tensorflow import clip_by_value
@@ -156,9 +156,9 @@ def df_to_dataset(dataframe, target='target', shuffle=True, batch_size=32):
     dataframe = dataframe.copy()
     if target is not None:
         labels = dataframe.pop(target)
-        ds = Dataset.from_tensor_slices((dict(dataframe), labels))
+        ds = data.Dataset.from_tensor_slices((dict(dataframe), labels))
     else:
-        ds = Dataset.from_tensor_slices((dict(dataframe)))
+        ds = data.Dataset.from_tensor_slices((dict(dataframe)))
     if shuffle:
         ds = ds.shuffle(buffer_size=len(dataframe))
     ds = ds.batch(batch_size)

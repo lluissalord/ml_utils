@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.7.2" />
-<title>utils.feature_selection_utils API documentation</title>
+<title>ml_utils.feature_selection_utils API documentation</title>
 <meta name="description" content="" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
@@ -14,35 +14,37 @@
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
 <script async src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS_CHTML'></script>
 <style>.homelink{display:block;font-size:2em;font-weight:bold;color:#555;padding-bottom:.5em;border-bottom:1px solid silver}.homelink:hover{color:inherit}.homelink img{max-width:20%;max-height:5em;margin:auto;margin-bottom:.3em}</style>
-<link rel="canonical" href="https://pdoc3.github.io/pdoc/doc/utils/feature_selection_utils.html">
+<link rel="canonical" href="https://pdoc3.github.io/pdoc/doc/ml_utils/feature_selection_utils.html">
 <link rel="icon" href="https://pdoc3.github.io/pdoc/logo.png">
 </head>
 <body>
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>utils.feature_selection_utils</code></h1>
+<h1 class="title">Module <code>ml_utils.feature_selection_utils</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/feature_selection_utils.py#L0-L524" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\feature_selection_utils.py#L0-L530" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">import pandas as pd
 import numpy as np
+import pickle
 from tqdm import tqdm_notebook
-from scipy import stats
-from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
-import seaborn as sns
 import os
-import catboost as cb
 
-from plot_utils import plot_scatter, get_subplot_rows_cols
+from ml_utils.plot_utils import plot_scatter, get_subplot_rows_cols
 
 def covariate_shift(train, test, categorical_columns, n_samples, iterations = 200, weights_coef = 1, AUC_threshold = 0.8, importance_threshold = 0.9, max_loops = 20, test_size = 0.1, trys_all_influencer=5, calc_sample_weights=True, task_type=&#34;CPU&#34;, data_dir=&#39;&#39;, load_cov=False, save_cov=False, plot=True):
     &#34;&#34;&#34; Select features without Covariate Shift between training and test set using iteratively CatBoostClassifier to identify relation between train and test &#34;&#34;&#34;
+    
+    import seaborn as sns
+    import catboost as cb
+    from sklearn.model_selection import train_test_split
+    
     if not os.path.exists(data_dir + &#39;cov_shift_features.pkl&#39;) or not load_cov:
         train_sample = train.sample(n_samples)
         train_sample.loc[:,&#39;origin&#39;] = 0
@@ -174,6 +176,10 @@ def covariate_shift(train, test, categorical_columns, n_samples, iterations = 20
 def stadistic_difference_distributions(data, submission, time_column, test_percentage=0.2, p_value_threshold=None,
                                        verbose=False):
     &#34;&#34;&#34; Calculate relation between initial and end part of the dataset for each column using Kolmogorov-Smirnov statistic on 2 samples &#34;&#34;&#34;
+    
+    from scipy import stats
+    from sklearn.model_selection import train_test_split
+    
     train, test = train_test_split(data.sort_values(time_column), test_size=test_percentage, shuffle=False)
 
     time_analysis_df = pd.DataFrame(False, columns=[&#39;train_test&#39;, &#39;train_submission&#39;, &#39;test_submission&#39;],
@@ -563,7 +569,7 @@ def get_feature_importance_mean(classifier_initial, y_train, x_train, n_iteratio
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="utils.feature_selection_utils.collinear_feature_selection"><code class="name flex">
+<dt id="ml_utils.feature_selection_utils.collinear_feature_selection"><code class="name flex">
 <span>def <span class="ident">collinear_feature_selection</span></span>(<span>x_train, df_feature_importance, collinear_threshold=0.98, plot=True)</span>
 </code></dt>
 <dd>
@@ -571,7 +577,7 @@ def get_feature_importance_mean(classifier_initial, y_train, x_train, n_iteratio
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/feature_selection_utils.py#L308-L356" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\feature_selection_utils.py#L314-L362" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def collinear_feature_selection(x_train, df_feature_importance, collinear_threshold=0.98, plot=True):
     &#34;&#34;&#34; Select features which have less collinearity below the threshold &#34;&#34;&#34;
@@ -624,7 +630,7 @@ def get_feature_importance_mean(classifier_initial, y_train, x_train, n_iteratio
     return df_feature_importance</code></pre>
 </details>
 </dd>
-<dt id="utils.feature_selection_utils.covariate_shift"><code class="name flex">
+<dt id="ml_utils.feature_selection_utils.covariate_shift"><code class="name flex">
 <span>def <span class="ident">covariate_shift</span></span>(<span>train, test, categorical_columns, n_samples, iterations=200, weights_coef=1, AUC_threshold=0.8, importance_threshold=0.9, max_loops=20, test_size=0.1, trys_all_influencer=5, calc_sample_weights=True, task_type='CPU', data_dir='', load_cov=False, save_cov=False, plot=True)</span>
 </code></dt>
 <dd>
@@ -632,10 +638,15 @@ def get_feature_importance_mean(classifier_initial, y_train, x_train, n_iteratio
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/feature_selection_utils.py#L13-L141" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\feature_selection_utils.py#L10-L143" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def covariate_shift(train, test, categorical_columns, n_samples, iterations = 200, weights_coef = 1, AUC_threshold = 0.8, importance_threshold = 0.9, max_loops = 20, test_size = 0.1, trys_all_influencer=5, calc_sample_weights=True, task_type=&#34;CPU&#34;, data_dir=&#39;&#39;, load_cov=False, save_cov=False, plot=True):
     &#34;&#34;&#34; Select features without Covariate Shift between training and test set using iteratively CatBoostClassifier to identify relation between train and test &#34;&#34;&#34;
+    
+    import seaborn as sns
+    import catboost as cb
+    from sklearn.model_selection import train_test_split
+    
     if not os.path.exists(data_dir + &#39;cov_shift_features.pkl&#39;) or not load_cov:
         train_sample = train.sample(n_samples)
         train_sample.loc[:,&#39;origin&#39;] = 0
@@ -765,7 +776,7 @@ def get_feature_importance_mean(classifier_initial, y_train, x_train, n_iteratio
     return influence_columns, cov_shift_model, sample_weight</code></pre>
 </details>
 </dd>
-<dt id="utils.feature_selection_utils.cumulative_feature_selection"><code class="name flex">
+<dt id="ml_utils.feature_selection_utils.cumulative_feature_selection"><code class="name flex">
 <span>def <span class="ident">cumulative_feature_selection</span></span>(<span>df_feature_importance, cum_importance_threshold)</span>
 </code></dt>
 <dd>
@@ -773,7 +784,7 @@ def get_feature_importance_mean(classifier_initial, y_train, x_train, n_iteratio
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/feature_selection_utils.py#L291-L305" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\feature_selection_utils.py#L297-L311" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def cumulative_feature_selection(df_feature_importance, cum_importance_threshold):
     &#34;&#34;&#34; Select features which are below of the cumulative feature importance threshold &#34;&#34;&#34;
@@ -792,7 +803,7 @@ def get_feature_importance_mean(classifier_initial, y_train, x_train, n_iteratio
     return df_feature_importance</code></pre>
 </details>
 </dd>
-<dt id="utils.feature_selection_utils.feature_selection"><code class="name flex">
+<dt id="ml_utils.feature_selection_utils.feature_selection"><code class="name flex">
 <span>def <span class="ident">feature_selection</span></span>(<span>classifier_initial, y_train, x_train, n_top_features=50, baseline_features=[], min_importance=None)</span>
 </code></dt>
 <dd>
@@ -800,7 +811,7 @@ def get_feature_importance_mean(classifier_initial, y_train, x_train, n_iteratio
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/feature_selection_utils.py#L267-L288" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\feature_selection_utils.py#L273-L294" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def feature_selection(classifier_initial, y_train, x_train, n_top_features=50, baseline_features=[],
                       min_importance=None):
@@ -826,7 +837,7 @@ def get_feature_importance_mean(classifier_initial, y_train, x_train, n_iteratio
     return model_columns</code></pre>
 </details>
 </dd>
-<dt id="utils.feature_selection_utils.get_feature_importance_mean"><code class="name flex">
+<dt id="ml_utils.feature_selection_utils.get_feature_importance_mean"><code class="name flex">
 <span>def <span class="ident">get_feature_importance_mean</span></span>(<span>classifier_initial, y_train, x_train, n_iterations_mean=3, need_cat_features_index=False, categorical_columns=[], dict_shadow_names={}, eval_set=None)</span>
 </code></dt>
 <dd>
@@ -834,7 +845,7 @@ def get_feature_importance_mean(classifier_initial, y_train, x_train, n_iteratio
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/feature_selection_utils.py#L489-L525" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\feature_selection_utils.py#L495-L531" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def get_feature_importance_mean(classifier_initial, y_train, x_train, n_iterations_mean=3,
                                 need_cat_features_index=False, categorical_columns=[], dict_shadow_names={}, eval_set=None):
@@ -875,7 +886,7 @@ def get_feature_importance_mean(classifier_initial, y_train, x_train, n_iteratio
     return df_feature_importance.mean()</code></pre>
 </details>
 </dd>
-<dt id="utils.feature_selection_utils.outliers_analysis"><code class="name flex">
+<dt id="ml_utils.feature_selection_utils.outliers_analysis"><code class="name flex">
 <span>def <span class="ident">outliers_analysis</span></span>(<span>full_data, features_names=None, x_column=None, subplot_rows=None, subplot_cols=None, starting_index=0, index_offset=0, z_score_threshold=3.5, use_mean=False, plot=True, num_bins=50)</span>
 </code></dt>
 <dd>
@@ -883,7 +894,7 @@ def get_feature_importance_mean(classifier_initial, y_train, x_train, n_iteratio
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/feature_selection_utils.py#L185-L265" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\feature_selection_utils.py#L191-L271" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def outliers_analysis(full_data, features_names=None, x_column=None, subplot_rows=None, subplot_cols=None, starting_index=0,
                       index_offset=0, z_score_threshold=3.5, use_mean=False, plot=True, num_bins=50):
@@ -968,7 +979,7 @@ def get_feature_importance_mean(classifier_initial, y_train, x_train, n_iteratio
     return outliers_summary, outliers_pd</code></pre>
 </details>
 </dd>
-<dt id="utils.feature_selection_utils.shadow_feature_selection"><code class="name flex">
+<dt id="ml_utils.feature_selection_utils.shadow_feature_selection"><code class="name flex">
 <span>def <span class="ident">shadow_feature_selection</span></span>(<span>classifier_initial, y_train, x_train, eval_set=None, n_top_features=None, collinear_threshold=0.98, cum_importance_threshold=0.99, times_no_change_features=2, max_loops=50, n_iterations_mean=3, need_cat_features_index=False, categorical_columns=[], verbose=True, debug=False, plot_correlation=False)</span>
 </code></dt>
 <dd>
@@ -976,7 +987,7 @@ def get_feature_importance_mean(classifier_initial, y_train, x_train, n_iteratio
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/feature_selection_utils.py#L359-L466" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\feature_selection_utils.py#L365-L472" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def shadow_feature_selection(classifier_initial, y_train, x_train, eval_set=None, n_top_features=None, collinear_threshold=0.98, cum_importance_threshold=0.99, times_no_change_features=2, max_loops=50, n_iterations_mean=3, need_cat_features_index=False, categorical_columns=[], verbose=True, debug=False, plot_correlation=False):
     &#34;&#34;&#34; Select features which have greater feature importance than random and than shuffle shadowed feature of itself &#34;&#34;&#34;
@@ -1088,7 +1099,7 @@ def get_feature_importance_mean(classifier_initial, y_train, x_train, n_iteratio
     return list(df_feature_importance.index), df_feature_importance</code></pre>
 </details>
 </dd>
-<dt id="utils.feature_selection_utils.stadistic_difference_distributions"><code class="name flex">
+<dt id="ml_utils.feature_selection_utils.stadistic_difference_distributions"><code class="name flex">
 <span>def <span class="ident">stadistic_difference_distributions</span></span>(<span>data, submission, time_column, test_percentage=0.2, p_value_threshold=None, verbose=False)</span>
 </code></dt>
 <dd>
@@ -1096,11 +1107,15 @@ def get_feature_importance_mean(classifier_initial, y_train, x_train, n_iteratio
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/feature_selection_utils.py#L143-L183" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\feature_selection_utils.py#L145-L189" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def stadistic_difference_distributions(data, submission, time_column, test_percentage=0.2, p_value_threshold=None,
                                        verbose=False):
     &#34;&#34;&#34; Calculate relation between initial and end part of the dataset for each column using Kolmogorov-Smirnov statistic on 2 samples &#34;&#34;&#34;
+    
+    from scipy import stats
+    from sklearn.model_selection import train_test_split
+    
     train, test = train_test_split(data.sort_values(time_column), test_size=test_percentage, shuffle=False)
 
     time_analysis_df = pd.DataFrame(False, columns=[&#39;train_test&#39;, &#39;train_submission&#39;, &#39;test_submission&#39;],
@@ -1154,19 +1169,19 @@ def get_feature_importance_mean(classifier_initial, y_train, x_train, n_iteratio
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="utils" href="index.html">utils</a></code></li>
+<li><code><a title="ml_utils" href="index.html">ml_utils</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="utils.feature_selection_utils.collinear_feature_selection" href="#utils.feature_selection_utils.collinear_feature_selection">collinear_feature_selection</a></code></li>
-<li><code><a title="utils.feature_selection_utils.covariate_shift" href="#utils.feature_selection_utils.covariate_shift">covariate_shift</a></code></li>
-<li><code><a title="utils.feature_selection_utils.cumulative_feature_selection" href="#utils.feature_selection_utils.cumulative_feature_selection">cumulative_feature_selection</a></code></li>
-<li><code><a title="utils.feature_selection_utils.feature_selection" href="#utils.feature_selection_utils.feature_selection">feature_selection</a></code></li>
-<li><code><a title="utils.feature_selection_utils.get_feature_importance_mean" href="#utils.feature_selection_utils.get_feature_importance_mean">get_feature_importance_mean</a></code></li>
-<li><code><a title="utils.feature_selection_utils.outliers_analysis" href="#utils.feature_selection_utils.outliers_analysis">outliers_analysis</a></code></li>
-<li><code><a title="utils.feature_selection_utils.shadow_feature_selection" href="#utils.feature_selection_utils.shadow_feature_selection">shadow_feature_selection</a></code></li>
-<li><code><a title="utils.feature_selection_utils.stadistic_difference_distributions" href="#utils.feature_selection_utils.stadistic_difference_distributions">stadistic_difference_distributions</a></code></li>
+<li><code><a title="ml_utils.feature_selection_utils.collinear_feature_selection" href="#ml_utils.feature_selection_utils.collinear_feature_selection">collinear_feature_selection</a></code></li>
+<li><code><a title="ml_utils.feature_selection_utils.covariate_shift" href="#ml_utils.feature_selection_utils.covariate_shift">covariate_shift</a></code></li>
+<li><code><a title="ml_utils.feature_selection_utils.cumulative_feature_selection" href="#ml_utils.feature_selection_utils.cumulative_feature_selection">cumulative_feature_selection</a></code></li>
+<li><code><a title="ml_utils.feature_selection_utils.feature_selection" href="#ml_utils.feature_selection_utils.feature_selection">feature_selection</a></code></li>
+<li><code><a title="ml_utils.feature_selection_utils.get_feature_importance_mean" href="#ml_utils.feature_selection_utils.get_feature_importance_mean">get_feature_importance_mean</a></code></li>
+<li><code><a title="ml_utils.feature_selection_utils.outliers_analysis" href="#ml_utils.feature_selection_utils.outliers_analysis">outliers_analysis</a></code></li>
+<li><code><a title="ml_utils.feature_selection_utils.shadow_feature_selection" href="#ml_utils.feature_selection_utils.shadow_feature_selection">shadow_feature_selection</a></code></li>
+<li><code><a title="ml_utils.feature_selection_utils.stadistic_difference_distributions" href="#ml_utils.feature_selection_utils.stadistic_difference_distributions">stadistic_difference_distributions</a></code></li>
 </ul>
 </li>
 </ul>

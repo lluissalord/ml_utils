@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.7.2" />
-<title>utils.misc_utils API documentation</title>
+<title>ml_utils.misc_utils API documentation</title>
 <meta name="description" content="" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
@@ -14,30 +14,26 @@
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
 <script async src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS_CHTML'></script>
 <style>.homelink{display:block;font-size:2em;font-weight:bold;color:#555;padding-bottom:.5em;border-bottom:1px solid silver}.homelink:hover{color:inherit}.homelink img{max-width:20%;max-height:5em;margin:auto;margin-bottom:.3em}</style>
-<link rel="canonical" href="https://pdoc3.github.io/pdoc/doc/utils/misc_utils.html">
+<link rel="canonical" href="https://pdoc3.github.io/pdoc/doc/ml_utils/misc_utils.html">
 <link rel="icon" href="https://pdoc3.github.io/pdoc/logo.png">
 </head>
 <body>
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>utils.misc_utils</code></h1>
+<h1 class="title">Module <code>ml_utils.misc_utils</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/misc_utils.py#L0-L362" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\misc_utils.py#L0-L370" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">import sys
 import os
 import shutil
 import pandas as pd
 import numpy as np
-
-from tqdm import tqdm_notebook
-
-from sklearn.model_selection import train_test_split
 
 def extract_zips(zip_path, extract_dir):
     &#34;&#34;&#34; Extract zip file &#34;&#34;&#34;
@@ -63,6 +59,9 @@ def get_var_list():
 
 def rebalance_data(df, n_ensemble, target, negative_downsampling=True, use_partial_data=False, ratio_partial_data=3):
     &#34;&#34;&#34; Downsampling (negative or positive) data according to ratio and distribute it across number of ensemble &#34;&#34;&#34;
+
+    from tqdm import tqdm_notebook
+
     pos_rows = df[df[target] == 1].shape[0]
     neg_rows = df[df[target] == 0].shape[0]
 
@@ -229,6 +228,9 @@ def oversampling_data(
 
 def convert_Int_to_int(df, columns=None, verbose=True):
     &#34;&#34;&#34; Convert Pandas Int dtype to corresponding numpy int dtype &#34;&#34;&#34;
+
+    from tqdm import tqdm_notebook
+
     if columns == None:
         columns = list(df.columns)
     df_int_cols = list(df[columns].dtypes[df.dtypes.astype(str).str.lower().str.startswith(&#39;int&#39;)].index)
@@ -246,6 +248,9 @@ def convert_Int_to_int(df, columns=None, verbose=True):
 
 def KFolds_stratified(dataframe, k=10, target=&#34;class&#34;, shuffle=True, seed=None):
     &#34;&#34;&#34; Generate kFolds pairs of training and validation sets &#34;&#34;&#34;
+
+    from sklearn.model_selection import train_test_split
+
     train_folds = []
     valid_folds = []
     Kfolds = []
@@ -293,6 +298,9 @@ def KFolds_stratified(dataframe, k=10, target=&#34;class&#34;, shuffle=True, see
 
 def reduce_mem_usage(df, columns=None, verbose=True, debug=False):
     &#34;&#34;&#34; Reduce memory usage of provided DataFrame using best dtype for each column &#34;&#34;&#34;
+
+    from tqdm import tqdm_notebook
+
     if columns == None:
         columns = df.columns
     elif len(columns) == 0:
@@ -401,7 +409,7 @@ def reduce_mem_usage(df, columns=None, verbose=True, debug=False):
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="utils.misc_utils.KFolds_stratified"><code class="name flex">
+<dt id="ml_utils.misc_utils.KFolds_stratified"><code class="name flex">
 <span>def <span class="ident">KFolds_stratified</span></span>(<span>dataframe, k=10, target='class', shuffle=True, seed=None)</span>
 </code></dt>
 <dd>
@@ -409,10 +417,13 @@ def reduce_mem_usage(df, columns=None, verbose=True, debug=False):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/misc_utils.py#L216-L261" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\misc_utils.py#L218-L266" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def KFolds_stratified(dataframe, k=10, target=&#34;class&#34;, shuffle=True, seed=None):
     &#34;&#34;&#34; Generate kFolds pairs of training and validation sets &#34;&#34;&#34;
+
+    from sklearn.model_selection import train_test_split
+
     train_folds = []
     valid_folds = []
     Kfolds = []
@@ -459,7 +470,7 @@ def reduce_mem_usage(df, columns=None, verbose=True, debug=False):
     return Kfolds</code></pre>
 </details>
 </dd>
-<dt id="utils.misc_utils.convert_Int_to_int"><code class="name flex">
+<dt id="ml_utils.misc_utils.convert_Int_to_int"><code class="name flex">
 <span>def <span class="ident">convert_Int_to_int</span></span>(<span>df, columns=None, verbose=True)</span>
 </code></dt>
 <dd>
@@ -467,10 +478,13 @@ def reduce_mem_usage(df, columns=None, verbose=True, debug=False):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/misc_utils.py#L199-L214" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\misc_utils.py#L198-L216" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def convert_Int_to_int(df, columns=None, verbose=True):
     &#34;&#34;&#34; Convert Pandas Int dtype to corresponding numpy int dtype &#34;&#34;&#34;
+
+    from tqdm import tqdm_notebook
+
     if columns == None:
         columns = list(df.columns)
     df_int_cols = list(df[columns].dtypes[df.dtypes.astype(str).str.lower().str.startswith(&#39;int&#39;)].index)
@@ -487,7 +501,7 @@ def reduce_mem_usage(df, columns=None, verbose=True, debug=False):
     return df</code></pre>
 </details>
 </dd>
-<dt id="utils.misc_utils.downsampling_data"><code class="name flex">
+<dt id="ml_utils.misc_utils.downsampling_data"><code class="name flex">
 <span>def <span class="ident">downsampling_data</span></span>(<span>df, targets, goal_percentages=None, positive_oversampling=True)</span>
 </code></dt>
 <dd>
@@ -495,7 +509,7 @@ def reduce_mem_usage(df, columns=None, verbose=True, debug=False):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/misc_utils.py#L76-L162" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\misc_utils.py#L75-L161" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def downsampling_data(df, targets, goal_percentages=None, positive_oversampling=True):
     &#34;&#34;&#34; Downsample data to achieve or at least approximate to the goal percentage &#34;&#34;&#34;
@@ -586,7 +600,7 @@ def reduce_mem_usage(df, columns=None, verbose=True, debug=False):
     return pd.concat([df[df[targets[i_min]] == 1], downsampling_df]).sort_index()</code></pre>
 </details>
 </dd>
-<dt id="utils.misc_utils.extract_zips"><code class="name flex">
+<dt id="ml_utils.misc_utils.extract_zips"><code class="name flex">
 <span>def <span class="ident">extract_zips</span></span>(<span>zip_path, extract_dir)</span>
 </code></dt>
 <dd>
@@ -594,7 +608,7 @@ def reduce_mem_usage(df, columns=None, verbose=True, debug=False):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/misc_utils.py#L11-L17" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\misc_utils.py#L7-L13" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def extract_zips(zip_path, extract_dir):
     &#34;&#34;&#34; Extract zip file &#34;&#34;&#34;
@@ -605,7 +619,7 @@ def reduce_mem_usage(df, columns=None, verbose=True, debug=False):
     print(f&#34;File in {zip_path} extracted in directory {extract_dir}&#34;)</code></pre>
 </details>
 </dd>
-<dt id="utils.misc_utils.get_var_list"><code class="name flex">
+<dt id="ml_utils.misc_utils.get_var_list"><code class="name flex">
 <span>def <span class="ident">get_var_list</span></span>(<span>)</span>
 </code></dt>
 <dd>
@@ -613,7 +627,7 @@ def reduce_mem_usage(df, columns=None, verbose=True, debug=False):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/misc_utils.py#L27-L31" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\misc_utils.py#L23-L27" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def get_var_list():
     &#34;&#34;&#34; Print current variable size in memory &#34;&#34;&#34;
@@ -622,7 +636,7 @@ def reduce_mem_usage(df, columns=None, verbose=True, debug=False):
         print(&#34;{:&gt;30}: {:&gt;8}&#34;.format(name, sizeof_fmt(size)))</code></pre>
 </details>
 </dd>
-<dt id="utils.misc_utils.oversampling_data"><code class="name flex">
+<dt id="ml_utils.misc_utils.oversampling_data"><code class="name flex">
 <span>def <span class="ident">oversampling_data</span></span>(<span>df, target, goal_percentage=0.3333333333333333, positive_oversampling=True, max_ratio=10)</span>
 </code></dt>
 <dd>
@@ -630,7 +644,7 @@ def reduce_mem_usage(df, columns=None, verbose=True, debug=False):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/misc_utils.py#L164-L197" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\misc_utils.py#L163-L196" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def oversampling_data(
     df, target, goal_percentage=1 / 3, positive_oversampling=True, max_ratio=10
@@ -668,7 +682,7 @@ def reduce_mem_usage(df, columns=None, verbose=True, debug=False):
         return df.sample(frac=1).reset_index(drop=True)</code></pre>
 </details>
 </dd>
-<dt id="utils.misc_utils.rebalance_data"><code class="name flex">
+<dt id="ml_utils.misc_utils.rebalance_data"><code class="name flex">
 <span>def <span class="ident">rebalance_data</span></span>(<span>df, n_ensemble, target, negative_downsampling=True, use_partial_data=False, ratio_partial_data=3)</span>
 </code></dt>
 <dd>
@@ -676,10 +690,13 @@ def reduce_mem_usage(df, columns=None, verbose=True, debug=False):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/misc_utils.py#L33-L74" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\misc_utils.py#L29-L73" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def rebalance_data(df, n_ensemble, target, negative_downsampling=True, use_partial_data=False, ratio_partial_data=3):
     &#34;&#34;&#34; Downsampling (negative or positive) data according to ratio and distribute it across number of ensemble &#34;&#34;&#34;
+
+    from tqdm import tqdm_notebook
+
     pos_rows = df[df[target] == 1].shape[0]
     neg_rows = df[df[target] == 0].shape[0]
 
@@ -722,7 +739,7 @@ def reduce_mem_usage(df, columns=None, verbose=True, debug=False):
     return all_batch_indexes</code></pre>
 </details>
 </dd>
-<dt id="utils.misc_utils.reduce_mem_usage"><code class="name flex">
+<dt id="ml_utils.misc_utils.reduce_mem_usage"><code class="name flex">
 <span>def <span class="ident">reduce_mem_usage</span></span>(<span>df, columns=None, verbose=True, debug=False)</span>
 </code></dt>
 <dd>
@@ -730,10 +747,13 @@ def reduce_mem_usage(df, columns=None, verbose=True, debug=False):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/misc_utils.py#L263-L363" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\misc_utils.py#L268-L371" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def reduce_mem_usage(df, columns=None, verbose=True, debug=False):
     &#34;&#34;&#34; Reduce memory usage of provided DataFrame using best dtype for each column &#34;&#34;&#34;
+
+    from tqdm import tqdm_notebook
+
     if columns == None:
         columns = df.columns
     elif len(columns) == 0:
@@ -835,7 +855,7 @@ def reduce_mem_usage(df, columns=None, verbose=True, debug=False):
     return df</code></pre>
 </details>
 </dd>
-<dt id="utils.misc_utils.sizeof_fmt"><code class="name flex">
+<dt id="ml_utils.misc_utils.sizeof_fmt"><code class="name flex">
 <span>def <span class="ident">sizeof_fmt</span></span>(<span>num, suffix='B')</span>
 </code></dt>
 <dd>
@@ -843,7 +863,7 @@ def reduce_mem_usage(df, columns=None, verbose=True, debug=False):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/misc_utils.py#L19-L25" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\misc_utils.py#L15-L21" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def sizeof_fmt(num, suffix=&#39;B&#39;):
     &#34;&#34;&#34; Transform number to readable unit &#34;&#34;&#34;
@@ -867,20 +887,20 @@ def reduce_mem_usage(df, columns=None, verbose=True, debug=False):
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="utils" href="index.html">utils</a></code></li>
+<li><code><a title="ml_utils" href="index.html">ml_utils</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="two-column">
-<li><code><a title="utils.misc_utils.KFolds_stratified" href="#utils.misc_utils.KFolds_stratified">KFolds_stratified</a></code></li>
-<li><code><a title="utils.misc_utils.convert_Int_to_int" href="#utils.misc_utils.convert_Int_to_int">convert_Int_to_int</a></code></li>
-<li><code><a title="utils.misc_utils.downsampling_data" href="#utils.misc_utils.downsampling_data">downsampling_data</a></code></li>
-<li><code><a title="utils.misc_utils.extract_zips" href="#utils.misc_utils.extract_zips">extract_zips</a></code></li>
-<li><code><a title="utils.misc_utils.get_var_list" href="#utils.misc_utils.get_var_list">get_var_list</a></code></li>
-<li><code><a title="utils.misc_utils.oversampling_data" href="#utils.misc_utils.oversampling_data">oversampling_data</a></code></li>
-<li><code><a title="utils.misc_utils.rebalance_data" href="#utils.misc_utils.rebalance_data">rebalance_data</a></code></li>
-<li><code><a title="utils.misc_utils.reduce_mem_usage" href="#utils.misc_utils.reduce_mem_usage">reduce_mem_usage</a></code></li>
-<li><code><a title="utils.misc_utils.sizeof_fmt" href="#utils.misc_utils.sizeof_fmt">sizeof_fmt</a></code></li>
+<li><code><a title="ml_utils.misc_utils.KFolds_stratified" href="#ml_utils.misc_utils.KFolds_stratified">KFolds_stratified</a></code></li>
+<li><code><a title="ml_utils.misc_utils.convert_Int_to_int" href="#ml_utils.misc_utils.convert_Int_to_int">convert_Int_to_int</a></code></li>
+<li><code><a title="ml_utils.misc_utils.downsampling_data" href="#ml_utils.misc_utils.downsampling_data">downsampling_data</a></code></li>
+<li><code><a title="ml_utils.misc_utils.extract_zips" href="#ml_utils.misc_utils.extract_zips">extract_zips</a></code></li>
+<li><code><a title="ml_utils.misc_utils.get_var_list" href="#ml_utils.misc_utils.get_var_list">get_var_list</a></code></li>
+<li><code><a title="ml_utils.misc_utils.oversampling_data" href="#ml_utils.misc_utils.oversampling_data">oversampling_data</a></code></li>
+<li><code><a title="ml_utils.misc_utils.rebalance_data" href="#ml_utils.misc_utils.rebalance_data">rebalance_data</a></code></li>
+<li><code><a title="ml_utils.misc_utils.reduce_mem_usage" href="#ml_utils.misc_utils.reduce_mem_usage">reduce_mem_usage</a></code></li>
+<li><code><a title="ml_utils.misc_utils.sizeof_fmt" href="#ml_utils.misc_utils.sizeof_fmt">sizeof_fmt</a></code></li>
 </ul>
 </li>
 </ul>

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.7.2" />
-<title>utils.dicom_utils API documentation</title>
+<title>ml_utils.dicom_utils API documentation</title>
 <meta name="description" content="" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
@@ -14,31 +14,25 @@
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
 <script async src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS_CHTML'></script>
 <style>.homelink{display:block;font-size:2em;font-weight:bold;color:#555;padding-bottom:.5em;border-bottom:1px solid silver}.homelink:hover{color:inherit}.homelink img{max-width:20%;max-height:5em;margin:auto;margin-bottom:.3em}</style>
-<link rel="canonical" href="https://pdoc3.github.io/pdoc/doc/utils/dicom_utils.html">
+<link rel="canonical" href="https://pdoc3.github.io/pdoc/doc/ml_utils/dicom_utils.html">
 <link rel="icon" href="https://pdoc3.github.io/pdoc/logo.png">
 </head>
 <body>
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>utils.dicom_utils</code></h1>
+<h1 class="title">Module <code>ml_utils.dicom_utils</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dicom_utils.py#L0-L333" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dicom_utils.py#L0-L350" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">import numpy as np
 import pandas as pd
-import cv2
-import pydicom
-from matplotlib import pyplot as plt
-from scipy import interpolate
 import warnings
 import os
-
-from tqdm import tqdm_notebook
 
 # From https://radiopaedia.org/articles/windowing-ct
 dicom_windows = {
@@ -57,6 +51,10 @@ dicom_windows = {
 
 def crop_brain(image, n_top_areas = 5, max_scale_diff = 3, plot = False, dimensions = None, area = None):
     &#34;&#34;&#34; Crop image in order to only include square image of the &#34;best&#34; image of the brain &#34;&#34;&#34;
+
+    import cv2
+    from matplotlib import pyplot as plt
+
     image = normalize_img(image, use_min_max = True)
     if dimensions is None:
         if (image.max() - image.min()) == 0 or np.isnan(image.max()) or np.isnan(image.min()):
@@ -138,6 +136,9 @@ def pad_square(x):
 
 def get_first_of_dicom_field_as_int(x):
     &#34;&#34;&#34; Get first DICOM field as in int &#34;&#34;&#34;
+
+    import pydicom
+
     if type(x) == pydicom.multival.MultiValue:
         return int(x[0])
     else:
@@ -198,6 +199,9 @@ def get_freqhist_bins(dcm_img, n_bins = 100):
 
 def get_dcm_img(path, window_type = &#39;brain&#39;, verbose = True):
     &#34;&#34;&#34; Read and scale of DICOM images according to its metadata &#34;&#34;&#34;
+
+    import pydicom
+
     dcm = pydicom.dcmread(path)
     window_center, window_width, intercept, slope = get_windowing(dcm)
     group = get_subgroups(dcm)   
@@ -236,6 +240,9 @@ def get_pixel_array(dcm, path=None):
 
 def interpolate_img(dcm_img, bins = None, n_bins = 100):
     &#34;&#34;&#34; Interpolate DCM image to equally distribute intensity on the image &#34;&#34;&#34;
+
+    from scipy import interpolate
+
     # Equal distribution of intensity
     if bins is None: 
         bins = get_freqhist_bins(dcm_img, n_bins)
@@ -263,6 +270,9 @@ def normalize_img(dcm_img, mean = None, std = None, use_min_max = False):
 
 def preprocess_dicom(path, x, y, bins = None, n_bins = 100, mean = None, std = None, use_min_max = False, remove_empty = False, windows_type = &#39;brain&#39;, verbose = True): 
     &#34;&#34;&#34; Process (open, interpolate, normalize and resize) the DICOM file on the specified path &#34;&#34;&#34;
+    
+    import cv2
+    
     area = 0
     dimensions = None
     if not type(windows_type) is list:
@@ -312,6 +322,10 @@ def preprocess_dicom(path, x, y, bins = None, n_bins = 100, mean = None, std = N
 # This is done due to memory limitations of have all training metadata in a DataFrame
 def sample_groups(load_dir, samples_per_group = 5, max_trys = 1000):
     &#34;&#34;&#34; Extract equally distributed number of samples of DICOM files paths &#34;&#34;&#34;
+
+    import pydicom
+    from tqdm import tqdm_notebook
+
     filenames = os.listdir(load_dir)
     filenames_groups = {1 : [], 2 : [], 3 : []}
     for group in tqdm_notebook([1,2,3], desc = &#39;Group sample&#39;):
@@ -331,6 +345,9 @@ def sample_groups(load_dir, samples_per_group = 5, max_trys = 1000):
 # Secondly mean of mean pixels values and mean of std pixel values using the previous bin mean
 def sample_bins_mean_std(load_dir, samples_per_group = 5, max_trys = 1000, n_bins = 100):
     &#34;&#34;&#34; Extract the bins intensity mean, image mean and image standard deviation of each group &#34;&#34;&#34;
+
+    from tqdm import tqdm_notebook
+
     bins_mean = {}
     mean = {}
     std = {}
@@ -372,7 +389,7 @@ def sample_bins_mean_std(load_dir, samples_per_group = 5, max_trys = 1000, n_bin
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="utils.dicom_utils.correct_dcm"><code class="name flex">
+<dt id="ml_utils.dicom_utils.correct_dcm"><code class="name flex">
 <span>def <span class="ident">correct_dcm</span></span>(<span>dcm)</span>
 </code></dt>
 <dd>
@@ -380,7 +397,7 @@ def sample_bins_mean_std(load_dir, samples_per_group = 5, max_trys = 1000, n_bin
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dicom_utils.py#L150-L157" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dicom_utils.py#L151-L158" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def correct_dcm(dcm):
     &#34;&#34;&#34; Correct DCM image which were actually signed data, but were treated as unsigned &#34;&#34;&#34;
@@ -392,7 +409,7 @@ def sample_bins_mean_std(load_dir, samples_per_group = 5, max_trys = 1000, n_bin
     return dcm.pixel_array, dcm.RescaleIntercept</code></pre>
 </details>
 </dd>
-<dt id="utils.dicom_utils.crop_brain"><code class="name flex">
+<dt id="ml_utils.dicom_utils.crop_brain"><code class="name flex">
 <span>def <span class="ident">crop_brain</span></span>(<span>image, n_top_areas=5, max_scale_diff=3, plot=False, dimensions=None, area=None)</span>
 </code></dt>
 <dd>
@@ -400,10 +417,14 @@ def sample_bins_mean_std(load_dir, samples_per_group = 5, max_trys = 1000, n_bin
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dicom_utils.py#L27-L97" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dicom_utils.py#L21-L95" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def crop_brain(image, n_top_areas = 5, max_scale_diff = 3, plot = False, dimensions = None, area = None):
     &#34;&#34;&#34; Crop image in order to only include square image of the &#34;best&#34; image of the brain &#34;&#34;&#34;
+
+    import cv2
+    from matplotlib import pyplot as plt
+
     image = normalize_img(image, use_min_max = True)
     if dimensions is None:
         if (image.max() - image.min()) == 0 or np.isnan(image.max()) or np.isnan(image.min()):
@@ -475,7 +496,7 @@ def sample_bins_mean_std(load_dir, samples_per_group = 5, max_trys = 1000, n_bin
     return final_image, best_area, (x,y,w,h)</code></pre>
 </details>
 </dd>
-<dt id="utils.dicom_utils.get_dcm_img"><code class="name flex">
+<dt id="ml_utils.dicom_utils.get_dcm_img"><code class="name flex">
 <span>def <span class="ident">get_dcm_img</span></span>(<span>path, window_type='brain', verbose=True)</span>
 </code></dt>
 <dd>
@@ -483,10 +504,13 @@ def sample_bins_mean_std(load_dir, samples_per_group = 5, max_trys = 1000, n_bin
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dicom_utils.py#L168-L192" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dicom_utils.py#L169-L196" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def get_dcm_img(path, window_type = &#39;brain&#39;, verbose = True):
     &#34;&#34;&#34; Read and scale of DICOM images according to its metadata &#34;&#34;&#34;
+
+    import pydicom
+
     dcm = pydicom.dcmread(path)
     window_center, window_width, intercept, slope = get_windowing(dcm)
     group = get_subgroups(dcm)   
@@ -512,7 +536,7 @@ def sample_bins_mean_std(load_dir, samples_per_group = 5, max_trys = 1000, n_bin
     return dcm_img, group</code></pre>
 </details>
 </dd>
-<dt id="utils.dicom_utils.get_first_of_dicom_field_as_int"><code class="name flex">
+<dt id="ml_utils.dicom_utils.get_first_of_dicom_field_as_int"><code class="name flex">
 <span>def <span class="ident">get_first_of_dicom_field_as_int</span></span>(<span>x)</span>
 </code></dt>
 <dd>
@@ -520,17 +544,20 @@ def sample_bins_mean_std(load_dir, samples_per_group = 5, max_trys = 1000, n_bin
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dicom_utils.py#L108-L113" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dicom_utils.py#L106-L114" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def get_first_of_dicom_field_as_int(x):
     &#34;&#34;&#34; Get first DICOM field as in int &#34;&#34;&#34;
+
+    import pydicom
+
     if type(x) == pydicom.multival.MultiValue:
         return int(x[0])
     else:
         return int(x)</code></pre>
 </details>
 </dd>
-<dt id="utils.dicom_utils.get_freqhist_bins"><code class="name flex">
+<dt id="ml_utils.dicom_utils.get_freqhist_bins"><code class="name flex">
 <span>def <span class="ident">get_freqhist_bins</span></span>(<span>dcm_img, n_bins=100)</span>
 </code></dt>
 <dd>
@@ -538,7 +565,7 @@ def sample_bins_mean_std(load_dir, samples_per_group = 5, max_trys = 1000, n_bin
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dicom_utils.py#L159-L166" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dicom_utils.py#L160-L167" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def get_freqhist_bins(dcm_img, n_bins = 100):
     &#34;&#34;&#34; Create equally distribute bins within DCM image intensity range &#34;&#34;&#34;
@@ -550,7 +577,7 @@ def sample_bins_mean_std(load_dir, samples_per_group = 5, max_trys = 1000, n_bin
     return np.unique(imsd[t])</code></pre>
 </details>
 </dd>
-<dt id="utils.dicom_utils.get_pixel_array"><code class="name flex">
+<dt id="ml_utils.dicom_utils.get_pixel_array"><code class="name flex">
 <span>def <span class="ident">get_pixel_array</span></span>(<span>dcm, path=None)</span>
 </code></dt>
 <dd>
@@ -558,7 +585,7 @@ def sample_bins_mean_std(load_dir, samples_per_group = 5, max_trys = 1000, n_bin
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dicom_utils.py#L194-L204" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dicom_utils.py#L198-L208" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def get_pixel_array(dcm, path=None):
     &#34;&#34;&#34; Extract pixel array from DCM file &#34;&#34;&#34;
@@ -573,7 +600,7 @@ def sample_bins_mean_std(load_dir, samples_per_group = 5, max_trys = 1000, n_bin
         return np.zeros((rows, columns), dtype=np.float32)</code></pre>
 </details>
 </dd>
-<dt id="utils.dicom_utils.get_rows_columns"><code class="name flex">
+<dt id="ml_utils.dicom_utils.get_rows_columns"><code class="name flex">
 <span>def <span class="ident">get_rows_columns</span></span>(<span>data)</span>
 </code></dt>
 <dd>
@@ -581,7 +608,7 @@ def sample_bins_mean_std(load_dir, samples_per_group = 5, max_trys = 1000, n_bin
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dicom_utils.py#L123-L127" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dicom_utils.py#L124-L128" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def get_rows_columns(data):
     &#34;&#34;&#34; Get rows and columns info from DICOM &#34;&#34;&#34;
@@ -590,7 +617,7 @@ def sample_bins_mean_std(load_dir, samples_per_group = 5, max_trys = 1000, n_bin
     return [get_first_of_dicom_field_as_int(x) for x in dicom_fields]</code></pre>
 </details>
 </dd>
-<dt id="utils.dicom_utils.get_subgroups"><code class="name flex">
+<dt id="ml_utils.dicom_utils.get_subgroups"><code class="name flex">
 <span>def <span class="ident">get_subgroups</span></span>(<span>data)</span>
 </code></dt>
 <dd>
@@ -603,7 +630,7 @@ There are 3 groups, but we will create a fourth for Others:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dicom_utils.py#L129-L147" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dicom_utils.py#L130-L148" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def get_subgroups(data):
     &#34;&#34;&#34; Get value of subgroup depending on Bits Store and Pixel Representation values
@@ -626,7 +653,7 @@ There are 3 groups, but we will create a fourth for Others:
         return -1</code></pre>
 </details>
 </dd>
-<dt id="utils.dicom_utils.get_windowing"><code class="name flex">
+<dt id="ml_utils.dicom_utils.get_windowing"><code class="name flex">
 <span>def <span class="ident">get_windowing</span></span>(<span>data)</span>
 </code></dt>
 <dd>
@@ -634,7 +661,7 @@ There are 3 groups, but we will create a fourth for Others:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dicom_utils.py#L115-L121" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dicom_utils.py#L116-L122" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def get_windowing(data):
     &#34;&#34;&#34; Get DICOM parameters for windowing (window center, window width, intercept and slope) &#34;&#34;&#34;
@@ -645,7 +672,7 @@ There are 3 groups, but we will create a fourth for Others:
     return [get_first_of_dicom_field_as_int(x) for x in dicom_fields]</code></pre>
 </details>
 </dd>
-<dt id="utils.dicom_utils.interpolate_img"><code class="name flex">
+<dt id="ml_utils.dicom_utils.interpolate_img"><code class="name flex">
 <span>def <span class="ident">interpolate_img</span></span>(<span>dcm_img, bins=None, n_bins=100)</span>
 </code></dt>
 <dd>
@@ -653,10 +680,13 @@ There are 3 groups, but we will create a fourth for Others:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dicom_utils.py#L206-L212" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dicom_utils.py#L210-L219" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def interpolate_img(dcm_img, bins = None, n_bins = 100):
     &#34;&#34;&#34; Interpolate DCM image to equally distribute intensity on the image &#34;&#34;&#34;
+
+    from scipy import interpolate
+
     # Equal distribution of intensity
     if bins is None: 
         bins = get_freqhist_bins(dcm_img, n_bins)
@@ -664,7 +694,7 @@ There are 3 groups, but we will create a fourth for Others:
     return np.clip(interpolate.interp1d(bins, np.linspace(0., 1., len(bins)), fill_value=&#34;extrapolate&#34;)(dcm_img.flatten()).reshape(dcm_img.shape), 0., 1.)</code></pre>
 </details>
 </dd>
-<dt id="utils.dicom_utils.normalize_img"><code class="name flex">
+<dt id="ml_utils.dicom_utils.normalize_img"><code class="name flex">
 <span>def <span class="ident">normalize_img</span></span>(<span>dcm_img, mean=None, std=None, use_min_max=False)</span>
 </code></dt>
 <dd>
@@ -672,7 +702,7 @@ There are 3 groups, but we will create a fourth for Others:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dicom_utils.py#L214-L230" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dicom_utils.py#L221-L237" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def normalize_img(dcm_img, mean = None, std = None, use_min_max = False):
     &#34;&#34;&#34; Normalize image using min/max or z-score &#34;&#34;&#34;
@@ -693,7 +723,7 @@ There are 3 groups, but we will create a fourth for Others:
         return (dcm_img - mean) / std</code></pre>
 </details>
 </dd>
-<dt id="utils.dicom_utils.pad_square"><code class="name flex">
+<dt id="ml_utils.dicom_utils.pad_square"><code class="name flex">
 <span>def <span class="ident">pad_square</span></span>(<span>x)</span>
 </code></dt>
 <dd>
@@ -701,7 +731,7 @@ There are 3 groups, but we will create a fourth for Others:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dicom_utils.py#L99-L106" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dicom_utils.py#L97-L104" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def pad_square(x):
     &#34;&#34;&#34; Pad image to meet square dimensions &#34;&#34;&#34;
@@ -713,7 +743,7 @@ There are 3 groups, but we will create a fourth for Others:
     return np.pad(x, ((pt,pb),(pl,pr)), &#39;minimum&#39;)</code></pre>
 </details>
 </dd>
-<dt id="utils.dicom_utils.preprocess_dicom"><code class="name flex">
+<dt id="ml_utils.dicom_utils.preprocess_dicom"><code class="name flex">
 <span>def <span class="ident">preprocess_dicom</span></span>(<span>path, x, y, bins=None, n_bins=100, mean=None, std=None, use_min_max=False, remove_empty=False, windows_type='brain', verbose=True)</span>
 </code></dt>
 <dd>
@@ -721,10 +751,13 @@ There are 3 groups, but we will create a fourth for Others:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dicom_utils.py#L233-L278" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dicom_utils.py#L240-L288" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def preprocess_dicom(path, x, y, bins = None, n_bins = 100, mean = None, std = None, use_min_max = False, remove_empty = False, windows_type = &#39;brain&#39;, verbose = True): 
     &#34;&#34;&#34; Process (open, interpolate, normalize and resize) the DICOM file on the specified path &#34;&#34;&#34;
+    
+    import cv2
+    
     area = 0
     dimensions = None
     if not type(windows_type) is list:
@@ -771,7 +804,7 @@ There are 3 groups, but we will create a fourth for Others:
     return final_dcm_img, area</code></pre>
 </details>
 </dd>
-<dt id="utils.dicom_utils.sample_bins_mean_std"><code class="name flex">
+<dt id="ml_utils.dicom_utils.sample_bins_mean_std"><code class="name flex">
 <span>def <span class="ident">sample_bins_mean_std</span></span>(<span>load_dir, samples_per_group=5, max_trys=1000, n_bins=100)</span>
 </code></dt>
 <dd>
@@ -779,10 +812,13 @@ There are 3 groups, but we will create a fourth for Others:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dicom_utils.py#L301-L334" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dicom_utils.py#L315-L351" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def sample_bins_mean_std(load_dir, samples_per_group = 5, max_trys = 1000, n_bins = 100):
     &#34;&#34;&#34; Extract the bins intensity mean, image mean and image standard deviation of each group &#34;&#34;&#34;
+
+    from tqdm import tqdm_notebook
+
     bins_mean = {}
     mean = {}
     std = {}
@@ -817,7 +853,7 @@ There are 3 groups, but we will create a fourth for Others:
     return bins_mean, mean, std</code></pre>
 </details>
 </dd>
-<dt id="utils.dicom_utils.sample_groups"><code class="name flex">
+<dt id="ml_utils.dicom_utils.sample_groups"><code class="name flex">
 <span>def <span class="ident">sample_groups</span></span>(<span>load_dir, samples_per_group=5, max_trys=1000)</span>
 </code></dt>
 <dd>
@@ -825,10 +861,14 @@ There are 3 groups, but we will create a fourth for Others:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/dicom_utils.py#L282-L296" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dicom_utils.py#L292-L310" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def sample_groups(load_dir, samples_per_group = 5, max_trys = 1000):
     &#34;&#34;&#34; Extract equally distributed number of samples of DICOM files paths &#34;&#34;&#34;
+
+    import pydicom
+    from tqdm import tqdm_notebook
+
     filenames = os.listdir(load_dir)
     filenames_groups = {1 : [], 2 : [], 3 : []}
     for group in tqdm_notebook([1,2,3], desc = &#39;Group sample&#39;):
@@ -857,26 +897,26 @@ There are 3 groups, but we will create a fourth for Others:
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="utils" href="index.html">utils</a></code></li>
+<li><code><a title="ml_utils" href="index.html">ml_utils</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="utils.dicom_utils.correct_dcm" href="#utils.dicom_utils.correct_dcm">correct_dcm</a></code></li>
-<li><code><a title="utils.dicom_utils.crop_brain" href="#utils.dicom_utils.crop_brain">crop_brain</a></code></li>
-<li><code><a title="utils.dicom_utils.get_dcm_img" href="#utils.dicom_utils.get_dcm_img">get_dcm_img</a></code></li>
-<li><code><a title="utils.dicom_utils.get_first_of_dicom_field_as_int" href="#utils.dicom_utils.get_first_of_dicom_field_as_int">get_first_of_dicom_field_as_int</a></code></li>
-<li><code><a title="utils.dicom_utils.get_freqhist_bins" href="#utils.dicom_utils.get_freqhist_bins">get_freqhist_bins</a></code></li>
-<li><code><a title="utils.dicom_utils.get_pixel_array" href="#utils.dicom_utils.get_pixel_array">get_pixel_array</a></code></li>
-<li><code><a title="utils.dicom_utils.get_rows_columns" href="#utils.dicom_utils.get_rows_columns">get_rows_columns</a></code></li>
-<li><code><a title="utils.dicom_utils.get_subgroups" href="#utils.dicom_utils.get_subgroups">get_subgroups</a></code></li>
-<li><code><a title="utils.dicom_utils.get_windowing" href="#utils.dicom_utils.get_windowing">get_windowing</a></code></li>
-<li><code><a title="utils.dicom_utils.interpolate_img" href="#utils.dicom_utils.interpolate_img">interpolate_img</a></code></li>
-<li><code><a title="utils.dicom_utils.normalize_img" href="#utils.dicom_utils.normalize_img">normalize_img</a></code></li>
-<li><code><a title="utils.dicom_utils.pad_square" href="#utils.dicom_utils.pad_square">pad_square</a></code></li>
-<li><code><a title="utils.dicom_utils.preprocess_dicom" href="#utils.dicom_utils.preprocess_dicom">preprocess_dicom</a></code></li>
-<li><code><a title="utils.dicom_utils.sample_bins_mean_std" href="#utils.dicom_utils.sample_bins_mean_std">sample_bins_mean_std</a></code></li>
-<li><code><a title="utils.dicom_utils.sample_groups" href="#utils.dicom_utils.sample_groups">sample_groups</a></code></li>
+<li><code><a title="ml_utils.dicom_utils.correct_dcm" href="#ml_utils.dicom_utils.correct_dcm">correct_dcm</a></code></li>
+<li><code><a title="ml_utils.dicom_utils.crop_brain" href="#ml_utils.dicom_utils.crop_brain">crop_brain</a></code></li>
+<li><code><a title="ml_utils.dicom_utils.get_dcm_img" href="#ml_utils.dicom_utils.get_dcm_img">get_dcm_img</a></code></li>
+<li><code><a title="ml_utils.dicom_utils.get_first_of_dicom_field_as_int" href="#ml_utils.dicom_utils.get_first_of_dicom_field_as_int">get_first_of_dicom_field_as_int</a></code></li>
+<li><code><a title="ml_utils.dicom_utils.get_freqhist_bins" href="#ml_utils.dicom_utils.get_freqhist_bins">get_freqhist_bins</a></code></li>
+<li><code><a title="ml_utils.dicom_utils.get_pixel_array" href="#ml_utils.dicom_utils.get_pixel_array">get_pixel_array</a></code></li>
+<li><code><a title="ml_utils.dicom_utils.get_rows_columns" href="#ml_utils.dicom_utils.get_rows_columns">get_rows_columns</a></code></li>
+<li><code><a title="ml_utils.dicom_utils.get_subgroups" href="#ml_utils.dicom_utils.get_subgroups">get_subgroups</a></code></li>
+<li><code><a title="ml_utils.dicom_utils.get_windowing" href="#ml_utils.dicom_utils.get_windowing">get_windowing</a></code></li>
+<li><code><a title="ml_utils.dicom_utils.interpolate_img" href="#ml_utils.dicom_utils.interpolate_img">interpolate_img</a></code></li>
+<li><code><a title="ml_utils.dicom_utils.normalize_img" href="#ml_utils.dicom_utils.normalize_img">normalize_img</a></code></li>
+<li><code><a title="ml_utils.dicom_utils.pad_square" href="#ml_utils.dicom_utils.pad_square">pad_square</a></code></li>
+<li><code><a title="ml_utils.dicom_utils.preprocess_dicom" href="#ml_utils.dicom_utils.preprocess_dicom">preprocess_dicom</a></code></li>
+<li><code><a title="ml_utils.dicom_utils.sample_bins_mean_std" href="#ml_utils.dicom_utils.sample_bins_mean_std">sample_bins_mean_std</a></code></li>
+<li><code><a title="ml_utils.dicom_utils.sample_groups" href="#ml_utils.dicom_utils.sample_groups">sample_groups</a></code></li>
 </ul>
 </li>
 </ul>

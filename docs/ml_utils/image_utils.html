@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.7.2" />
-<title>utils.image_utils API documentation</title>
+<title>ml_utils.image_utils API documentation</title>
 <meta name="description" content="" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
@@ -14,23 +14,22 @@
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
 <script async src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS_CHTML'></script>
 <style>.homelink{display:block;font-size:2em;font-weight:bold;color:#555;padding-bottom:.5em;border-bottom:1px solid silver}.homelink:hover{color:inherit}.homelink img{max-width:20%;max-height:5em;margin:auto;margin-bottom:.3em}</style>
-<link rel="canonical" href="https://pdoc3.github.io/pdoc/doc/utils/image_utils.html">
+<link rel="canonical" href="https://pdoc3.github.io/pdoc/doc/ml_utils/image_utils.html">
 <link rel="icon" href="https://pdoc3.github.io/pdoc/logo.png">
 </head>
 <body>
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>utils.image_utils</code></h1>
+<h1 class="title">Module <code>ml_utils.image_utils</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/image_utils.py#L0-L88" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\image_utils.py#L0-L93" class="git-link">Browse git</a>
 </summary>
-<pre><code class="python">import cv2
-import os
+<pre><code class="python">import os
 import numpy as np
 
 #os.system(&#39;pip install -U efficientnet==0.0.4&#39;) #Used from Script Utility https://www.kaggle.com/ratthachat/efficientnet
@@ -50,6 +49,9 @@ TRANSFORM_0_1_to_1_1 = 6
 
 def crop_image_from_gray(img, tol=7):
     &#34;&#34;&#34; Crop image which have values above tol in gray scale &#34;&#34;&#34;
+
+    import cv2
+
     if img.ndim == 2:
         mask = img &gt; tol
         return img[np.ix_(mask.any(1), mask.any(0))]
@@ -104,6 +106,9 @@ def preprocess_image(image, sigmaX=2):
     3. Resize image to desired size
     4. Add Gaussian noise to increase Robustness
     &#34;&#34;&#34;
+
+    import cv2
+
     if image.ndim == 2:
         img_size = image.shape
     elif image.ndim == 3:
@@ -127,7 +132,7 @@ def preprocess_image(image, sigmaX=2):
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="utils.image_utils.check_range"><code class="name flex">
+<dt id="ml_utils.image_utils.check_range"><code class="name flex">
 <span>def <span class="ident">check_range</span></span>(<span>image)</span>
 </code></dt>
 <dd>
@@ -135,7 +140,7 @@ def preprocess_image(image, sigmaX=2):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/image_utils.py#L39-L46" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\image_utils.py#L41-L48" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def check_range(image):
     &#34;&#34;&#34; Check range of values of the image &#34;&#34;&#34;
@@ -147,7 +152,7 @@ def preprocess_image(image, sigmaX=2):
         return RANGE_0_1</code></pre>
 </details>
 </dd>
-<dt id="utils.image_utils.crop_image_from_gray"><code class="name flex">
+<dt id="ml_utils.image_utils.crop_image_from_gray"><code class="name flex">
 <span>def <span class="ident">crop_image_from_gray</span></span>(<span>img, tol=7)</span>
 </code></dt>
 <dd>
@@ -155,10 +160,13 @@ def preprocess_image(image, sigmaX=2):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/image_utils.py#L20-L37" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\image_utils.py#L19-L39" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def crop_image_from_gray(img, tol=7):
     &#34;&#34;&#34; Crop image which have values above tol in gray scale &#34;&#34;&#34;
+
+    import cv2
+
     if img.ndim == 2:
         mask = img &gt; tol
         return img[np.ix_(mask.any(1), mask.any(0))]
@@ -177,7 +185,7 @@ def preprocess_image(image, sigmaX=2):
         return img</code></pre>
 </details>
 </dd>
-<dt id="utils.image_utils.preprocess_image"><code class="name flex">
+<dt id="ml_utils.image_utils.preprocess_image"><code class="name flex">
 <span>def <span class="ident">preprocess_image</span></span>(<span>image, sigmaX=2)</span>
 </code></dt>
 <dd>
@@ -189,7 +197,7 @@ def preprocess_image(image, sigmaX=2):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/image_utils.py#L68-L89" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\image_utils.py#L70-L94" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def preprocess_image(image, sigmaX=2):
     &#34;&#34;&#34;
@@ -199,6 +207,9 @@ def preprocess_image(image, sigmaX=2):
     3. Resize image to desired size
     4. Add Gaussian noise to increase Robustness
     &#34;&#34;&#34;
+
+    import cv2
+
     if image.ndim == 2:
         img_size = image.shape
     elif image.ndim == 3:
@@ -215,7 +226,7 @@ def preprocess_image(image, sigmaX=2):
     return image</code></pre>
 </details>
 </dd>
-<dt id="utils.image_utils.transform_range"><code class="name flex">
+<dt id="ml_utils.image_utils.transform_range"><code class="name flex">
 <span>def <span class="ident">transform_range</span></span>(<span>image, flag)</span>
 </code></dt>
 <dd>
@@ -223,7 +234,7 @@ def preprocess_image(image, sigmaX=2):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/image_utils.py#L48-L66" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\image_utils.py#L50-L68" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def transform_range(image, flag):
     &#34;&#34;&#34; Transform image with the specified transformation &#34;&#34;&#34;
@@ -259,15 +270,15 @@ def preprocess_image(image, sigmaX=2):
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="utils" href="index.html">utils</a></code></li>
+<li><code><a title="ml_utils" href="index.html">ml_utils</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="utils.image_utils.check_range" href="#utils.image_utils.check_range">check_range</a></code></li>
-<li><code><a title="utils.image_utils.crop_image_from_gray" href="#utils.image_utils.crop_image_from_gray">crop_image_from_gray</a></code></li>
-<li><code><a title="utils.image_utils.preprocess_image" href="#utils.image_utils.preprocess_image">preprocess_image</a></code></li>
-<li><code><a title="utils.image_utils.transform_range" href="#utils.image_utils.transform_range">transform_range</a></code></li>
+<li><code><a title="ml_utils.image_utils.check_range" href="#ml_utils.image_utils.check_range">check_range</a></code></li>
+<li><code><a title="ml_utils.image_utils.crop_image_from_gray" href="#ml_utils.image_utils.crop_image_from_gray">crop_image_from_gray</a></code></li>
+<li><code><a title="ml_utils.image_utils.preprocess_image" href="#ml_utils.image_utils.preprocess_image">preprocess_image</a></code></li>
+<li><code><a title="ml_utils.image_utils.transform_range" href="#ml_utils.image_utils.transform_range">transform_range</a></code></li>
 </ul>
 </li>
 </ul>

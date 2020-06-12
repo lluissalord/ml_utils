@@ -5,7 +5,7 @@ from tqdm import tqdm_notebook
 import matplotlib.pyplot as plt
 import os
 
-from plot_utils import plot_scatter, get_subplot_rows_cols
+from ml_utils.plot_utils import plot_scatter, get_subplot_rows_cols
 
 def covariate_shift(train, test, categorical_columns, n_samples, iterations = 200, weights_coef = 1, AUC_threshold = 0.8, importance_threshold = 0.9, max_loops = 20, test_size = 0.1, trys_all_influencer=5, calc_sample_weights=True, task_type="CPU", data_dir='', load_cov=False, save_cov=False, plot=True):
     """ Select features without Covariate Shift between training and test set using iteratively CatBoostClassifier to identify relation between train and test """

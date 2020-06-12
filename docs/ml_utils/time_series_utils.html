@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.7.2" />
-<title>utils.time_series_utils API documentation</title>
+<title>ml_utils.time_series_utils API documentation</title>
 <meta name="description" content="" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
@@ -14,27 +14,27 @@
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
 <script async src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS_CHTML'></script>
 <style>.homelink{display:block;font-size:2em;font-weight:bold;color:#555;padding-bottom:.5em;border-bottom:1px solid silver}.homelink:hover{color:inherit}.homelink img{max-width:20%;max-height:5em;margin:auto;margin-bottom:.3em}</style>
-<link rel="canonical" href="https://pdoc3.github.io/pdoc/doc/utils/time_series_utils.html">
+<link rel="canonical" href="https://pdoc3.github.io/pdoc/doc/ml_utils/time_series_utils.html">
 <link rel="icon" href="https://pdoc3.github.io/pdoc/logo.png">
 </head>
 <body>
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>utils.time_series_utils</code></h1>
+<h1 class="title">Module <code>ml_utils.time_series_utils</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/time_series_utils.py#L0-L164" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\time_series_utils.py#L0-L164" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">import numpy as np
 import pandas as pd
 from tqdm import tqdm_notebook
 import matplotlib.pyplot as plt
 
-from .plot_utils import plot_scatter
+from ml_utils.plot_utils import plot_scatter
 
 
 def laggingData(X, data, lag, suffix=&#39;Prev_&#39;, data_cols=None, exclude_cols=[&#39;datetime&#39;], output_data=False):
@@ -203,7 +203,7 @@ def extract_seasonal_component(df, columns_to_treat, daily_windows=[], agg_type=
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="utils.time_series_utils.dataToSequential"><code class="name flex">
+<dt id="ml_utils.time_series_utils.dataToSequential"><code class="name flex">
 <span>def <span class="ident">dataToSequential</span></span>(<span>data, seq_len, out_np=True, exclude_cols=['datetime'], dtype=numpy.float32)</span>
 </code></dt>
 <dd>
@@ -211,7 +211,7 @@ def extract_seasonal_component(df, columns_to_treat, daily_windows=[], agg_type=
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/time_series_utils.py#L32-L45" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\time_series_utils.py#L32-L45" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def dataToSequential(data, seq_len, out_np=True, exclude_cols=[&#39;datetime&#39;], dtype=np.float32):
     &#34;&#34;&#34; Transform data to sequential data &#34;&#34;&#34;
@@ -229,7 +229,7 @@ def extract_seasonal_component(df, columns_to_treat, daily_windows=[], agg_type=
     return new_data</code></pre>
 </details>
 </dd>
-<dt id="utils.time_series_utils.extract_seasonal_component"><code class="name flex">
+<dt id="ml_utils.time_series_utils.extract_seasonal_component"><code class="name flex">
 <span>def <span class="ident">extract_seasonal_component</span></span>(<span>df, columns_to_treat, daily_windows=[], agg_type='mean', win_type='boxcar', each_row_is='hour', plot=False)</span>
 </code></dt>
 <dd>
@@ -238,7 +238,7 @@ def extract_seasonal_component(df, columns_to_treat, daily_windows=[], agg_type=
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/time_series_utils.py#L86-L165" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\time_series_utils.py#L86-L165" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def extract_seasonal_component(df, columns_to_treat, daily_windows=[], agg_type=&#39;mean&#39;, win_type=&#39;boxcar&#39;,
                                each_row_is=&#39;hour&#39;, plot=False):
@@ -322,7 +322,7 @@ def extract_seasonal_component(df, columns_to_treat, daily_windows=[], agg_type=
     return temp_df[cols_created], cols_created</code></pre>
 </details>
 </dd>
-<dt id="utils.time_series_utils.laggingData"><code class="name flex">
+<dt id="ml_utils.time_series_utils.laggingData"><code class="name flex">
 <span>def <span class="ident">laggingData</span></span>(<span>X, data, lag, suffix='Prev_', data_cols=None, exclude_cols=['datetime'], output_data=False)</span>
 </code></dt>
 <dd>
@@ -330,7 +330,7 @@ def extract_seasonal_component(df, columns_to_treat, daily_windows=[], agg_type=
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/time_series_utils.py#L9-L29" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\time_series_utils.py#L9-L29" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def laggingData(X, data, lag, suffix=&#39;Prev_&#39;, data_cols=None, exclude_cols=[&#39;datetime&#39;], output_data=False):
     &#34;&#34;&#34; Generate new X containing lagged data &#34;&#34;&#34;
@@ -355,7 +355,7 @@ def extract_seasonal_component(df, columns_to_treat, daily_windows=[], agg_type=
         return new_X, cols_created</code></pre>
 </details>
 </dd>
-<dt id="utils.time_series_utils.medial_average"><code class="name flex">
+<dt id="ml_utils.time_series_utils.medial_average"><code class="name flex">
 <span>def <span class="ident">medial_average</span></span>(<span>x)</span>
 </code></dt>
 <dd>
@@ -363,14 +363,14 @@ def extract_seasonal_component(df, columns_to_treat, daily_windows=[], agg_type=
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/time_series_utils.py#L62-L64" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\time_series_utils.py#L62-L64" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def medial_average(x):
     &#34;&#34;&#34; Calculate medial average which is average excluding the maximum and minimum value  &#34;&#34;&#34;
     return x.loc[x.notnull()].sort_values().iloc[1:-1].mean()</code></pre>
 </details>
 </dd>
-<dt id="utils.time_series_utils.pdToNpSequential"><code class="name flex">
+<dt id="ml_utils.time_series_utils.pdToNpSequential"><code class="name flex">
 <span>def <span class="ident">pdToNpSequential</span></span>(<span>data, seq_len, dtype=numpy.float32)</span>
 </code></dt>
 <dd>
@@ -378,14 +378,14 @@ def extract_seasonal_component(df, columns_to_treat, daily_windows=[], agg_type=
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/time_series_utils.py#L48-L50" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\time_series_utils.py#L48-L50" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def pdToNpSequential(data, seq_len, dtype=np.float32):
     &#34;&#34;&#34; Transform from pandas 2D (rows, cols * sequence_length) to numpy 3D (rows, sequence_length, cols)&#34;&#34;&#34;
     return np.array(data, dtype=dtype).reshape(data.shape[0], seq_len + 1, data.shape[1] // (seq_len + 1))</code></pre>
 </details>
 </dd>
-<dt id="utils.time_series_utils.prepareInputData"><code class="name flex">
+<dt id="ml_utils.time_series_utils.prepareInputData"><code class="name flex">
 <span>def <span class="ident">prepareInputData</span></span>(<span>data, seq_len, keep_datetime, dtype=numpy.float32)</span>
 </code></dt>
 <dd>
@@ -393,7 +393,7 @@ def extract_seasonal_component(df, columns_to_treat, daily_windows=[], agg_type=
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/time_series_utils.py#L54-L59" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\time_series_utils.py#L54-L59" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def prepareInputData(data, seq_len, keep_datetime, dtype=np.float32):
     &#34;&#34;&#34; Transform data to be used as input on DNN &#34;&#34;&#34;
@@ -403,7 +403,7 @@ def extract_seasonal_component(df, columns_to_treat, daily_windows=[], agg_type=
     return pdToNpSequential(data, seq_len, dtype=dtype)</code></pre>
 </details>
 </dd>
-<dt id="utils.time_series_utils.seasonal_mean"><code class="name flex">
+<dt id="ml_utils.time_series_utils.seasonal_mean"><code class="name flex">
 <span>def <span class="ident">seasonal_mean</span></span>(<span>x, freq, window_length=24, agg_type='mean')</span>
 </code></dt>
 <dd>
@@ -411,7 +411,7 @@ def extract_seasonal_component(df, columns_to_treat, daily_windows=[], agg_type=
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/time_series_utils.py#L67-L83" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\time_series_utils.py#L67-L83" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def seasonal_mean(x, freq, window_length=24, agg_type=&#39;mean&#39;):
     &#34;&#34;&#34; Calculate seasonal mean or seasonal median with the provided frequency and window length &#34;&#34;&#34;
@@ -445,18 +445,18 @@ def extract_seasonal_component(df, columns_to_treat, daily_windows=[], agg_type=
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="utils" href="index.html">utils</a></code></li>
+<li><code><a title="ml_utils" href="index.html">ml_utils</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="utils.time_series_utils.dataToSequential" href="#utils.time_series_utils.dataToSequential">dataToSequential</a></code></li>
-<li><code><a title="utils.time_series_utils.extract_seasonal_component" href="#utils.time_series_utils.extract_seasonal_component">extract_seasonal_component</a></code></li>
-<li><code><a title="utils.time_series_utils.laggingData" href="#utils.time_series_utils.laggingData">laggingData</a></code></li>
-<li><code><a title="utils.time_series_utils.medial_average" href="#utils.time_series_utils.medial_average">medial_average</a></code></li>
-<li><code><a title="utils.time_series_utils.pdToNpSequential" href="#utils.time_series_utils.pdToNpSequential">pdToNpSequential</a></code></li>
-<li><code><a title="utils.time_series_utils.prepareInputData" href="#utils.time_series_utils.prepareInputData">prepareInputData</a></code></li>
-<li><code><a title="utils.time_series_utils.seasonal_mean" href="#utils.time_series_utils.seasonal_mean">seasonal_mean</a></code></li>
+<li><code><a title="ml_utils.time_series_utils.dataToSequential" href="#ml_utils.time_series_utils.dataToSequential">dataToSequential</a></code></li>
+<li><code><a title="ml_utils.time_series_utils.extract_seasonal_component" href="#ml_utils.time_series_utils.extract_seasonal_component">extract_seasonal_component</a></code></li>
+<li><code><a title="ml_utils.time_series_utils.laggingData" href="#ml_utils.time_series_utils.laggingData">laggingData</a></code></li>
+<li><code><a title="ml_utils.time_series_utils.medial_average" href="#ml_utils.time_series_utils.medial_average">medial_average</a></code></li>
+<li><code><a title="ml_utils.time_series_utils.pdToNpSequential" href="#ml_utils.time_series_utils.pdToNpSequential">pdToNpSequential</a></code></li>
+<li><code><a title="ml_utils.time_series_utils.prepareInputData" href="#ml_utils.time_series_utils.prepareInputData">prepareInputData</a></code></li>
+<li><code><a title="ml_utils.time_series_utils.seasonal_mean" href="#ml_utils.time_series_utils.seasonal_mean">seasonal_mean</a></code></li>
 </ul>
 </li>
 </ul>

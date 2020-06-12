@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.7.2" />
-<title>utils.plot_utils API documentation</title>
+<title>ml_utils.plot_utils API documentation</title>
 <meta name="description" content="" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
@@ -14,29 +14,25 @@
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
 <script async src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS_CHTML'></script>
 <style>.homelink{display:block;font-size:2em;font-weight:bold;color:#555;padding-bottom:.5em;border-bottom:1px solid silver}.homelink:hover{color:inherit}.homelink img{max-width:20%;max-height:5em;margin:auto;margin-bottom:.3em}</style>
-<link rel="canonical" href="https://pdoc3.github.io/pdoc/doc/utils/plot_utils.html">
+<link rel="canonical" href="https://pdoc3.github.io/pdoc/doc/ml_utils/plot_utils.html">
 <link rel="icon" href="https://pdoc3.github.io/pdoc/logo.png">
 </head>
 <body>
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>utils.plot_utils</code></h1>
+<h1 class="title">Module <code>ml_utils.plot_utils</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/plot_utils.py#L0-L213" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\plot_utils.py#L0-L219" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import pandas as pd
 import numpy as np
-from sklearn import metrics
-from tqdm import tqdm_notebook
-import seaborn as sns
-from scipy.stats import norm
 
 def get_subplot_rows_cols(num_plots, n_cols = [3,4,5]):
     &#34;&#34;&#34; Calculate number row and cols for a pretty grid &#34;&#34;&#34;
@@ -65,8 +61,15 @@ def get_subplot_rows_cols(num_plots, n_cols = [3,4,5]):
     return subplot_rows, subplot_cols
 
 def plot_histograms(df, column_names, df_types, max_value_counts, subplot_rows=None, subplot_cols=None,
-                    starting_index=0, index_offset=0, fit=norm):
+                    starting_index=0, index_offset=0, fit=None):
     &#34;&#34;&#34; Plot histogram plot grid for all the feature provided &#34;&#34;&#34;
+
+    from scipy.stats import norm
+    import seaborn as sns
+
+    if fit is None:
+        fit = norm
+
     # Set a good relation rows/cols for the plot if not specified
     if subplot_rows is None or subplot_cols is None:
         subplot_rows, subplot_cols = get_subplot_rows_cols(len(column_names), [3,4,5])
@@ -94,6 +97,9 @@ def plot_histograms(df, column_names, df_types, max_value_counts, subplot_rows=N
 
 def plot_roc_auc(y_true, y_pred):
     &#34;&#34;&#34; Plot ROC AUC &#34;&#34;&#34;
+
+    from sklearn import metrics
+
     fpr, tpr, threshold = metrics.roc_curve(y_true, y_pred)
     roc_auc = metrics.auc(fpr, tpr)
 
@@ -252,7 +258,7 @@ def plot_list_scatters(data, list_dict, subplot_cols=None, subplot_rows=None, st
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="utils.plot_utils.get_subplot_rows_cols"><code class="name flex">
+<dt id="ml_utils.plot_utils.get_subplot_rows_cols"><code class="name flex">
 <span>def <span class="ident">get_subplot_rows_cols</span></span>(<span>num_plots, n_cols=[3, 4, 5])</span>
 </code></dt>
 <dd>
@@ -260,7 +266,7 @@ def plot_list_scatters(data, list_dict, subplot_cols=None, subplot_rows=None, st
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/plot_utils.py#L10-L34" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\plot_utils.py#L6-L30" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def get_subplot_rows_cols(num_plots, n_cols = [3,4,5]):
     &#34;&#34;&#34; Calculate number row and cols for a pretty grid &#34;&#34;&#34;
@@ -289,7 +295,7 @@ def plot_list_scatters(data, list_dict, subplot_cols=None, subplot_rows=None, st
     return subplot_rows, subplot_cols</code></pre>
 </details>
 </dd>
-<dt id="utils.plot_utils.plot_date"><code class="name flex">
+<dt id="ml_utils.plot_utils.plot_date"><code class="name flex">
 <span>def <span class="ident">plot_date</span></span>(<span>x, y, axes=None, title=None, color='b')</span>
 </code></dt>
 <dd>
@@ -297,7 +303,7 @@ def plot_list_scatters(data, list_dict, subplot_cols=None, subplot_rows=None, st
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/plot_utils.py#L82-L143" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\plot_utils.py#L88-L149" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def plot_date(x, y, axes=None, title=None, color=&#39;b&#39;):
     &#34;&#34;&#34; Plot data correctly using X date data &#34;&#34;&#34;
@@ -363,19 +369,26 @@ def plot_list_scatters(data, list_dict, subplot_cols=None, subplot_rows=None, st
     axes.xaxis.set_major_formatter(major_format)</code></pre>
 </details>
 </dd>
-<dt id="utils.plot_utils.plot_histograms"><code class="name flex">
-<span>def <span class="ident">plot_histograms</span></span>(<span>df, column_names, df_types, max_value_counts, subplot_rows=None, subplot_cols=None, starting_index=0, index_offset=0, fit=&lt;scipy.stats._continuous_distns.norm_gen object&gt;)</span>
+<dt id="ml_utils.plot_utils.plot_histograms"><code class="name flex">
+<span>def <span class="ident">plot_histograms</span></span>(<span>df, column_names, df_types, max_value_counts, subplot_rows=None, subplot_cols=None, starting_index=0, index_offset=0, fit=None)</span>
 </code></dt>
 <dd>
 <section class="desc"><p>Plot histogram plot grid for all the feature provided</p></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/plot_utils.py#L36-L62" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\plot_utils.py#L32-L65" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def plot_histograms(df, column_names, df_types, max_value_counts, subplot_rows=None, subplot_cols=None,
-                    starting_index=0, index_offset=0, fit=norm):
+                    starting_index=0, index_offset=0, fit=None):
     &#34;&#34;&#34; Plot histogram plot grid for all the feature provided &#34;&#34;&#34;
+
+    from scipy.stats import norm
+    import seaborn as sns
+
+    if fit is None:
+        fit = norm
+
     # Set a good relation rows/cols for the plot if not specified
     if subplot_rows is None or subplot_cols is None:
         subplot_rows, subplot_cols = get_subplot_rows_cols(len(column_names), [3,4,5])
@@ -402,7 +415,7 @@ def plot_list_scatters(data, list_dict, subplot_cols=None, subplot_rows=None, st
     plt.rcParams[&#39;figure.figsize&#39;] = [10, 6]</code></pre>
 </details>
 </dd>
-<dt id="utils.plot_utils.plot_list_scatters"><code class="name flex">
+<dt id="ml_utils.plot_utils.plot_list_scatters"><code class="name flex">
 <span>def <span class="ident">plot_list_scatters</span></span>(<span>data, list_dict, subplot_cols=None, subplot_rows=None, starting_index=0, index_offset=0, fig=None, axes=None)</span>
 </code></dt>
 <dd>
@@ -410,7 +423,7 @@ def plot_list_scatters(data, list_dict, subplot_cols=None, subplot_rows=None, st
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/plot_utils.py#L176-L214" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\plot_utils.py#L182-L220" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def plot_list_scatters(data, list_dict, subplot_cols=None, subplot_rows=None, starting_index=0, index_offset=0, fig=None,
                        axes=None):
@@ -453,7 +466,7 @@ def plot_list_scatters(data, list_dict, subplot_cols=None, subplot_rows=None, st
     plt.rcParams[&#39;figure.figsize&#39;] = [10, 6]</code></pre>
 </details>
 </dd>
-<dt id="utils.plot_utils.plot_roc_auc"><code class="name flex">
+<dt id="ml_utils.plot_utils.plot_roc_auc"><code class="name flex">
 <span>def <span class="ident">plot_roc_auc</span></span>(<span>y_true, y_pred)</span>
 </code></dt>
 <dd>
@@ -461,10 +474,13 @@ def plot_list_scatters(data, list_dict, subplot_cols=None, subplot_rows=None, st
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/plot_utils.py#L64-L78" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\plot_utils.py#L67-L84" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def plot_roc_auc(y_true, y_pred):
     &#34;&#34;&#34; Plot ROC AUC &#34;&#34;&#34;
+
+    from sklearn import metrics
+
     fpr, tpr, threshold = metrics.roc_curve(y_true, y_pred)
     roc_auc = metrics.auc(fpr, tpr)
 
@@ -480,7 +496,7 @@ def plot_list_scatters(data, list_dict, subplot_cols=None, subplot_rows=None, st
     plt.show()</code></pre>
 </details>
 </dd>
-<dt id="utils.plot_utils.plot_scatter"><code class="name flex">
+<dt id="ml_utils.plot_utils.plot_scatter"><code class="name flex">
 <span>def <span class="ident">plot_scatter</span></span>(<span>data, x_column, y_column, title=None, axes=None, highlight_column=None, highlight_color='r', normal_color='b')</span>
 </code></dt>
 <dd>
@@ -488,7 +504,7 @@ def plot_list_scatters(data, list_dict, subplot_cols=None, subplot_rows=None, st
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b799fa82da9b1688453485b748c98d0da8bb4f52/plot_utils.py#L146-L173" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\plot_utils.py#L152-L179" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def plot_scatter(data, x_column, y_column, title=None, axes=None, highlight_column=None, highlight_color=&#39;r&#39;,
                  normal_color=&#39;b&#39;):
@@ -533,17 +549,17 @@ def plot_list_scatters(data, list_dict, subplot_cols=None, subplot_rows=None, st
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="utils" href="index.html">utils</a></code></li>
+<li><code><a title="ml_utils" href="index.html">ml_utils</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="utils.plot_utils.get_subplot_rows_cols" href="#utils.plot_utils.get_subplot_rows_cols">get_subplot_rows_cols</a></code></li>
-<li><code><a title="utils.plot_utils.plot_date" href="#utils.plot_utils.plot_date">plot_date</a></code></li>
-<li><code><a title="utils.plot_utils.plot_histograms" href="#utils.plot_utils.plot_histograms">plot_histograms</a></code></li>
-<li><code><a title="utils.plot_utils.plot_list_scatters" href="#utils.plot_utils.plot_list_scatters">plot_list_scatters</a></code></li>
-<li><code><a title="utils.plot_utils.plot_roc_auc" href="#utils.plot_utils.plot_roc_auc">plot_roc_auc</a></code></li>
-<li><code><a title="utils.plot_utils.plot_scatter" href="#utils.plot_utils.plot_scatter">plot_scatter</a></code></li>
+<li><code><a title="ml_utils.plot_utils.get_subplot_rows_cols" href="#ml_utils.plot_utils.get_subplot_rows_cols">get_subplot_rows_cols</a></code></li>
+<li><code><a title="ml_utils.plot_utils.plot_date" href="#ml_utils.plot_utils.plot_date">plot_date</a></code></li>
+<li><code><a title="ml_utils.plot_utils.plot_histograms" href="#ml_utils.plot_utils.plot_histograms">plot_histograms</a></code></li>
+<li><code><a title="ml_utils.plot_utils.plot_list_scatters" href="#ml_utils.plot_utils.plot_list_scatters">plot_list_scatters</a></code></li>
+<li><code><a title="ml_utils.plot_utils.plot_roc_auc" href="#ml_utils.plot_utils.plot_roc_auc">plot_roc_auc</a></code></li>
+<li><code><a title="ml_utils.plot_utils.plot_scatter" href="#ml_utils.plot_utils.plot_scatter">plot_scatter</a></code></li>
 </ul>
 </li>
 </ul>
