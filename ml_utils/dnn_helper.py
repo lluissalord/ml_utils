@@ -490,6 +490,7 @@ def visualize_training(history):
                 output_name = key[:-5]
                 visualize_acc_loss(history, output_name=output_name)
                 
+# TODO: Adapt Model generator to have only three 2 function (DNN and LSTM) but higly flexible depending on parameters
 class Model_generator:
     """ Class used for generating models according to the parameters specified """
     def __init__(self, input_shape, n_outputs, n_units, model_type='dnn_baseline', activation='softmax', hidden_layers=2, hidden_layer_activation='relu', residual_blocks=10, lstm_blocks=1, dropout_rate=0, recurrent_dropout=0, lstm_l1=0, lstm_l2=0, droput_input_cols=None, remain_input_cols=None):
