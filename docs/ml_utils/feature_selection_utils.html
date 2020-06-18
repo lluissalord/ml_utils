@@ -27,7 +27,7 @@
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\feature_selection_utils.py#L0-L530" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\feature_selection_utils.py#L0-L530" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">import pandas as pd
 import numpy as np
@@ -577,7 +577,7 @@ def get_feature_importance_mean(classifier_initial, y_train, x_train, n_iteratio
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\feature_selection_utils.py#L314-L362" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\feature_selection_utils.py#L314-L362" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def collinear_feature_selection(x_train, df_feature_importance, collinear_threshold=0.98, plot=True):
     &#34;&#34;&#34; Select features which have less collinearity below the threshold &#34;&#34;&#34;
@@ -638,7 +638,7 @@ def get_feature_importance_mean(classifier_initial, y_train, x_train, n_iteratio
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\feature_selection_utils.py#L10-L143" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\feature_selection_utils.py#L10-L143" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def covariate_shift(train, test, categorical_columns, n_samples, iterations = 200, weights_coef = 1, AUC_threshold = 0.8, importance_threshold = 0.9, max_loops = 20, test_size = 0.1, trys_all_influencer=5, calc_sample_weights=True, task_type=&#34;CPU&#34;, data_dir=&#39;&#39;, load_cov=False, save_cov=False, plot=True):
     &#34;&#34;&#34; Select features without Covariate Shift between training and test set using iteratively CatBoostClassifier to identify relation between train and test &#34;&#34;&#34;
@@ -784,7 +784,7 @@ def get_feature_importance_mean(classifier_initial, y_train, x_train, n_iteratio
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\feature_selection_utils.py#L297-L311" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\feature_selection_utils.py#L297-L311" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def cumulative_feature_selection(df_feature_importance, cum_importance_threshold):
     &#34;&#34;&#34; Select features which are below of the cumulative feature importance threshold &#34;&#34;&#34;
@@ -811,7 +811,7 @@ def get_feature_importance_mean(classifier_initial, y_train, x_train, n_iteratio
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\feature_selection_utils.py#L273-L294" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\feature_selection_utils.py#L273-L294" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def feature_selection(classifier_initial, y_train, x_train, n_top_features=50, baseline_features=[],
                       min_importance=None):
@@ -845,7 +845,7 @@ def get_feature_importance_mean(classifier_initial, y_train, x_train, n_iteratio
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\feature_selection_utils.py#L495-L531" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\feature_selection_utils.py#L495-L531" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def get_feature_importance_mean(classifier_initial, y_train, x_train, n_iterations_mean=3,
                                 need_cat_features_index=False, categorical_columns=[], dict_shadow_names={}, eval_set=None):
@@ -894,7 +894,7 @@ def get_feature_importance_mean(classifier_initial, y_train, x_train, n_iteratio
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\feature_selection_utils.py#L191-L271" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\feature_selection_utils.py#L191-L271" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def outliers_analysis(full_data, features_names=None, x_column=None, subplot_rows=None, subplot_cols=None, starting_index=0,
                       index_offset=0, z_score_threshold=3.5, use_mean=False, plot=True, num_bins=50):
@@ -987,7 +987,7 @@ def get_feature_importance_mean(classifier_initial, y_train, x_train, n_iteratio
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\feature_selection_utils.py#L365-L472" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\feature_selection_utils.py#L365-L472" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def shadow_feature_selection(classifier_initial, y_train, x_train, eval_set=None, n_top_features=None, collinear_threshold=0.98, cum_importance_threshold=0.99, times_no_change_features=2, max_loops=50, n_iterations_mean=3, need_cat_features_index=False, categorical_columns=[], verbose=True, debug=False, plot_correlation=False):
     &#34;&#34;&#34; Select features which have greater feature importance than random and than shuffle shadowed feature of itself &#34;&#34;&#34;
@@ -1107,7 +1107,7 @@ def get_feature_importance_mean(classifier_initial, y_train, x_train, n_iteratio
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\feature_selection_utils.py#L145-L189" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\feature_selection_utils.py#L145-L189" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def stadistic_difference_distributions(data, submission, time_column, test_percentage=0.2, p_value_threshold=None,
                                        verbose=False):

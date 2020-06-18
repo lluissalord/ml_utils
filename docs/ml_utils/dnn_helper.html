@@ -27,7 +27,7 @@
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L0-L716" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\dnn_helper.py#L0-L716" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">import pickle
 import numpy as np
@@ -763,7 +763,7 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L32-L87" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\dnn_helper.py#L32-L87" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def KFolds_flow_from_dataframe(dataframe, generators, kfolds=10, directory=None, x_col=&#39;filename&#39;, y_col=&#39;class&#39;,
                                weight_col=None, target_size=(256, 256), color_mode=&#39;rgb&#39;, classes=None,
@@ -831,7 +831,7 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L194-L199" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\dnn_helper.py#L194-L199" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def bce_dice_loss(y_true, y_pred, clip_loss = None):
     &#34;&#34;&#34; Calculate binary cross entropy loss given y_true and y_pred &#34;&#34;&#34;
@@ -849,7 +849,7 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L118-L151" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\dnn_helper.py#L118-L151" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def config_model_trainable(model, config, last_block=0, base_model=None):
     &#34;&#34;&#34; Configure provided model to train the whole model, only top layer or from last_block layer to top (both included) &#34;&#34;&#34;
@@ -895,7 +895,7 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L154-L165" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\dnn_helper.py#L154-L165" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def df_to_dataset(dataframe, target=&#39;target&#39;, shuffle=True, batch_size=32):
     &#34;&#34;&#34; Utility method to create a tf.data dataset from a Pandas Dataframe &#34;&#34;&#34;
@@ -919,7 +919,7 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L174-L179" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\dnn_helper.py#L174-L179" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def dice_coef(y_true, y_pred, smooth=1):
     &#34;&#34;&#34; Calculate DICE coeficient given y_true and y_pred &#34;&#34;&#34;
@@ -937,7 +937,7 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L182-L191" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\dnn_helper.py#L182-L191" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def dice_loss(y_true, y_pred):
     &#34;&#34;&#34; Calculate DICE loss given y_true and y_pred &#34;&#34;&#34;
@@ -959,7 +959,7 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L168-L171" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\dnn_helper.py#L168-L171" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def dnn_plot_roc_auc(X, y_test, model, feature_selection, batch_size):
     &#34;&#34;&#34; Plot ROC AUC diagram of provided model using X data and real y values &#34;&#34;&#34;
@@ -975,7 +975,7 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L90-L115" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\dnn_helper.py#L90-L115" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def fold_training(KFolds_gens, k, model, optimizer=&#39;nadam&#39;, loss=&#39;binary_crossentropy&#39;, metrics=[&#39;accuracy&#39;],
                   class_weight=None, models_dir=&#39;&#39;, callbacks_list=None, history_callback=None, plot_history=False):
@@ -1013,7 +1013,7 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L261-L312" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\dnn_helper.py#L261-L312" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def load_train(models_dir=&#34;&#34;, model_generator=None, json_path=&#34;&#34;, weights_path=&#34;&#34;, load_weights=True, history_path=&#34;&#34;, feature_selection_path=&#34;&#34;):
     &#34;&#34;&#34; Load training model (JSON and weights separetly), history (if provided) and feature selection (if provided) &#34;&#34;&#34;
@@ -1077,7 +1077,7 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L201-L214" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\dnn_helper.py#L201-L214" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def make_pred(model, gen, steps = None):
     &#34;&#34;&#34; Predict model output from provided generator &#34;&#34;&#34;
@@ -1103,7 +1103,7 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L216-L258" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\dnn_helper.py#L216-L258" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def save_train(model, history=None, models_dir=&#34;&#34;, json_path=&#34;&#34;, weights_path=&#34;&#34;, save_weights=True, history_path=&#34;&#34;, feature_selection=None, feature_selection_path=&#34;&#34;):
     &#34;&#34;&#34; Save training model (JSON and weights separetly), history (if provided) and feature selection (if provided) &#34;&#34;&#34;
@@ -1158,7 +1158,7 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L450-L463" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\dnn_helper.py#L450-L463" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def visualize(history, key, y_label, x_label=&#34;epoch&#34;, title=None):
     &#34;&#34;&#34; Plot history data with one plot per metric &#34;&#34;&#34;
@@ -1184,7 +1184,7 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L466-L478" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\dnn_helper.py#L466-L478" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def visualize_acc_loss(history, output_name=&#34;&#34;, only_loss=False):
     &#34;&#34;&#34; Plot accuracy loss data from history &#34;&#34;&#34;
@@ -1209,7 +1209,7 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L481-L491" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\dnn_helper.py#L481-L491" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def visualize_training(history):
     &#34;&#34;&#34; Plot all metrics from training history &#34;&#34;&#34;
@@ -1238,7 +1238,7 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L315-L447" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\dnn_helper.py#L315-L447" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">class BatchHistoryEarlyStopping(Callback):
     &#34;&#34;&#34; EarlyStopping class based on batch evaluation &#34;&#34;&#34;
@@ -1388,7 +1388,7 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L419-L428" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\dnn_helper.py#L419-L428" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def get_monitor_value(self, logs):
     monitor_value = logs.get(self.monitor)
@@ -1410,7 +1410,7 @@ class Model_generator:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L377-L413" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\dnn_helper.py#L377-L413" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def on_batch_end(self, batch, logs={}):
     if batch != 0 and batch % self.batch_freq == 0:
@@ -1466,7 +1466,7 @@ but that may change in the future.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L373-L375" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\dnn_helper.py#L373-L375" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def on_train_begin(self, logs={}):
     if self.reset_on_train:
@@ -1488,7 +1488,7 @@ but that may change in the future.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L415-L417" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\dnn_helper.py#L415-L417" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def on_train_end(self, logs=None):
     if self.early_stopping and self.stopped_epoch &gt; 0 and self.verbose &gt; 0:
@@ -1503,7 +1503,7 @@ but that may change in the future.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L430-L447" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\dnn_helper.py#L430-L447" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def reset_stats(self):
     self.metrics = (
@@ -1536,7 +1536,7 @@ but that may change in the future.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L494-L717" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\dnn_helper.py#L494-L717" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">class Model_generator:
     &#34;&#34;&#34; Class used for generating models according to the parameters specified &#34;&#34;&#34;
@@ -1773,7 +1773,7 @@ but that may change in the future.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L625-L652" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\dnn_helper.py#L625-L652" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def attention_lstm(self):
     input_x = Input(shape = self.input_shape, name = &#39;input&#39;)
@@ -1813,7 +1813,7 @@ but that may change in the future.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L694-L717" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\dnn_helper.py#L694-L717" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def attention_lstm_dropout_input(self):
     dropout_input = Input(shape = (self.seq_len, self.droput_input_cols), name = &#39;dropout_input&#39;)
@@ -1849,7 +1849,7 @@ but that may change in the future.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L654-L692" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\dnn_helper.py#L654-L692" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def attention_lstm_residual(self):
     input_x = Input(shape = self.input_shape, name = &#39;input&#39;)
@@ -1900,7 +1900,7 @@ but that may change in the future.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L547-L560" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\dnn_helper.py#L547-L560" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def dnn(self):
     input_x = Input(shape = self.input_shape, name=&#39;input&#39;)
@@ -1926,7 +1926,7 @@ but that may change in the future.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L539-L545" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\dnn_helper.py#L539-L545" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def dnn_baseline(self):
     input_x = Input(shape = self.input_shape, name=&#39;input&#39;)
@@ -1945,7 +1945,7 @@ but that may change in the future.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L562-L581" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\dnn_helper.py#L562-L581" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def dnn_residual(self):
     input_x = Input(shape = self.input_shape, name=&#39;input&#39;)
@@ -1977,7 +1977,7 @@ but that may change in the future.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L514-L537" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\dnn_helper.py#L514-L537" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def get_model(self, model_type=None):
     if model_type is None:
@@ -2013,7 +2013,7 @@ but that may change in the future.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L600-L623" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\dnn_helper.py#L600-L623" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def lstm(self):
     input_x = Input(shape = self.input_shape, name=&#39;input&#39;)
@@ -2049,7 +2049,7 @@ but that may change in the future.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\dnn_helper.py#L583-L598" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\dnn_helper.py#L583-L598" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def lstm_baseline(self):
     input_x = Input(shape = self.input_shape, name=&#39;input&#39;)

@@ -27,7 +27,7 @@
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\time_series_utils.py#L0-L164" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\time_series_utils.py#L0-L164" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">import numpy as np
 import pandas as pd
@@ -211,7 +211,7 @@ def extract_seasonal_component(df, columns_to_treat, daily_windows=[], agg_type=
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\time_series_utils.py#L32-L45" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\time_series_utils.py#L32-L45" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def dataToSequential(data, seq_len, out_np=True, exclude_cols=[&#39;datetime&#39;], dtype=np.float32):
     &#34;&#34;&#34; Transform data to sequential data &#34;&#34;&#34;
@@ -238,7 +238,7 @@ def extract_seasonal_component(df, columns_to_treat, daily_windows=[], agg_type=
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\time_series_utils.py#L86-L165" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\time_series_utils.py#L86-L165" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def extract_seasonal_component(df, columns_to_treat, daily_windows=[], agg_type=&#39;mean&#39;, win_type=&#39;boxcar&#39;,
                                each_row_is=&#39;hour&#39;, plot=False):
@@ -330,7 +330,7 @@ def extract_seasonal_component(df, columns_to_treat, daily_windows=[], agg_type=
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\time_series_utils.py#L9-L29" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\time_series_utils.py#L9-L29" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def laggingData(X, data, lag, suffix=&#39;Prev_&#39;, data_cols=None, exclude_cols=[&#39;datetime&#39;], output_data=False):
     &#34;&#34;&#34; Generate new X containing lagged data &#34;&#34;&#34;
@@ -363,7 +363,7 @@ def extract_seasonal_component(df, columns_to_treat, daily_windows=[], agg_type=
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\time_series_utils.py#L62-L64" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\time_series_utils.py#L62-L64" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def medial_average(x):
     &#34;&#34;&#34; Calculate medial average which is average excluding the maximum and minimum value  &#34;&#34;&#34;
@@ -378,7 +378,7 @@ def extract_seasonal_component(df, columns_to_treat, daily_windows=[], agg_type=
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\time_series_utils.py#L48-L50" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\time_series_utils.py#L48-L50" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def pdToNpSequential(data, seq_len, dtype=np.float32):
     &#34;&#34;&#34; Transform from pandas 2D (rows, cols * sequence_length) to numpy 3D (rows, sequence_length, cols)&#34;&#34;&#34;
@@ -393,7 +393,7 @@ def extract_seasonal_component(df, columns_to_treat, daily_windows=[], agg_type=
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\time_series_utils.py#L54-L59" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\time_series_utils.py#L54-L59" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def prepareInputData(data, seq_len, keep_datetime, dtype=np.float32):
     &#34;&#34;&#34; Transform data to be used as input on DNN &#34;&#34;&#34;
@@ -411,7 +411,7 @@ def extract_seasonal_component(df, columns_to_treat, daily_windows=[], agg_type=
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/ml_utils/blob/b27f19412b0b5364a74c92cbfa6ccf197f9dc057/ml_utils\time_series_utils.py#L67-L83" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/ml_utils/blob/126c95123c17253be178ab3024047af3711bfc51/ml_utils\time_series_utils.py#L67-L83" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def seasonal_mean(x, freq, window_length=24, agg_type=&#39;mean&#39;):
     &#34;&#34;&#34; Calculate seasonal mean or seasonal median with the provided frequency and window length &#34;&#34;&#34;
