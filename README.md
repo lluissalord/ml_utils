@@ -13,3 +13,37 @@ This library includes several kind of utilities which are split by:
 - Miscelaneas utilities.
 
 See API documentation [here](https://lluissalord.github.io/ml_utils/)
+
+## Instalation
+
+This library requires some dependencies which are mandatory to be able to import the modules. However, some other dependencies are only required for specific functions from the modules, hence, only dependencies in use need to be installed.
+
+### Required dependencies
+
+```
+conda install numpy matplotlib pandas tqdm
+```
+
+### Optional dependencies
+
+```
+conda install pydicom
+```
+```
+conda install scipy
+```
+```
+conda install scikit-learn
+```
+```
+conda install tensorflow=2
+```
+```
+conda install seaborn
+```
+```
+conda install catboost
+```
+```
+conda install -c menpo opencv
+```
